@@ -703,7 +703,9 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, onTerm
   const [checkedItems, setCheckedItems] = useState({});
   const [speciesFilter, setSpeciesFilter] = useState("all");
   const bottomRef = useRef(null);
-  const isPro = localStorage.getItem("wildai_pro") === "true";
+  const { user, isLoaded } = useUser();
+  const { openSignIn } = useClerk();
+  const isPro = user?.publicMetadata?.isPro === true;
   const hitLimit = !isPro && messageCount >= FREE_LIMIT;
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:"smooth" }); }, [messages, loading]);
@@ -832,7 +834,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                 <div style={{fontSize:36,marginBottom:10}}>🔒</div>
                 <div style={{fontFamily:"var(--font-display)",fontSize:20,color:"var(--text)",marginBottom:6}}>Upgrade to WildAI Pro</div>
                 <div style={{color:"var(--text2)",fontSize:14,marginBottom:18,lineHeight:1.6}}>You've used your free messages. Get unlimited access and advanced features.</div>
-                <button className="btn-primary" style={{padding:"13px 32px",fontSize:15,borderRadius:"var(--radius)"}} onClick={async()=>{const res=await fetch("https://wildai-server.onrender.com/create-checkout",{method:"POST",headers:{"Content-Type":"application/json"}});const data=await res.json();if(data.url)window.location.href=data.url;}}>Upgrade for $4.99/month →</button>
+                <button className="btn-primary" style={{padding:"13px 32px",fontSize:15,borderRadius:"var(--radius)"}} onClick={async()=>{if(!user){openSignIn();return;}const res=await fetch("https://wildai-server.onrender.com/create-checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:user?.id})});const data=await res.json();if(data.url)window.location.href=data.url;}}>Upgrade for $4.99/month →</button>
               </div>
             )}
             {!hitLimit && (
@@ -963,8 +965,7 @@ export default function App() {
 useEffect(() => {
   const params = new URLSearchParams(window.location.search);
   if (params.get("upgraded") === "true") {
-    localStorage.setItem("wildai_pro", "true");
-    localStorage.setItem("wildai_message_count", "0");
+
     window.history.replaceState({}, "", "/");
     setPage("chat");
   }
