@@ -532,7 +532,13 @@ function RegulationsTab({ selectedState }) {
       )}
       {regs && !loading && (
         <div className="card fade-in" style={{padding:28}}>
-          <div className="msg-bubble" style={{lineHeight:1.8}} dangerouslySetInnerHTML={{ __html: regs.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").replace(/\n\n/g,"</p><p style='margin-top:14px'>").replace(/\n/g,"<br/>") }}/>
+          <div className="msg-bubble" style={{lineHeight:1.8}} dangerouslySetInnerHTML={{ __html: regs
+  .replace(/^### (.*?)$/gm, "<h4 style='color:var(--green);margin:16px 0 8px;font-size:14px;font-weight:700'>$1</h4>")
+  .replace(/^## (.*?)$/gm, "<h3 style='color:var(--text);margin:20px 0 10px;font-size:16px;font-weight:700'>$1</h3>")
+  .replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>")
+  .replace(/\n\n/g,"</p><p style='margin-top:14px'>")
+  .replace(/\n/g,"<br/>")
+}}/>
         </div>
       )}
       <div style={{padding:"16px 20px",background:"var(--amber-dim)",border:"1px solid rgba(212,147,10,0.2)",borderRadius:"var(--radius)"}}>
@@ -696,7 +702,8 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, onTerm
   const [checkedItems, setCheckedItems] = useState({});
   const [speciesFilter, setSpeciesFilter] = useState("all");
   const bottomRef = useRef(null);
-  const hitLimit = messageCount >= FREE_LIMIT;
+  const isPro = localStorage.getItem("wildai_pro") === "true";
+  const hitLimit = !isPro && messageCount >= FREE_LIMIT;
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:"smooth" }); }, [messages, loading]);
 
@@ -778,7 +785,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           </div>
         </div>
         <div style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:600,background:hitLimit?"rgba(255,100,100,0.1)":"var(--green-dim)",border:`1px solid ${hitLimit?"rgba(255,100,100,0.2)":"var(--border-accent)"}`,color:hitLimit?"#ff6b6b":"var(--green)"}}>
-          {hitLimit?"Limit reached":`${FREE_LIMIT-messageCount} msgs left`}
+          {hitLimit?"Limit reached":isPro?"Pro ✓":`${Math.max(0, FREE_LIMIT-messageCount)} msgs left`}
         </div>
       </header>
 
@@ -952,6 +959,15 @@ export default function App() {
   const saved = localStorage.getItem("wildai_message_count");
   return saved ? parseInt(saved) : 0;
 });
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("upgraded") === "true") {
+    localStorage.setItem("wildai_pro", "true");
+    localStorage.setItem("wildai_message_count", "0");
+    window.history.replaceState({}, "", "/");
+    setPage("chat");
+  }
+}, []);
   const [selectedState, setSelectedState] = useState("");
   const goTo = (p) => { setPrevPage(page); setPage(p); };
   return (
