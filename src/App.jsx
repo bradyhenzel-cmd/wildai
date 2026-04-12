@@ -704,9 +704,36 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, onTerm
     const msg = text || input;
     if (!msg.trim() || hitLimit) return;
     const newMsgs = [...messages, { role:"user", content:msg, animate:false }];
-    setMessages(newMsgs); setInput(""); setLoading(true); setMessageCount(messageCount+1);
+    setMessages(newMsgs); setInput(""); setLoading(true); 
+    const newCount = messageCount + 1;
+setMessageCount(newCount);
+localStorage.setItem("wildai_message_count", newCount);
     if (tab !== "chat") setTab("chat");
-    const system = `You are WildAI, an expert hunting and fishing assistant${selectedState?` specializing in ${selectedState}`:""}. Deep knowledge of hunting tactics, fishing techniques, gear, wildlife behavior, seasons, regulations${selectedState?` specific to ${selectedState}`:" across US states"}, trip planning, and public land navigation. Give practical, specific, confident advice like a seasoned outdoorsman. Use **bold** for key terms. Keep responses concise and useful. Remind users to verify regulations with their state agency when relevant.`;
+    const now = new Date();
+const moonPhase = () => {
+  const synodicMonth = 29.53058867;
+  const known = new Date(2000, 0, 6, 18, 14, 0);
+  const diff = (now - known) / (1000 * 60 * 60 * 24);
+  const phase = ((diff % synodicMonth) + synodicMonth) % synodicMonth;
+  if (phase < 1.85) return "New Moon 🌑";
+  if (phase < 5.53) return "Waxing Crescent 🌒";
+  if (phase < 9.22) return "First Quarter 🌓";
+  if (phase < 12.91) return "Waxing Gibbous 🌔";
+  if (phase < 16.61) return "Full Moon 🌕";
+  if (phase < 20.30) return "Waning Gibbous 🌖";
+  if (phase < 23.99) return "Last Quarter 🌗";
+  if (phase < 27.68) return "Waning Crescent 🌘";
+  return "New Moon 🌑";
+};
+const timeOfDay = now.getHours() < 12 ? "morning" : now.getHours() < 17 ? "afternoon" : "evening";
+const system = `You are WildAI, an expert hunting and fishing assistant${selectedState?` specializing in ${selectedState}`:""}. Deep knowledge of hunting tactics, fishing techniques, gear, wildlife behavior, seasons, regulations${selectedState?` specific to ${selectedState}`:" across US states"}, trip planning, and public land navigation. Give practical, specific, confident advice like a seasoned outdoorsman. Use **bold** for key terms. Keep responses concise and useful. Remind users to verify regulations with their state agency when relevant.
+
+CURRENT CONTEXT (use this for accurate seasonal and timing advice):
+- Today's date: ${now.toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}
+- Time of day: ${timeOfDay}
+- Current moon phase: ${moonPhase()}
+- User's state: ${selectedState || "not specified"}
+- Season: ${["Winter","Winter","Spring","Spring","Spring","Summer","Summer","Summer","Fall","Fall","Fall","Winter"][now.getMonth()]}`;
     try {
       const res = await fetch("https://wildai-server.onrender.com/chat", {
         method:"POST", headers:{"Content-Type":"application/json"},
@@ -797,7 +824,7 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, onTerm
                 <div style={{fontSize:36,marginBottom:10}}>🔒</div>
                 <div style={{fontFamily:"var(--font-display)",fontSize:20,color:"var(--text)",marginBottom:6}}>Upgrade to WildAI Pro</div>
                 <div style={{color:"var(--text2)",fontSize:14,marginBottom:18,lineHeight:1.6}}>You've used your free messages. Get unlimited access and advanced features.</div>
-                <button className="btn-primary" style={{padding:"13px 32px",fontSize:15,borderRadius:"var(--radius)"}}>Upgrade for $9.99/month →</button>
+                <button className="btn-primary" style={{padding:"13px 32px",fontSize:15,borderRadius:"var(--radius)"}} onClick={async()=>{const res=await fetch("https://wildai-server.onrender.com/create-checkout",{method:"POST",headers:{"Content-Type":"application/json"}});const data=await res.json();if(data.url)window.location.href=data.url;}}>Upgrade for $4.99/month →</button>
               </div>
             )}
             {!hitLimit && (
@@ -921,7 +948,10 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, onTerm
 export default function App() {
   const [page, setPage] = useState("landing");
   const [prevPage, setPrevPage] = useState("landing");
-  const [messageCount, setMessageCount] = useState(0);
+  const [messageCount, setMessageCount] = useState(() => {
+  const saved = localStorage.getItem("wildai_message_count");
+  return saved ? parseInt(saved) : 0;
+});
   const [selectedState, setSelectedState] = useState("");
   const goTo = (p) => { setPrevPage(page); setPage(p); };
   return (

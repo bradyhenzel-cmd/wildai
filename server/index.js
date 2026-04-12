@@ -2,8 +2,10 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const Anthropic = require("@anthropic-ai/sdk");
+const Stripe = require("stripe");
 
 const app = express();
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 app.use(cors());
 app.use(express.json());
 
@@ -31,6 +33,24 @@ app.post("/regulations", async (req, res) => {
     }]
   });
   res.json({ regulations: response.content[0].text });
+});
+
+app.post("/create-checkout", async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [{
+        price: "price_1TLT6hEOP0uwb8WrKdDBGq4m",
+        quantity: 1,
+      }],
+      mode: "subscription",
+      success_url: "https://wildai.netlify.app?upgraded=true",
+      cancel_url: "https://wildai.netlify.app",
+    });
+    res.json({ url: session.url });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.listen(3001, () => console.log("Server running on port 3001"));
