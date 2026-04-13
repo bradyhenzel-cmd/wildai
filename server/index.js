@@ -60,7 +60,18 @@ app.post("/create-checkout", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
+app.post("/customer-portal", async (req, res) => {
+  const { customerId } = req.body;
+  try {
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: "https://wildai.netlify.app",
+    });
+    res.json({ url: session.url });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 app.post("/webhook", async (req, res) => {
   const sig = req.headers["stripe-signature"];
   let event;

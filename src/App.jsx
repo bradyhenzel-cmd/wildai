@@ -704,6 +704,7 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, onTerm
   const [speciesFilter, setSpeciesFilter] = useState("all");
   const bottomRef = useRef(null);
   const { user, isLoaded } = useUser();
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const { openSignIn } = useClerk();
   const isPro = user?.publicMetadata?.isPro === true;
   const hitLimit = !isPro && messageCount >= FREE_LIMIT;
@@ -790,6 +791,11 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         <div style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:600,background:hitLimit?"rgba(255,100,100,0.1)":"var(--green-dim)",border:`1px solid ${hitLimit?"rgba(255,100,100,0.2)":"var(--border-accent)"}`,color:hitLimit?"#ff6b6b":"var(--green)"}}>
           {hitLimit?"Limit reached":isPro?"Pro ✓":`${Math.max(0, FREE_LIMIT-messageCount)} msgs left`}
         </div>
+        {!user ? (
+  <button onClick={()=>openSignIn()} className="btn-ghost" style={{padding:"7px 14px",fontSize:13}}>Sign In</button>
+) : (
+  <UserButton afterSignOutUrl="https://wildai.netlify.app"/>
+)}
       </header>
 
       <div style={{borderBottom:"1px solid var(--border)",padding:"12px 20px",display:"flex",gap:8,overflowX:"auto",background:"rgba(8,15,8,0.78)",position:"sticky",top:57,zIndex:40}}>
@@ -834,7 +840,9 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                 <div style={{fontSize:36,marginBottom:10}}>🔒</div>
                 <div style={{fontFamily:"var(--font-display)",fontSize:20,color:"var(--text)",marginBottom:6}}>Upgrade to WildAI Pro</div>
                 <div style={{color:"var(--text2)",fontSize:14,marginBottom:18,lineHeight:1.6}}>You've used your free messages. Get unlimited access and advanced features.</div>
-                <button className="btn-primary" style={{padding:"13px 32px",fontSize:15,borderRadius:"var(--radius)"}} onClick={async()=>{if(!user){openSignIn();return;}const res=await fetch("https://wildai-server.onrender.com/create-checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:user?.id})});const data=await res.json();if(data.url)window.location.href=data.url;}}>Upgrade for $4.99/month →</button>
+                <button className="btn-primary" style={{padding:"13px 32px",fontSize:15,borderRadius:"var(--radius)",opacity:checkoutLoading?0.6:1}} disabled={checkoutLoading} onClick={async()=>{if(!user){openSignIn();return;}setCheckoutLoading(true);const res=await fetch("https://wildai-server.onrender.com/create-checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:user?.id})});const data=await res.json();if(data.url)window.location.href=data.url;setCheckoutLoading(false);}}>
+  {checkoutLoading?"Loading...":"Upgrade for $4.99/month →"}
+</button>
               </div>
             )}
             {!hitLimit && (
