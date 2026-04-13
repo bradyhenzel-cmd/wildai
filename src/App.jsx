@@ -737,7 +737,7 @@ const moonPhase = () => {
   return "New Moon 🌑";
 };
 const timeOfDay = now.getHours() < 12 ? "morning" : now.getHours() < 17 ? "afternoon" : "evening";
-const system = `You are WildAI, an expert hunting and fishing assistant${selectedState?` specializing in ${selectedState}`:""}. Deep knowledge of hunting tactics, fishing techniques, gear, wildlife behavior, seasons, regulations${selectedState?` specific to ${selectedState}`:" across US states"}, trip planning, and public land navigation. Give practical, specific, confident advice like a seasoned outdoorsman. Use **bold** for key terms. Keep responses concise and useful. Remind users to verify regulations with their state agency when relevant.
+const system = `You are WildAI, an expert hunting and fishing assistant${selectedState?` specializing in ${selectedState}`:""}. Deep knowledge of hunting tactics, fishing techniques, gear, wildlife behavior, seasons, regulations${selectedState?` specific to ${selectedState}`:" across US states"}, trip planning, and public land navigation. Give practical, specific, confident advice like a seasoned outdoorsman. Use **bold** for key terms. Keep responses concise and useful. Remind users to verify regulations with their state agency when relevant.If a user asks about canceling their subscription or managing billing, tell them to click their profile avatar in the top right corner of the app and select "Manage Subscription".
 
 CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 - Today's date: ${now.toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}
@@ -794,7 +794,20 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         {!user ? (
   <button onClick={()=>openSignIn()} className="btn-ghost" style={{padding:"7px 14px",fontSize:13}}>Sign In</button>
 ) : (
-  <UserButton afterSignOutUrl="https://wildai.netlify.app"/>
+  <UserButton afterSignOutUrl="https://wildai.netlify.app">
+  <UserButton.MenuItems>
+    <UserButton.Action
+      label="Manage Subscription"
+      labelIcon={<span>💳</span>}
+      onClick={async()=>{
+        const customerId = user?.publicMetadata?.stripeCustomerId;
+        const res = await fetch("https://wildai-server.onrender.com/customer-portal",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({customerId})});
+        const data = await res.json();
+        if(data.url) window.location.href = data.url;
+      }}
+    />
+  </UserButton.MenuItems>
+</UserButton>
 )}
       </header>
 
@@ -949,6 +962,16 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
               </div>
             </div>
             <div style={{marginTop:28,paddingTop:28,borderTop:"1px solid var(--border)"}}>
+              {isPro && (
+  <div style={{marginTop:16}}>
+    <button className="btn-ghost" style={{padding:"10px 20px",fontSize:13}} onClick={async()=>{
+      const customerId = user?.publicMetadata?.stripeCustomerId;
+      const res = await fetch("https://wildai-server.onrender.com/customer-portal",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({customerId})});
+      const data = await res.json();
+      if(data.url) window.location.href = data.url;
+    }}>Manage Subscription →</button>
+  </div>
+)}
               <button onClick={onTerms} className="btn-ghost" style={{padding:"10px 20px",fontSize:13}}>View Terms & Conditions →</button>
             </div>
           </div>
