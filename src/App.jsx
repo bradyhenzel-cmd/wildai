@@ -3,6 +3,59 @@ import { useUser, SignIn, SignUp, UserButton, useClerk } from '@clerk/react';
 
 const STATES = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
 
+const STATE_WILDLIFE_AGENCIES = {
+  "Alabama": { name: "Alabama DCNR", hunting: "https://www.outdooralabama.com/licenses-and-permits", fishing: "https://www.outdooralabama.com/licenses-and-permits" },
+  "Alaska": { name: "Alaska DFG", hunting: "https://www.adfg.alaska.gov/index.cfm?adfg=license.main", fishing: "https://www.adfg.alaska.gov/index.cfm?adfg=license.main" },
+  "Arizona": { name: "Arizona GFD", hunting: "https://www.azgfd.com/licensing/", fishing: "https://www.azgfd.com/licensing/" },
+  "Arkansas": { name: "Arkansas GFC", hunting: "https://www.agfc.com/en/resources/licensing/", fishing: "https://www.agfc.com/en/resources/licensing/" },
+  "California": { name: "California CDFW", hunting: "https://www.wildlife.ca.gov/Licensing", fishing: "https://www.wildlife.ca.gov/Licensing" },
+  "Colorado": { name: "Colorado CPW", hunting: "https://cpw.state.co.us/buyapply/Pages/Licenses.aspx", fishing: "https://cpw.state.co.us/buyapply/Pages/Licenses.aspx" },
+  "Connecticut": { name: "Connecticut DEEP", hunting: "https://portal.ct.gov/DEEP/Hunting/Hunting-Licenses", fishing: "https://portal.ct.gov/DEEP/Fishing/Fishing-Licenses" },
+  "Delaware": { name: "Delaware DNREC", hunting: "https://dnrec.delaware.gov/fish-wildlife/hunting/", fishing: "https://dnrec.delaware.gov/fish-wildlife/fishing/" },
+  "Florida": { name: "Florida FWC", hunting: "https://licenses.myfwc.com/", fishing: "https://licenses.myfwc.com/" },
+  "Georgia": { name: "Georgia DNR", hunting: "https://georgiawildlife.com/licenses-permits-passes", fishing: "https://georgiawildlife.com/licenses-permits-passes" },
+  "Hawaii": { name: "Hawaii DLNR", hunting: "https://dlnr.hawaii.gov/hunting/", fishing: "https://dlnr.hawaii.gov/dar/fishing/recreational-fishing-license/" },
+  "Idaho": { name: "Idaho Fish & Game", hunting: "https://idfg.idaho.gov/licenses", fishing: "https://idfg.idaho.gov/licenses" },
+  "Illinois": { name: "Illinois DNR", hunting: "https://www.dnr.illinois.gov/LicensePermit/Pages/HuntingLicenses.aspx", fishing: "https://www.dnr.illinois.gov/LicensePermit/Pages/FishingLicenses.aspx" },
+  "Indiana": { name: "Indiana DNR", hunting: "https://www.in.gov/dnr/fish-and-wildlife/licenses-and-permits/hunting/", fishing: "https://www.in.gov/dnr/fish-and-wildlife/licenses-and-permits/fishing/" },
+  "Iowa": { name: "Iowa DNR", hunting: "https://www.iowadnr.gov/Licensing/Hunting-Trapping", fishing: "https://www.iowadnr.gov/Licensing/Fishing" },
+  "Kansas": { name: "Kansas Wildlife", hunting: "https://ksoutdoors.com/Hunting/Licenses-Permits-and-Fees", fishing: "https://ksoutdoors.com/Fishing/Licenses-and-Permits" },
+  "Kentucky": { name: "Kentucky DFW", hunting: "https://fw.ky.gov/License/Pages/default.aspx", fishing: "https://fw.ky.gov/License/Pages/default.aspx" },
+  "Louisiana": { name: "Louisiana WLF", hunting: "https://www.wlf.louisiana.gov/licenses", fishing: "https://www.wlf.louisiana.gov/licenses" },
+  "Maine": { name: "Maine IFW", hunting: "https://www.maine.gov/ifw/hunting-trapping/licenses-registrations/index.html", fishing: "https://www.maine.gov/ifw/fishing/licenses/index.html" },
+  "Maryland": { name: "Maryland DNR", hunting: "https://dnr.maryland.gov/huntersguide/pages/licenses.aspx", fishing: "https://dnr.maryland.gov/fisheries/pages/recreational/licenses.aspx" },
+  "Massachusetts": { name: "Massachusetts DFW", hunting: "https://www.mass.gov/hunting-licenses-stamps-and-permits", fishing: "https://www.mass.gov/fishing-licenses-and-permits" },
+  "Michigan": { name: "Michigan DNR", hunting: "https://www.michigan.gov/dnr/licenses", fishing: "https://www.michigan.gov/dnr/licenses" },
+  "Minnesota": { name: "Minnesota DNR", hunting: "https://www.dnr.state.mn.us/licenses/hunting/index.html", fishing: "https://www.dnr.state.mn.us/licenses/fishing/index.html" },
+  "Mississippi": { name: "Mississippi MDWFP", hunting: "https://www.mdwfp.com/license/", fishing: "https://www.mdwfp.com/license/" },
+  "Missouri": { name: "Missouri MDC", hunting: "https://hunting.mdc.mo.gov/", fishing: "https://fishing.mdc.mo.gov/" },
+  "Montana": { name: "Montana FWP", hunting: "https://fwp.mt.gov/buyandapply", fishing: "https://fwp.mt.gov/buyandapply" },
+  "Nebraska": { name: "Nebraska Game & Parks", hunting: "https://outdoornebraska.gov/licenses/", fishing: "https://outdoornebraska.gov/licenses/" },
+  "Nevada": { name: "Nevada NDOW", hunting: "https://www.ndow.org/hunt/licenses-tags/", fishing: "https://www.ndow.org/fish/licenses/" },
+  "New Hampshire": { name: "New Hampshire DFG", hunting: "https://www.wildlife.nh.gov/hunting/hunting-licenses.html", fishing: "https://www.wildlife.nh.gov/fishing/fishing-licenses.html" },
+  "New Jersey": { name: "New Jersey DFW", hunting: "https://www.nj.gov/dep/fgw/huntlic.htm", fishing: "https://www.nj.gov/dep/fgw/fishlic.htm" },
+  "New Mexico": { name: "New Mexico DGF", hunting: "https://www.wildlife.state.nm.us/hunting/licenses/", fishing: "https://www.wildlife.state.nm.us/fishing/licenses/" },
+  "New York": { name: "New York DEC", hunting: "https://www.dec.ny.gov/permits/28121.html", fishing: "https://www.dec.ny.gov/permits/31722.html" },
+  "North Carolina": { name: "North Carolina WRC", hunting: "https://www.ncwildlife.org/Licensing/Hunting-Licenses", fishing: "https://www.ncwildlife.org/Licensing/Fishing-Licenses" },
+  "North Dakota": { name: "North Dakota GFD", hunting: "https://gf.nd.gov/licenses/hunting", fishing: "https://gf.nd.gov/licenses/fishing" },
+  "Ohio": { name: "Ohio DNR", hunting: "https://ohiodnr.gov/buy-and-apply/hunting-trapping-licenses", fishing: "https://ohiodnr.gov/buy-and-apply/fishing-licenses" },
+  "Oklahoma": { name: "Oklahoma DWC", hunting: "https://www.wildlifedepartment.com/licenses/hunting", fishing: "https://www.wildlifedepartment.com/licenses/fishing" },
+  "Oregon": { name: "Oregon DFW", hunting: "https://myodfw.com/hunting/licensing", fishing: "https://myodfw.com/fishing/licensing" },
+  "Pennsylvania": { name: "Pennsylvania GC & FC", hunting: "https://www.pgc.pa.gov/HuntTrap/Pages/Licenses.aspx", fishing: "https://www.fishandboat.com/Fishing/FishingLicenses/Pages/default.aspx" },
+  "Rhode Island": { name: "Rhode Island DEM", hunting: "https://dem.ri.gov/programs/fish-wildlife/hunting/hunting-license.php", fishing: "https://dem.ri.gov/programs/fish-wildlife/fishing/saltwater-license.php" },
+  "South Carolina": { name: "South Carolina DNR", hunting: "https://www.dnr.sc.gov/licenses/hunting.html", fishing: "https://www.dnr.sc.gov/licenses/fishing.html" },
+  "South Dakota": { name: "South Dakota GFP", hunting: "https://gfp.sd.gov/licenses/", fishing: "https://gfp.sd.gov/licenses/" },
+  "Tennessee": { name: "Tennessee TWRA", hunting: "https://www.tn.gov/twra/license-sales/hunting-licenses.html", fishing: "https://www.tn.gov/twra/license-sales/fishing-licenses.html" },
+  "Texas": { name: "Texas Parks & Wildlife", hunting: "https://tpwd.texas.gov/huntwild/hunt/license/", fishing: "https://tpwd.texas.gov/huntwild/fish/recreational-fishing/fishing_license/" },
+  "Utah": { name: "Utah DWR", hunting: "https://wildlife.utah.gov/licenses-and-permits/hunting.html", fishing: "https://wildlife.utah.gov/licenses-and-permits/fishing.html" },
+  "Vermont": { name: "Vermont DFW", hunting: "https://vtfishandwildlife.com/hunt-trap/licenses-and-permits", fishing: "https://vtfishandwildlife.com/fish/licenses-and-permits" },
+  "Virginia": { name: "Virginia DWR", hunting: "https://dwr.virginia.gov/licenses/hunting/", fishing: "https://dwr.virginia.gov/licenses/fishing/" },
+  "Washington": { name: "Washington WDFW", hunting: "https://wdfw.wa.gov/licenses/hunting", fishing: "https://wdfw.wa.gov/licenses/fishing" },
+  "West Virginia": { name: "West Virginia DNR", hunting: "https://wvdnr.gov/hunting/huntlic.shtm", fishing: "https://wvdnr.gov/fishing/fishlic.shtm" },
+  "Wisconsin": { name: "Wisconsin DNR", hunting: "https://dnr.wisconsin.gov/topic/Hunt/license.html", fishing: "https://dnr.wisconsin.gov/topic/Fish/license.html" },
+  "Wyoming": { name: "Wyoming GFD", hunting: "https://wgfd.wyo.gov/apply-and-buy", fishing: "https://wgfd.wyo.gov/apply-and-buy" },
+};
+
 const STATE_COORDS = {
   "Alabama": [32.81, -86.79], "Alaska": [61.37, -152.4], "Arizona": [33.73, -111.43], "Arkansas": [34.97, -92.37],
   "California": [36.12, -119.68], "Colorado": [39.06, -105.31], "Connecticut": [41.6, -72.76], "Delaware": [39.32, -75.51],
@@ -19,6 +72,17 @@ const STATE_COORDS = {
   "Wisconsin": [44.27, -89.62], "Wyoming": [42.76, -107.3]
 };
 
+const SPECIES_ICONS = {
+  "Elk": "🦌", "Whitetail Deer": "🦌", "Mule Deer": "🦌", "Moose": "🦌", "Antelope": "🦌", "Bison": "🦬",
+  "Turkey": "🦃", "Pheasant": "🐦", "Quail": "🐦", "Dove": "🕊️", "Duck": "🦆", "Goose": "🪿",
+  "Bear": "🐻", "Hog": "🐗", "Javelina": "🐗", "Coyote": "🐺", "Fox": "🦊", "Rabbit": "🐇", "Squirrel": "🐿️",
+  "Largemouth Bass": "🐟", "Smallmouth Bass": "🐟", "Striped Bass": "🐟", "Bass": "🐟",
+  "Trout": "🐟", "Walleye": "🐟", "Pike": "🐟", "Muskie": "🐟", "Catfish": "🐟",
+  "Crappie": "🐟", "Bluegill": "🐟", "Perch": "🐟", "Salmon": "🐟", "Steelhead": "🐟",
+  "Redfish": "🐠", "Snook": "🐠", "Tarpon": "🐠", "Flounder": "🐠", "Grouper": "🐠",
+  "Snapper": "🐠", "Cobia": "🐠", "Mahi-Mahi": "🐠", "Tuna": "🐠", "Marlin": "🐠",
+  "Striped Marlin": "🐠", "Shark": "🦈", "Swordfish": "🐟", "Wahoo": "🐠", "Amberjack": "🐠",
+};
 const SPECIES = [
   { name: "Elk", icon: "🦌", type: "hunting", desc: "Rocky Mountain & Roosevelt" },
   { name: "Whitetail Deer", icon: "🦌", type: "hunting", desc: "Most popular big game" },
@@ -303,10 +367,11 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
   const searchLocations = async (val) => {
     if (val.length < 3) { setSuggestions([]); return; }
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&format=json&limit=6&countrycodes=us`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&format=json&limit=6&countrycodes=us&class=place&type=city,town,village,hamlet`);
       const data = await res.json();
       const seen = new Set();
       const unique = data.filter(s => {
+        if (s.type === "house" || s.type === "building" || s.class === "building" || s.class === "highway") return false;
         const label = s.display_name.split(",").slice(0, 3).join(",").trim();
         if (seen.has(label)) return false;
         seen.add(label);
@@ -407,15 +472,16 @@ function MapTab({ selectedState }) {
   const mapRef = useRef(null);
   const mapInst = useRef(null);
   const markers = useRef([]);
-  const [filter, setFilter] = useState("all");
   const [leafletReady, setLeafletReady] = useState(false);
   const [selected, setSelected] = useState(null);
-
-  const lands = PUBLIC_LANDS.filter(l => {
-    const stOk = !selectedState || l.state === selectedState;
-    const tOk = filter === "all" || l.type === filter;
-    return stOk && tOk;
-  });
+  const [activityType, setActivityType] = useState("hunting");
+  const [species, setSpecies] = useState("");
+  const [speciesList, setSpeciesList] = useState([]);
+  const [loadingSpecies, setLoadingSpecies] = useState(false);
+  const [lands, setLands] = useState([]);
+  const [loadingLands, setLoadingLands] = useState(false);
+  const [error, setError] = useState(null);
+  const speciesCache = useRef({});
 
   useEffect(() => {
     if (window.L) { setLeafletReady(true); return; }
@@ -432,63 +498,109 @@ function MapTab({ selectedState }) {
     if (!leafletReady || !mapRef.current) return;
     const L = window.L;
     if (mapInst.current) { mapInst.current.remove(); mapInst.current = null; }
-
     const center = selectedState && STATE_COORDS[selectedState] ? STATE_COORDS[selectedState] : [39.5, -98.35];
     const zoom = selectedState ? 7 : 4;
     const map = L.map(mapRef.current, { zoomControl: true, scrollWheelZoom: true }).setView(center, zoom);
     mapInst.current = map;
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap", maxZoom: 18 }).addTo(map);
+    L.tileLayer("https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_ForestSystemBoundaries_01/MapServer/tile/{z}/{y}/{x}", { opacity: 1.0, attribution: "USFS" }).addTo(map);
+    L.tileLayer("https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_Cached_BLM_Only/MapServer/tile/{z}/{y}/{x}", { opacity: 1.0, attribution: "BLM" }).addTo(map);
+    return () => { if (mapInst.current) { mapInst.current.remove(); mapInst.current = null; } };
+  }, [leafletReady, selectedState]);
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap", maxZoom: 18
-    }).addTo(map);
-
+  useEffect(() => {
+    if (!leafletReady || !mapInst.current || !window.L) return;
+    const L = window.L;
     markers.current.forEach(m => m.remove());
     markers.current = [];
-
     lands.forEach(loc => {
-      const color = loc.type === "hunting" ? "#d4930a" : "#4a90d9";
-      const em = loc.type === "hunting" ? "🎯" : "🎣";
+      const color = activityType === "hunting" ? "#d4930a" : "#4a90d9";
+      const em = activityType === "hunting" ? "🎯" : "🎣";
       const icon = L.divIcon({
         className: "custom-marker",
-        html: `<div style="width:38px;height:38px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${color};border:2px solid rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(0,0,0,0.5);cursor:pointer;transition:transform 0.2s"><span style="transform:rotate(45deg);font-size:17px;display:block">${em}</span></div>`,
+        html: `<div style="width:38px;height:38px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${color};border:2px solid rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(0,0,0,0.5);cursor:pointer"><span style="transform:rotate(45deg);font-size:17px;display:block">${em}</span></div>`,
         iconSize: [38, 38], iconAnchor: [19, 38]
       });
-      const m = L.marker([loc.lat, loc.lng], { icon }).addTo(map)
+      const m = L.marker([loc.lat, loc.lng], { icon }).addTo(mapInst.current)
         .bindPopup(`<div style="font-family:'DM Sans',sans-serif;min-width:210px;padding:6px 2px">
           <div style="font-weight:700;font-size:14px;margin-bottom:5px;color:#111">${loc.name}</div>
           <div style="font-size:12px;color:#555;margin-bottom:8px;line-height:1.5">${loc.desc}</div>
-          <div style="display:flex;flex-wrap:wrap;gap:4px">${loc.species.map(s => `<span style="background:${loc.type === "hunting" ? "#fff3d6" : "#ddefff"};color:${loc.type === "hunting" ? "#8a5a00" : "#2060a0"};padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${s}</span>`).join("")}</div>
-          <div style="font-size:11px;color:#888;margin-top:6px">📍 ${loc.state}</div>
+          <div style="font-size:11px;color:#888;margin-top:6px">📍 ${loc.state || selectedState}</div>
         </div>`, { maxWidth: 250 })
         .on("click", () => setSelected(loc));
       markers.current.push(m);
     });
+  }, [lands, leafletReady]);
 
-    return () => { if (mapInst.current) { mapInst.current.remove(); mapInst.current = null; } };
-  }, [leafletReady, selectedState, filter]);
+  useEffect(() => {
+    if (!selectedState) return;
+    setSpeciesList([]); setSpecies(""); setLands([]); setError(null);
+    setLoadingSpecies(true);
+    const prompt = `Return ONLY a JSON array of strings of the 20 most commonly ${activityType === "hunting" ? "hunted game animals and birds (NO fish)" : "fished species (NO game animals)"} in ${selectedState}. Only popular species most hunters/anglers target. No markdown, no explanation, just the JSON array.`;
+    fetch("https://wildai-server.onrender.com/chat", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: [{ role: "user", content: prompt }], system: "Return only a valid JSON array of strings. No markdown. No explanation." })
+    })
+      .then(r => r.json())
+      .then(d => {
+        const text = d.reply.replace(/```json|```/g, "").trim();
+        const parsed = JSON.parse(text);
+        setSpeciesList(parsed);
+      })
+      .catch(() => setError("Couldn't load species list. Try again."))
+      .finally(() => setLoadingSpecies(false));
+  }, [selectedState, activityType]);
+  const search = async () => {
+    if (!species) return;
+    setLoadingLands(true); setError(null); setLands([]); setSelected(null);
+    try {
+      const prompt = `You are a hunting and fishing public land expert. Return ONLY a JSON array (no markdown, no explanation) of the 8 best public land locations for ${species} ${activityType} in ${selectedState || "the US"}. Each object must have: name (string), lat (number), lng (number), desc (string, 1 sentence), state (string). Use accurate real coordinates for real public lands like national forests, BLM land, state WMAs, wildlife management areas, or public boat ramps/fishing access sites.`;
+      const res = await fetch("https://wildai-server.onrender.com/chat", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [{ role: "user", content: prompt }], system: "Return only valid JSON. No markdown. No explanation." })
+      });
+      const d = await res.json();
+      const text = d.reply.replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(text);
+      setLands(parsed);
+      if (mapInst.current && parsed.length > 0) {
+        mapInst.current.setView([parsed[0].lat, parsed[0].lng], 7);
+      }
+    } catch { setError("Couldn't load recommendations. Try again."); }
+    setLoadingLands(false);
+  };
 
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div className="card" style={{ padding: "14px 18px" }}>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          <span style={{ color: "var(--text3)", fontSize: 12, fontWeight: 600, letterSpacing: "0.06em" }}>SHOW:</span>
-          {["all", "hunting", "fishing"].map(f => (
-            <button key={f} onClick={() => setFilter(f)} className={`nav-tab ${filter === f ? "active" : "inactive"}`} style={{ padding: "6px 16px", fontSize: 12 }}>
-              {f === "all" ? "🗺️ All" : f === "hunting" ? "🎯 Hunting" : "🎣 Fishing"}
+      <div className="card" style={{ padding: "16px 18px" }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 12 }}>
+          {["hunting", "fishing"].map(t => (
+            <button key={t} onClick={() => { setActivityType(t); setSpecies(""); setLands([]); }} className={`nav-tab ${activityType === t ? "active" : "inactive"}`} style={{ padding: "6px 16px", fontSize: 12 }}>
+              {t === "hunting" ? "🎯 Hunting" : "🎣 Fishing"}
             </button>
           ))}
-          <span style={{ color: "var(--text3)", fontSize: 12, marginLeft: "auto" }}>{lands.length} locations</span>
         </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <select value={species} onChange={e => setSpecies(e.target.value)} disabled={loadingSpecies} style={{ flex: 1, padding: "9px 12px", borderRadius: "var(--radius-sm)", fontSize: 13, minWidth: 140, opacity: loadingSpecies ? 0.5 : 1 }}>
+            <option value="">{loadingSpecies ? "Loading species..." : !selectedState ? "Select a state first" : "Select species..."}</option>
+            {speciesList.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <button onClick={search} disabled={!species || loadingLands} className="btn-primary" style={{ padding: "9px 20px", fontSize: 13, opacity: (!species || loadingLands) ? 0.5 : 1 }}>
+            {loadingLands ? "Finding..." : "🔍 Find Public Lands"}
+          </button>
+        </div>
+        {error && <div style={{ color: "var(--amber)", fontSize: 13, marginTop: 10 }}>{error}</div>}
+        <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 8 }}>Don't see your species? Ask the AI in the Chat tab →</div>
       </div>
 
       <div className="card" style={{ overflow: "hidden", padding: 0 }}>
         <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <span style={{ fontSize: 16 }}>🗺️</span>
-          <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>Public Hunting & Fishing Lands</span>
+          <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>Public Lands Map</span>
           {selectedState && <span style={{ color: "var(--text3)", fontSize: 13 }}>· {selectedState}</span>}
           <div style={{ display: "flex", gap: 12, marginLeft: "auto" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 5 }}><div style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--amber)" }} /><span style={{ color: "var(--text3)", fontSize: 11 }}>Hunting</span></div>
-            <div style={{ display: "flex", alignItems: "center", gap: 5 }}><div style={{ width: 10, height: 10, borderRadius: "50%", background: "#4a90d9" }} /><span style={{ color: "var(--text3)", fontSize: 11 }}>Fishing</span></div>
+            <div style={{ display: "flex", alignItems: "center", gap: 5 }}><div style={{ width: 10, height: 10, background: "rgba(0,100,0,0.5)", border: "1px solid green" }} /><span style={{ color: "var(--text3)", fontSize: 11 }}>USFS</span></div>
+            <div style={{ display: "flex", alignItems: "center", gap: 5 }}><div style={{ width: 10, height: 10, background: "rgba(150,100,0,0.5)", border: "1px solid orange" }} /><span style={{ color: "var(--text3)", fontSize: 11 }}>BLM</span></div>
           </div>
         </div>
         {!leafletReady && <div style={{ height: 380, display: "flex", alignItems: "center", justifyContent: "center", background: "#0d1a0d" }}><div style={{ color: "var(--text3)", fontSize: 13 }} className="pulse">Loading map...</div></div>}
@@ -500,18 +612,255 @@ function MapTab({ selectedState }) {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
               <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>{selected.name}</span>
-              <span className={`tag tag-${selected.type === "hunting" ? "hunt" : "fish"}`}>{selected.type}</span>
-              {selected.state && <span style={{ color: "var(--text3)", fontSize: 12 }}>· {selected.state}</span>}
+              <span className={`tag tag-${activityType === "hunting" ? "hunt" : "fish"}`}>{activityType}</span>
             </div>
             <div style={{ color: "var(--text2)", fontSize: 13, marginBottom: 10 }}>{selected.desc}</div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {selected.species.map(s => <span key={s} style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)", padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600 }}>{s}</span>)}
-            </div>
           </div>
           <button onClick={() => setSelected(null)} className="btn-ghost" style={{ padding: "6px 12px", fontSize: 12, flexShrink: 0 }}>✕</button>
         </div>
       )}
-      <div style={{ color: "var(--text3)", fontSize: 11, textAlign: "center" }}>💡 Click any pin for details · Always verify local access and regulations before visiting</div>
+      {lands.length === 0 && !loadingLands && (
+        <div style={{ textAlign: "center", padding: 24, color: "var(--text3)", fontSize: 14 }}>
+          <div style={{ fontSize: 36, marginBottom: 10 }}>🗺️</div>
+          {!selectedState ? "Go back and select your state to get started" : "Select a species and hit search — AI will find the best public lands"}
+        </div>
+      )}
+      <div style={{ color: "var(--text3)", fontSize: 11, textAlign: "center" }}>💡 Green = National Forest · Orange = BLM Land · Always verify access before visiting</div>
+    </div>
+  );
+}
+
+// ─── TRIP PLANNER TAB ─────────────────────────────────────────────────────────
+function TripPlannerTab({ selectedState, isPro, hitLimit, messageCount, setMessageCount, onUpgrade }) {
+  const [activityType, setActivityType] = useState("hunting");
+  const [species, setSpecies] = useState("");
+  const [duration, setDuration] = useState("3");
+  const [startDate, setStartDate] = useState("");
+  const [groupSize, setGroupSize] = useState("2");
+  const [experience, setExperience] = useState("intermediate");
+  const [plan, setPlan] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const planRef = useRef(null);
+
+  const HUNTING_SPECIES = ["Elk", "Whitetail Deer", "Mule Deer", "Turkey", "Bear", "Pheasant", "Duck", "Antelope", "Moose", "Hog"];
+  const FISHING_SPECIES = ["Largemouth Bass", "Trout", "Walleye", "Catfish", "Salmon", "Striped Bass", "Crappie", "Pike", "Redfish", "Snook", "Tarpon", "Tuna"];
+
+  const generate = async () => {
+    if (!species) return;
+    if (hitLimit) return;
+    setLoading(true); setError(null); setPlan(null);
+    const newCount = messageCount + 1;
+    setMessageCount(newCount);
+    localStorage.setItem("wildai_message_count", newCount);
+    try {
+      const prompt = `Create a detailed ${duration}-day ${species} ${activityType} trip plan in ${selectedState || "the US"} for a group of ${groupSize} with ${experience} experience level${startDate ? `, starting ${new Date(startDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}` : ""}.
+
+Include:
+## Trip Overview
+Brief summary of the trip
+
+## Best Locations
+Top 2-3 specific public land spots to target
+
+## Daily Schedule
+Day-by-day breakdown of activities, timing, and tactics
+
+## Gear List
+Essential gear specific to this trip
+
+## Tactics & Tips
+Species-specific tactics for ${selectedState || "this region"} and this time of year
+
+## Licenses & Tags Required
+What licenses and tags are needed in ${selectedState || "this state"}
+
+## What to Expect
+Realistic expectations for success, conditions, and experience
+
+Use **bold** for key terms. Be specific and practical.`;
+
+      const res = await fetch("https://wildai-server.onrender.com/chat", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [{ role: "user", content: prompt }], system: "You are an expert hunting and fishing trip planner with deep knowledge of public lands, tactics, and regulations across all US states. Give specific, practical, actionable trip plans." })
+      });
+      const d = await res.json();
+      setPlan(d.reply);
+    } catch { setError("Couldn't generate trip plan. Try again."); }
+    setLoading(false);
+  };
+
+  const printPlan = () => {
+    const w = window.open("", "_blank");
+    w.document.write(`<html><head><title>WildAI Trip Plan — ${species} in ${selectedState}</title>
+    <style>body{font-family:Georgia,serif;max-width:800px;margin:40px auto;padding:0 20px;color:#111;line-height:1.7}h1{color:#2a5a1a;border-bottom:2px solid #2a5a1a;padding-bottom:10px}h2{color:#2a5a1a;margin-top:28px}h3{color:#555}strong{color:#2a5a1a}p{margin:10px 0}@media print{body{margin:20px}}</style>
+    </head><body>
+    <h1>🦌 WildAI Trip Plan</h1>
+    <p><strong>${duration}-Day ${species} ${activityType} Trip · ${selectedState}${startDate ? ` · Starting ${new Date(startDate + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}` : ""} · Group of ${groupSize} · ${experience} level</strong></p>
+    <hr/>
+    ${plan.replace(/^## (.*?)$/gm, "<h2>$1</h2>").replace(/^### (.*?)$/gm, "<h3>$1</h3>").replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>").replace(/\n\n/g, "</p><p>").replace(/\n/g, "<br/>")}
+    <hr/><p style="color:#888;font-size:12px">Generated by WildAI · Always verify regulations with your state wildlife agency</p>
+    </body></html>`);
+    w.document.close();
+    w.print();
+  };
+
+  const savePlan = () => {
+    const text = `WILDAI TRIP PLAN\n${duration}-Day ${species} ${activityType} Trip · ${selectedState}${startDate ? ` · Starting ${new Date(startDate + "T12:00:00").toLocaleDateString()}` : ""} · Group of ${groupSize} · ${experience} level\n${"=".repeat(60)}\n\n${plan.replace(/\*\*(.*?)\*\*/g, "$1")}`;
+    const blob = new Blob([text], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `WildAI-${species}-${selectedState}-Trip-Plan.txt`;
+    a.click(); URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div className="card" style={{ padding: "20px 24px" }}>
+        <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 16 }}>PLAN YOUR TRIP</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+          <div>
+            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 6 }}>ACTIVITY</div>
+            <div style={{ display: "flex", gap: 6 }}>
+              {["hunting", "fishing"].map(t => (
+                <button key={t} onClick={() => { setActivityType(t); setSpecies(""); }} className={`nav-tab ${activityType === t ? "active" : "inactive"}`} style={{ padding: "6px 14px", fontSize: 12, flex: 1 }}>
+                  {t === "hunting" ? "🎯 Hunting" : "🎣 Fishing"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 6 }}>SPECIES</div>
+            <select value={species} onChange={e => setSpecies(e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }}>
+              <option value="">Select species...</option>
+              {(activityType === "hunting" ? HUNTING_SPECIES : FISHING_SPECIES).map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div>
+            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 6 }}>DURATION</div>
+            <select value={duration} onChange={e => setDuration(e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }}>
+              {["1", "2", "3", "4", "5", "6", "7"].map(d => <option key={d} value={d}>{d} day{d !== "1" ? "s" : ""}</option>)}
+            </select>
+          </div>
+          <div>
+            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 6 }}>START DATE</div>
+            <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+          </div>
+          <div>
+            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 6 }}>GROUP SIZE</div>
+            <select value={groupSize} onChange={e => setGroupSize(e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }}>
+              {["1", "2", "3", "4", "5", "6", "7", "8"].map(n => <option key={n} value={n}>{n} {n === "1" ? "person" : "people"}</option>)}
+            </select>
+          </div>
+          <div>
+            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 6 }}>EXPERIENCE</div>
+            <select value={experience} onChange={e => setExperience(e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }}>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="expert">Expert</option>
+            </select>
+          </div>
+        </div>
+        {!selectedState && <div style={{ color: "var(--amber)", fontSize: 12, marginBottom: 10 }}>⚠️ Go back and select your state for a more accurate plan</div>}
+        {hitLimit ? (
+          <div style={{ background: "linear-gradient(135deg,rgba(120,180,80,0.08),rgba(90,154,50,0.04))", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)", padding: 20, textAlign: "center" }}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>🔒</div>
+            <div style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "var(--text)", marginBottom: 6 }}>Upgrade to WildAI Pro</div>
+            <div style={{ color: "var(--text2)", fontSize: 13, marginBottom: 14, lineHeight: 1.6 }}>You've used your free interactions. Upgrade for unlimited trip plans and more.</div>
+            <button className="btn-primary" style={{ padding: "12px 28px", fontSize: 14 }} onClick={onUpgrade}>Upgrade for $4.99/month →</button>
+          </div>
+        ) : (
+          <button onClick={generate} disabled={!species || loading} className="btn-primary" style={{ width: "100%", padding: "12px", fontSize: 14, opacity: (!species || loading) ? 0.5 : 1 }}>
+            {loading ? "✨ Generating your trip plan..." : "✨ Generate Trip Plan"}
+          </button>
+        )}
+        {error && <div style={{ color: "var(--amber)", fontSize: 13, marginTop: 10 }}>{error}</div>}
+      </div>
+
+      {loading && (
+        <div className="card" style={{ padding: 48, textAlign: "center" }}>
+          <div style={{ fontSize: 44, marginBottom: 16 }} className="float">🧭</div>
+          <div style={{ color: "var(--text2)", fontSize: 14 }} className="pulse">Building your {species} trip plan...</div>
+          <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 8 }}>This takes a few seconds</div>
+        </div>
+      )}
+
+      {plan && !loading && (
+        <div className="card fade-in" ref={planRef}>
+          <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+            <div>
+              <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>{duration}-Day {species} Trip · {selectedState}</div>
+              <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 2 }}>Group of {groupSize} · {experience} level</div>
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={savePlan} className="btn-ghost" style={{ padding: "8px 16px", fontSize: 12 }}>💾 Save</button>
+              <button onClick={printPlan} className="btn-ghost" style={{ padding: "8px 16px", fontSize: 12 }}>🖨️ Print</button>
+            </div>
+          </div>
+          <div style={{ padding: 24 }}>
+            <div className="msg-bubble" style={{ lineHeight: 1.85 }} dangerouslySetInnerHTML={{
+              __html: plan
+                .replace(/^## (.*?)$/gm, "<h3 style='color:var(--green);margin:20px 0 10px;font-size:15px;font-weight:700;border-bottom:1px solid var(--border);padding-bottom:6px'>$1</h3>")
+                .replace(/^### (.*?)$/gm, "<h4 style='color:var(--text);margin:14px 0 6px;font-size:13px;font-weight:700'>$1</h4>")
+                .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                .replace(/\n\n/g, "</p><p style='margin-top:12px'>")
+                .replace(/\n/g, "<br/>")
+            }} />
+          </div>
+        </div>
+      )}
+
+      {!plan && !loading && (
+        <div style={{ textAlign: "center", padding: 32, color: "var(--text3)", fontSize: 14 }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>🧭</div>
+          Fill in your trip details above and hit Generate — AI will build you a complete personalized trip plan
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── LICENSES TAB ─────────────────────────────────────────────────────────────
+function LicensesTab({ selectedState }) {
+  const agency = selectedState ? STATE_WILDLIFE_AGENCIES[selectedState] : null;
+  if (!selectedState) return (
+    <div className="card" style={{ padding: 40, textAlign: "center" }}>
+      <div style={{ fontSize: 48, marginBottom: 16 }}>🪪</div>
+      <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Select Your State</div>
+      <div style={{ color: "var(--text2)", fontSize: 14 }}>Go back home and choose your state to view license options.</div>
+    </div>
+  );
+  return (
+    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div className="card" style={{ padding: "20px 24px" }}>
+        <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 4 }}>STATE WILDLIFE AGENCY</div>
+        <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 20, marginBottom: 4 }}>{agency?.name}</div>
+        <div style={{ color: "var(--text3)", fontSize: 13 }}>{selectedState}</div>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <a href={agency?.hunting} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+          <div className="card" style={{ padding: "28px 20px", textAlign: "center", cursor: "pointer", borderColor: "rgba(212,147,10,0.3)" }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>🎯</div>
+            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, marginBottom: 6 }}>Hunting License</div>
+            <div style={{ color: "var(--text2)", fontSize: 13, marginBottom: 16 }}>Tags, permits & stamps</div>
+            <div style={{ background: "linear-gradient(135deg,var(--amber),#a06800)", color: "white", padding: "10px 20px", borderRadius: "var(--radius-sm)", fontSize: 13, fontWeight: 600 }}>Buy Now →</div>
+          </div>
+        </a>
+        <a href={agency?.fishing} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+          <div className="card" style={{ padding: "28px 20px", textAlign: "center", cursor: "pointer", borderColor: "rgba(80,140,220,0.3)" }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>🎣</div>
+            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, marginBottom: 6 }}>Fishing License</div>
+            <div style={{ color: "var(--text2)", fontSize: 13, marginBottom: 16 }}>Freshwater & saltwater</div>
+            <div style={{ background: "linear-gradient(135deg,#4a90d9,#2060a0)", color: "white", padding: "10px 20px", borderRadius: "var(--radius-sm)", fontSize: 13, fontWeight: 600 }}>Buy Now →</div>
+          </div>
+        </a>
+      </div>
+      <div style={{ padding: "16px 20px", background: "var(--green-dim)", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)" }}>
+        <p style={{ color: "var(--green)", fontSize: 13, lineHeight: 1.7 }}>💡 Always purchase your license before heading out. Licenses are required on public and private land in most states.</p>
+      </div>
+      <div style={{ padding: "16px 20px", background: "var(--amber-dim)", border: "1px solid rgba(212,147,10,0.2)", borderRadius: "var(--radius)" }}>
+        <p style={{ color: "rgba(212,147,10,0.9)", fontSize: 13, lineHeight: 1.7 }}>⚠️ License requirements and fees change annually. Always verify current requirements with your state agency.</p>
+      </div>
     </div>
   );
 }
@@ -795,6 +1144,9 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, onTerm
   const [selectedChecklist, setSelectedChecklist] = useState(null);
   const [checkedItems, setCheckedItems] = useState({});
   const [speciesFilter, setSpeciesFilter] = useState("all");
+  const [stateSpecies, setStateSpecies] = useState([]);
+  const [loadingStateSpecies, setLoadingStateSpecies] = useState(false);
+  const speciesTabCache = useRef({});
   const bottomRef = useRef(null);
   const { user, isLoaded } = useUser();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -851,6 +1203,29 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
     setLoading(false);
   };
 
+  useEffect(() => {
+    if (!selectedState) return;
+    const cacheKey = selectedState;
+    if (speciesTabCache.current[cacheKey]) {
+      setStateSpecies(speciesTabCache.current[cacheKey]);
+      return;
+    }
+    setLoadingStateSpecies(true);
+    const prompt = `Return ONLY a JSON array of objects for the 30 most commonly hunted and fished species in ${selectedState}. Each object must have: name (string), type ("hunting" or "fishing"), desc (string, max 5 words). No markdown, no explanation, just the JSON array.`;
+    fetch("https://wildai-server.onrender.com/chat", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: [{ role: "user", content: prompt }], system: "Return only a valid JSON array. No markdown. No explanation." })
+    })
+      .then(r => r.json())
+      .then(d => {
+        const text = d.reply.replace(/```json|```/g, "").trim();
+        const parsed = JSON.parse(text);
+        setStateSpecies(parsed);
+        speciesTabCache.current[cacheKey] = parsed;
+      })
+      .catch(() => setStateSpecies([]))
+      .finally(() => setLoadingStateSpecies(false));
+  }, [selectedState]);
   const toggleCheck = (cl, item) => {
     const k = `${cl}::${item}`;
     setCheckedItems(p => ({ ...p, [k]: !p[k] }));
@@ -858,8 +1233,8 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 
   const tabs = [
     { id: "chat", label: "💬 Chat" }, { id: "weather", label: "🌤️ Weather" },
-    { id: "map", label: "🗺️ Map" }, { id: "regs", label: "📋 Regulations" },
-    { id: "species", label: "🎯 Species" }, { id: "gear", label: "🎒 Gear" }, { id: "about", label: "ℹ️ About" },
+    { id: "map", label: "🗺️ Map" }, { id: "regs", label: "📋 Regulations" }, { id: "licenses", label: "🪪 Licenses" },
+    { id: "species", label: "🎯 Species" }, { id: "gear", label: "🎒 Gear" }, { id: "trip", label: "🧭 Trip Planner" }, { id: "about", label: "ℹ️ About" },
   ];
   const filteredSpecies = speciesFilter === "all" ? SPECIES : SPECIES.filter(s => s.type === speciesFilter);
 
@@ -974,26 +1349,46 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         {tab === "map" && <MapTab selectedState={selectedState} />}
 
         {tab === "regs" && <RegulationsTab selectedState={selectedState} />}
+        {tab === "licenses" && <LicensesTab selectedState={selectedState} />}
+        {tab === "trip" && <TripPlannerTab selectedState={selectedState} isPro={isPro} hitLimit={hitLimit} messageCount={messageCount} setMessageCount={setMessageCount} onUpgrade={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }} />}
 
         {tab === "species" && (
           <div className="fade-in">
-            <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-              {["all", "hunting", "fishing"].map(f => (
-                <button key={f} onClick={() => setSpeciesFilter(f)} className={`nav-tab ${speciesFilter === f ? "active" : "inactive"}`} style={{ padding: "7px 18px", fontSize: 12 }}>
-                  {f === "all" ? "All" : f === "hunting" ? "🎯 Hunting" : "🎣 Fishing"}
-                </button>
-              ))}
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(160px,1fr))", gap: 12 }}>
-              {filteredSpecies.map(s => (
-                <button key={s.name} onClick={() => { sendMessage(`Give me a complete guide for ${s.name} — best tactics, gear, timing, and ${selectedState ? selectedState + " specific " : ""}tips.`); }} className="card" style={{ padding: "20px 16px", textAlign: "center", cursor: "pointer", border: "1px solid var(--border)" }}>
-                  <div style={{ fontSize: 32, marginBottom: 10 }}>{s.icon}</div>
-                  <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{s.name}</div>
-                  <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 10 }}>{s.desc}</div>
-                  <span className={`tag tag-${s.type === "hunting" ? "hunt" : "fish"}`}>{s.type}</span>
-                </button>
-              ))}
-            </div>
+            {!selectedState ? (
+              <div className="card" style={{ padding: 40, textAlign: "center" }}>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>🎯</div>
+                <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Select Your State</div>
+                <div style={{ color: "var(--text2)", fontSize: 14 }}>Go back home and choose your state to see available species.</div>
+              </div>
+            ) : (
+              <>
+                <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 12 }}>Don't see your species? Ask the AI in the Chat tab →</div>
+                <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+                  {["all", "hunting", "fishing"].map(f => (
+                    <button key={f} onClick={() => setSpeciesFilter(f)} className={`nav-tab ${speciesFilter === f ? "active" : "inactive"}`} style={{ padding: "7px 18px", fontSize: 12 }}>
+                      {f === "all" ? "All" : f === "hunting" ? "🎯 Hunting" : "🎣 Fishing"}
+                    </button>
+                  ))}
+                </div>
+                {loadingStateSpecies && (
+                  <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14 }} className="pulse">Loading {selectedState} species...</div>
+                )}
+                {!loadingStateSpecies && (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(160px,1fr))", gap: 12 }}>
+                    {(stateSpecies.length > 0 ? stateSpecies : SPECIES)
+                      .filter(s => speciesFilter === "all" || s.type === speciesFilter)
+                      .map(s => (
+                        <button key={s.name} onClick={() => { sendMessage(`Give me a complete guide for ${s.name} — best tactics, gear, timing, and ${selectedState ? selectedState + " specific " : ""}tips.`); setTab("chat"); }} className="card" style={{ padding: "20px 16px", textAlign: "center", cursor: "pointer", border: "1px solid var(--border)" }}>
+                          <div style={{ fontSize: 32, marginBottom: 10 }}>{SPECIES_ICONS[s.name] || (s.type === "hunting" ? "🎯" : "🎣")}</div>
+                          <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{s.name}</div>
+                          <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 10 }}>{s.desc}</div>
+                          <span className={`tag tag-${s.type === "hunting" ? "hunt" : "fish"}`}>{s.type}</span>
+                        </button>
+                      ))}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
 
