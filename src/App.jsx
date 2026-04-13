@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { supabase } from './supabase';
 import { useUser, SignIn, SignUp, UserButton, useClerk } from '@clerk/react';
 
 const STATES = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
@@ -630,30 +631,210 @@ function MapTab({ selectedState }) {
   );
 }
 
+// ─── COMMUNITY TAB ────────────────────────────────────────────────────────────
+function CommunityTab({ selectedState, user, openSignIn }) {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [stateFilter, setStateFilter] = useState(selectedState || "all");
+  const [form, setForm] = useState({ species: "", location: "", caption: "", photo: "" });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+
+  const loadPosts = async () => {
+    setLoading(true);
+    let query = supabase.from("posts").select("*").order("created_at", { ascending: false });
+    if (stateFilter !== "all") query = query.eq("state", stateFilter);
+    const { data, error } = await query.limit(50);
+    if (!error) setPosts(data || []);
+    setLoading(false);
+  };
+
+  useEffect(() => { loadPosts(); }, [stateFilter]);
+
+  const submitPost = async () => {
+    if (!form.caption && !form.photo) return;
+    if (!user) { openSignIn(); return; }
+    setSubmitting(true); setError(null);
+    const { error } = await supabase.from("posts").insert({
+      user_id: user.id,
+      username: user.firstName || user.username || "Hunter",
+      state: selectedState || "Unknown",
+      species: form.species,
+      location: form.location,
+      caption: form.caption,
+      photo: form.photo,
+    });
+    if (error) { setError("Failed to post. Try again."); }
+    else { setForm({ species: "", location: "", caption: "", photo: "" }); setShowForm(false); loadPosts(); }
+    setSubmitting(false);
+  };
+
+  const reportPost = async (postId) => {
+    await supabase.from("reports").insert({ post_id: postId, reason: "User reported" });
+    alert("Post reported. Thank you.");
+  };
+
+  const deletePost = async (postId) => {
+    if (!window.confirm("Delete this post?")) return;
+    await supabase.from("posts").delete().eq("id", postId);
+    loadPosts();
+  };
+
+  return (
+    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, fontFamily: "var(--font-display)" }}>Community</div>
+          <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 2 }}>Hunters & anglers sharing spots</div>
+        </div>
+        <button onClick={() => { if (!user) { openSignIn(); return; } setShowForm(s => !s); }} className="btn-primary" style={{ padding: "9px 18px", fontSize: 13 }}>
+          {showForm ? "Cancel" : "+ Post"}
+        </button>
+      </div>
+
+      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
+        <button onClick={() => setStateFilter("all")} className={`nav-tab ${stateFilter === "all" ? "active" : "inactive"}`} style={{ padding: "6px 14px", fontSize: 12, flexShrink: 0 }}>🌎 All States</button>
+        {selectedState && <button onClick={() => setStateFilter(selectedState)} className={`nav-tab ${stateFilter === selectedState ? "active" : "inactive"}`} style={{ padding: "6px 14px", fontSize: 12, flexShrink: 0 }}>📍 {selectedState}</button>}
+      </div>
+
+      {showForm && (
+        <div className="card fade-in" style={{ padding: 20 }}>
+          <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 14 }}>NEW POST</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div>
+              <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>PHOTO</div>
+              <input type="file" accept="image/*" onChange={async e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
+                const { data, error } = await supabase.storage.from("post-photos").upload(fileName, file, { contentType: file.type });
+                if (error) { alert("Photo upload failed. Try again."); return; }
+                const { data: urlData } = supabase.storage.from("post-photos").getPublicUrl(fileName);
+                setForm(f => ({ ...f, photo: urlData.publicUrl }));
+              }} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text2)" }} />
+              {form.photo && <img src={form.photo} style={{ marginTop: 8, width: "100%", borderRadius: "var(--radius-sm)", maxHeight: 250, objectFit: "cover" }} />}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <div>
+                <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>SPECIES</div>
+                <input placeholder="e.g. Elk, Trout" value={form.species} onChange={e => setForm(f => ({ ...f, species: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+              </div>
+              <div>
+                <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>LOCATION</div>
+                <input placeholder="e.g. Flathead NF" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+              </div>
+            </div>
+            <div>
+              <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>CAPTION *</div>
+              <textarea placeholder="Share your experience..." value={form.caption} onChange={e => setForm(f => ({ ...f, caption: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13, minHeight: 80, resize: "vertical", background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)" }} />
+            </div>
+            {error && <div style={{ color: "var(--amber)", fontSize: 13 }}>{error}</div>}
+            <button onClick={submitPost} disabled={submitting || (!form.caption && !form.photo)} className="btn-primary" style={{ padding: "10px", fontSize: 14, opacity: (submitting || (!form.caption && !form.photo)) ? 0.5 : 1 }}>
+              {submitting ? "Posting..." : "Share Post"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {loading && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14 }} className="pulse">Loading posts...</div>}
+
+      {!loading && posts.length === 0 && (
+        <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>🌲</div>
+          <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>No posts yet</div>
+          Be the first to share a spot in {stateFilter === "all" ? "your state" : stateFilter}!
+        </div>
+      )}
+
+      {posts.map(post => (
+        <div key={post.id} className="card fade-in" style={{ padding: 0, overflow: "hidden" }}>
+          {post.photo && <img src={post.photo} style={{ width: "100%", maxHeight: 300, objectFit: "cover" }} />}
+          <div style={{ padding: "14px 16px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+              <div>
+                <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{post.username || "Hunter"}</span>
+                <span style={{ color: "var(--text3)", fontSize: 12, marginLeft: 8 }}>{post.state}</span>
+                <span style={{ color: "var(--text3)", fontSize: 11, marginLeft: 8 }}>{new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+              </div>
+              <div style={{ display: "flex", gap: 6 }}>
+                {user?.id === post.user_id && <button onClick={() => deletePost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.6)", fontSize: 12, padding: "2px 6px" }}>✕</button>}
+                <button onClick={() => reportPost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text3)", fontSize: 11, padding: "2px 6px" }}>⚑ Report</button>
+              </div>
+            </div>
+            {(post.species || post.location) && (
+              <div style={{ display: "flex", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
+                {post.species && <span style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)", padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600 }}>{post.species}</span>}
+                {post.location && <span style={{ color: "var(--text2)", fontSize: 12 }}>📍 {post.location}</span>}
+              </div>
+            )}
+            {post.caption && <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.6, margin: 0 }}>{post.caption}</p>}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── HARVEST LOG TAB ──────────────────────────────────────────────────────────
-function HarvestLogTab() {
-  const [entries, setEntries] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("wildai_harvest_log") || "[]"); } catch { return []; }
-  });
+function HarvestLogTab({ user, openSignIn }) {
+  const [entries, setEntries] = useState([]);
+  const [loadingEntries, setLoadingEntries] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [logFilter, setLogFilter] = useState("all");
   const [logSort, setLogSort] = useState("newest");
-  const [form, setForm] = useState({ type: "hunting", species: "", date: "", location: "", size: "", weight: "", notes: "" });
+  const [form, setForm] = useState({ type: "hunting", species: "", date: "", location: "", size: "", weight: "", notes: "", photo: "" });
 
-  const save = () => {
-    if (!form.species || !form.date) return;
-    const newEntries = [{ ...form, id: Date.now() }, ...entries];
-    setEntries(newEntries);
-    localStorage.setItem("wildai_harvest_log", JSON.stringify(newEntries));
-    setForm({ type: "hunting", species: "", date: "", location: "", size: "", weight: "", notes: "", photo: "" });
+  const loadEntries = async () => {
+    if (!user) { setLoadingEntries(false); return; }
+    setLoadingEntries(true);
+    const { data } = await supabase.from("harvest_logs").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+    setEntries(data || []);
+    setLoadingEntries(false);
+  };
+
+  useEffect(() => { loadEntries(); }, [user]);
+
+  const save = async () => {
+    if (!form.species || !form.date || !user) return;
+    let photoUrl = form.photo;
+    if (form.photoFile) {
+      const fileName = `${user.id}-${Date.now()}-${form.photoFile.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
+      const { data } = await supabase.storage.from("post-photos").upload(fileName, form.photoFile, { contentType: form.photoFile.type });
+      if (data) {
+        const { data: urlData } = supabase.storage.from("post-photos").getPublicUrl(fileName);
+        photoUrl = urlData.publicUrl;
+      }
+    }
+    await supabase.from("harvest_logs").insert({
+      user_id: user.id,
+      type: form.type,
+      species: form.species,
+      date: form.date,
+      location: form.location,
+      size: form.size,
+      weight: form.weight,
+      notes: form.notes,
+      photo: photoUrl,
+    });
+    setForm({ type: "hunting", species: "", date: "", location: "", size: "", weight: "", notes: "", photo: "", photoFile: null });
     setShowForm(false);
+    loadEntries();
   };
 
-  const remove = (id) => {
-    const newEntries = entries.filter(e => e.id !== id);
-    setEntries(newEntries);
-    localStorage.setItem("wildai_harvest_log", JSON.stringify(newEntries));
+  const remove = async (id) => {
+    await supabase.from("harvest_logs").delete().eq("id", id);
+    setEntries(prev => prev.filter(e => e.id !== id));
   };
+
+  if (!user) return (
+    <div className="card" style={{ padding: 40, textAlign: "center" }}>
+      <div style={{ fontSize: 48, marginBottom: 16 }}>📓</div>
+      <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Sign In to Use Harvest Log</div>
+      <div style={{ color: "var(--text2)", fontSize: 14, marginBottom: 20 }}>Your entries sync across all your devices.</div>
+      <button onClick={openSignIn} className="btn-primary" style={{ padding: "12px 28px", fontSize: 14 }}>Sign In →</button>
+    </div>
+  );
 
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -712,26 +893,12 @@ function HarvestLogTab() {
               <input placeholder="e.g. 185" value={form.weight} onChange={e => setForm(f => ({ ...f, weight: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
             </div>
           </div>
-          <div style={{ gridColumn: "1 / -1" }}>
+          <div style={{ marginBottom: 10 }}>
             <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>PHOTO</div>
             <input type="file" accept="image/*" onChange={e => {
               const file = e.target.files[0];
               if (!file) return;
-              const reader = new FileReader();
-              reader.onload = ev => {
-                const img = new Image();
-                img.onload = () => {
-                  const canvas = document.createElement("canvas");
-                  const max = 800;
-                  const ratio = Math.min(max / img.width, max / img.height);
-                  canvas.width = img.width * ratio;
-                  canvas.height = img.height * ratio;
-                  canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
-                  setForm(f => ({ ...f, photo: canvas.toDataURL("image/jpeg", 0.6) }));
-                };
-                img.src = ev.target.result;
-              };
-              reader.readAsDataURL(file);
+              setForm(f => ({ ...f, photoFile: file, photo: URL.createObjectURL(file) }));
             }} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text2)" }} />
             {form.photo && <img src={form.photo} style={{ marginTop: 8, width: "100%", borderRadius: "var(--radius-sm)", maxHeight: 200, objectFit: "cover" }} />}
           </div>
@@ -745,7 +912,9 @@ function HarvestLogTab() {
         </div>
       )}
 
-      {entries.length === 0 && !showForm && (
+      {loadingEntries && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)" }} className="pulse">Loading your log...</div>}
+
+      {!loadingEntries && entries.length === 0 && !showForm && (
         <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>📓</div>
           <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>Start Your Harvest Log</div>
@@ -755,7 +924,7 @@ function HarvestLogTab() {
 
       {[...entries]
         .filter(e => logFilter === "all" || e.type === logFilter)
-        .sort((a, b) => logSort === "newest" ? b.id - a.id : a.id - b.id)
+        .sort((a, b) => logSort === "newest" ? new Date(b.created_at) - new Date(a.created_at) : new Date(a.created_at) - new Date(b.created_at))
         .map(e => (
           <div key={e.id} className="card fade-in" style={{ padding: "16px 20px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
@@ -1692,6 +1861,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
               { id: "gear", icon: "🎒", label: "Gear" },
               { id: "licenses", icon: "🪪", label: "Licenses" },
               { id: "harvest", icon: "📓", label: "Harvest Log" },
+              { id: "community", icon: "🌲", label: "Community" },
               { id: "about", icon: "ℹ️", label: "About" },
             ].map(t => (
               <button key={t.id} onClick={(e) => { e.stopPropagation(); setTab(t.id); setShowMore(false); }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: tab === t.id ? "var(--green-dim)" : "rgba(255,255,255,0.03)", border: `1px solid ${tab === t.id ? "var(--border-accent)" : "var(--border)"}`, borderRadius: "var(--radius-sm)", cursor: "pointer", color: tab === t.id ? "var(--green)" : "var(--text2)", fontFamily: "var(--font-body)", fontSize: 14, fontWeight: 500, transition: "all 0.15s" }}>
@@ -1773,7 +1943,6 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         {tab === "regs" && <RegulationsTab selectedState={selectedState} />}
         {tab === "licenses" && <LicensesTab selectedState={selectedState} />}
         {tab === "trip" && <TripPlannerTab selectedState={selectedState} isPro={isPro} hitLimit={hitLimit} messageCount={messageCount} setMessageCount={setMessageCount} onUpgrade={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }} />}
-        {tab === "harvest" && <HarvestLogTab />}
         {tab === "species" && (
           <div className="fade-in">
             {!selectedState ? (
@@ -1856,7 +2025,8 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
             )}
           </div>
         )}
-
+        {tab === "harvest" && <HarvestLogTab user={user} openSignIn={openSignIn} />}
+        {tab === "community" && <CommunityTab selectedState={selectedState} user={user} openSignIn={openSignIn} />}
         {tab === "about" && (
           <div className="fade-in card" style={{ padding: 32 }}>
             <div style={{ textAlign: "center", marginBottom: 32 }}>
