@@ -2031,7 +2031,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         {[
           { id: "chat", icon: "💬", label: "Chat" },
           { id: "map", icon: "🗺️", label: "Map" },
-          { id: "weather", icon: "🌤️", label: "Weather" },
+          { id: "community", icon: "🌲", label: "Community" },
           { id: "more", icon: "☰", label: "More" },
         ].map(t => (
           <button key={t.id} onClick={() => { if (t.id === "more") { setShowMore(s => !s); } else { setTab(t.id); setShowMore(false); } }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, background: "none", border: "none", cursor: "pointer", color: tab === t.id && t.id !== "more" ? "var(--green)" : showMore && t.id === "more" ? "var(--green)" : "var(--text3)", transition: "color 0.2s" }}>
@@ -2052,7 +2052,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
               { id: "gear", icon: "🎒", label: "Gear" },
               { id: "licenses", icon: "🪪", label: "Licenses" },
               { id: "harvest", icon: "📓", label: "Harvest Log" },
-              { id: "community", icon: "🌲", label: "Community" },
+              { id: "weather", icon: "🌤️", label: "Weather" },
               { id: "about", icon: "ℹ️", label: "About" },
             ].map(t => (
               <button key={t.id} onClick={(e) => { e.stopPropagation(); setTab(t.id); setShowMore(false); }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: tab === t.id ? "var(--green-dim)" : "rgba(255,255,255,0.03)", border: `1px solid ${tab === t.id ? "var(--border-accent)" : "var(--border)"}`, borderRadius: "var(--radius-sm)", cursor: "pointer", color: tab === t.id ? "var(--green)" : "var(--text2)", fontFamily: "var(--font-body)", fontSize: 14, fontWeight: 500, transition: "all 0.15s" }}>
