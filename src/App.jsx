@@ -700,6 +700,165 @@ function MapTab({ selectedState, user, onSharePin }) {
   );
 }
 
+// ─── USER PROFILE ─────────────────────────────────────────────────────────────
+function UserProfilePage({ userId, currentUser, onBack, openSignIn }) {
+  const [profile, setProfile] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [editingBio, setEditingBio] = useState(false);
+  const [bioInput, setBioInput] = useState("");
+  const [savingBio, setSavingBio] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      const { data: postData } = await supabase.from("posts").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+      let { data: profileData } = await supabase.from("profiles").select("*").eq("user_id", userId).single();
+      if (!profileData) {
+        const username = postData?.[0]?.username || (currentUser?.id === userId ? (currentUser?.username || currentUser?.firstName) : null) || "Hunter";
+        await supabase.from("profiles").insert({ user_id: userId, username });
+        profileData = { user_id: userId, username };
+      }
+      const { data: followers } = await supabase.from("follows").select("id").eq("following_id", userId);
+      const { data: following } = await supabase.from("follows").select("id").eq("follower_id", userId);
+      setProfile(profileData);
+      setPosts(postData || []);
+      setFollowerCount(followers?.length || 0);
+      setFollowingCount(following?.length || 0);
+      if (currentUser) {
+        const { data: followCheck } = await supabase.from("follows").select("id").eq("follower_id", currentUser.id).eq("following_id", userId).single();
+        setIsFollowing(!!followCheck);
+      }
+      setLoading(false);
+    };
+    load();
+  }, [userId]);
+
+  const toggleFollow = async () => {
+    if (!currentUser) { openSignIn(); return; }
+    if (isFollowing) {
+      await supabase.from("follows").delete().eq("follower_id", currentUser.id).eq("following_id", userId);
+      setIsFollowing(false);
+      setFollowerCount(c => c - 1);
+    } else {
+      await supabase.from("follows").insert({ follower_id: currentUser.id, following_id: userId });
+      setIsFollowing(true);
+      setFollowerCount(c => c + 1);
+    }
+  };
+
+  if (loading) return <div style={{ textAlign: "center", padding: 60, color: "var(--text3)" }} className="pulse">Loading profile...</div>;
+
+  const displayName = profile?.username || posts[0]?.username || "Hunter";
+  const isOwnProfile = currentUser?.id === userId;
+
+  const saveBio = async () => {
+    setSavingBio(true);
+    await supabase.from("profiles").update({ bio: bioInput }).eq("user_id", userId);
+    setProfile(p => ({ ...p, bio: bioInput }));
+    setEditingBio(false);
+    setSavingBio(false);
+  };
+
+  const uploadAvatar = async (file) => {
+    if (!file) return;
+    setUploadingAvatar(true);
+    const fileName = `avatar-${userId}-${Date.now()}`;
+    const { error } = await supabase.storage.from("post-photos").upload(fileName, file, { contentType: file.type, upsert: true });
+    if (error) { setUploadingAvatar(false); return; }
+    const { data: urlData } = supabase.storage.from("post-photos").getPublicUrl(fileName);
+    await supabase.from("profiles").update({ avatar_url: urlData.publicUrl }).eq("user_id", userId);
+    setProfile(p => ({ ...p, avatar_url: urlData.publicUrl }));
+    setUploadingAvatar(false);
+  };
+
+  return (
+    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div className="card" style={{ padding: 24 }}>
+        <button onClick={onBack} className="btn-ghost" style={{ padding: "6px 14px", fontSize: 12, marginBottom: 16 }}>← Back</button>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20, textAlign: "left" }}>
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            <div style={{ width: 64, height: 64, borderRadius: "50%", background: "var(--green-dim)", border: "2px solid var(--border-accent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, overflow: "hidden" }}>
+              {profile?.avatar_url ? <img src={profile.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "🦌"}
+            </div>
+            {isOwnProfile && (
+              <label style={{ position: "absolute", bottom: 0, right: 0, width: 22, height: 22, borderRadius: "50%", background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 12 }}>
+                {uploadingAvatar ? "..." : "📷"}
+                <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => uploadAvatar(e.target.files[0])} />
+              </label>
+            )}
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 20, fontFamily: "var(--font-display)", textAlign: "left" }}>{displayName}</div>
+            {!editingBio && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+                <div style={{ color: "var(--text2)", fontSize: 13 }}>{profile?.bio || (isOwnProfile ? "Add a bio..." : "")}</div>
+                {isOwnProfile && <button onClick={() => { setEditingBio(true); setBioInput(profile?.bio || ""); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 11, cursor: "pointer", padding: 0 }}>✏️</button>}
+              </div>
+            )}
+            {editingBio && (
+              <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 6 }}>
+                <textarea value={bioInput} onChange={e => setBioInput(e.target.value)} placeholder="Write a short bio..." maxLength={150} style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", fontSize: 13, minHeight: 60, resize: "none", background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
+                <div style={{ display: "flex", gap: 6 }}>
+                  <button onClick={saveBio} disabled={savingBio} className="btn-primary" style={{ padding: "5px 14px", fontSize: 12 }}>{savingBio ? "Saving..." : "Save"}</button>
+                  <button onClick={() => setEditingBio(false)} className="btn-ghost" style={{ padding: "5px 14px", fontSize: 12 }}>Cancel</button>
+                </div>
+              </div>
+            )}
+          </div>
+          {!isOwnProfile && (
+            <button onClick={toggleFollow} className={isFollowing ? "btn-ghost" : "btn-primary"} style={{ padding: "8px 18px", fontSize: 13, flexShrink: 0 }}>
+              {isFollowing ? "Following" : "Follow"}
+            </button>
+          )}
+        </div>
+        <div style={{ display: "flex", gap: 24 }}>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18 }}>{posts.length}</div>
+            <div style={{ color: "var(--text3)", fontSize: 11 }}>Posts</div>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18 }}>{followerCount}</div>
+            <div style={{ color: "var(--text3)", fontSize: 11 }}>Followers</div>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18 }}>{followingCount}</div>
+            <div style={{ color: "var(--text3)", fontSize: 11 }}>Following</div>
+          </div>
+        </div>
+      </div>
+
+      {posts.length === 0 ? (
+        <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14 }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>🌲</div>
+          <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{isOwnProfile ? "You haven't posted yet" : `${displayName} hasn't posted yet`}</div>
+          {isOwnProfile && <div style={{ color: "var(--text3)", fontSize: 13 }}>Share your first hunt or catch in the community feed!</div>}
+        </div>
+      ) : (
+        posts.map(post => (
+          <div key={post.id} className="card fade-in" style={{ padding: 0, overflow: "hidden" }}>
+            {post.photo && <img src={post.photo} style={{ width: "100%", maxHeight: 280, objectFit: "cover" }} />}
+            <div style={{ padding: "14px 16px" }}>
+              {(post.species || post.location) && (
+                <div style={{ display: "flex", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
+                  {post.species && <span style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)", padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600 }}>{post.species}</span>}
+                  {post.location && <span style={{ color: "var(--text2)", fontSize: 12 }}>📍 {post.location}</span>}
+                </div>
+              )}
+              {post.caption && <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.6, margin: 0, marginBottom: 6 }}>{post.caption}</p>}
+              <div style={{ color: "var(--text3)", fontSize: 11 }}>{new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
 // ─── COMMUNITY TAB ────────────────────────────────────────────────────────────
 function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   const [posts, setPosts] = useState([]);
@@ -715,6 +874,10 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   const [likeCounts, setLikeCounts] = useState({});
   const [commentCounts, setCommentCounts] = useState({});
   const [expandedComments, setExpandedComments] = useState(new Set());
+  const [viewingProfile, setViewingProfile] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
 
   const loadPosts = async () => {
     setLoading(true);
@@ -742,6 +905,17 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
       commentData.forEach(c => { cc[c.post_id] = (cc[c.post_id] || 0) + 1; });
       setCommentCounts(cc);
     }
+  };
+
+  const searchUsers = async (query) => {
+    if (!query.trim()) { setSearchResults([]); return; }
+    setSearching(true);
+    const { data } = await supabase.from("posts").select("user_id, username").ilike("username", `%${query}%`).limit(20);
+    if (data) {
+      const unique = Object.values(data.reduce((acc, p) => { if (!acc[p.user_id]) acc[p.user_id] = p; return acc; }, {}));
+      setSearchResults(unique);
+    }
+    setSearching(false);
   };
 
   const loadSavedPins = async () => {
@@ -837,7 +1011,35 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
 
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div style={{ background: "#0a150a", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "18px 20px", marginBottom: 2 }}>
+      {viewingProfile && (
+        <UserProfilePage
+          userId={viewingProfile}
+          currentUser={user}
+          onBack={() => setViewingProfile(null)}
+          openSignIn={openSignIn}
+        />
+      )}
+      {!viewingProfile && <div style={{ background: "#0a150a", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "18px 20px", marginBottom: 2 }}>
+        <div style={{ marginBottom: 14 }}>
+          <input
+            placeholder="🔍 Search users..."
+            value={searchQuery}
+            onChange={e => { setSearchQuery(e.target.value); searchUsers(e.target.value); }}
+            style={{ width: "100%", padding: "9px 14px", borderRadius: "var(--radius-sm)", fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }}
+          />
+          {searchResults.length > 0 && (
+            <div style={{ marginTop: 8, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", overflow: "hidden" }}>
+              {searchResults.map(u => (
+                <div key={u.user_id} onClick={() => { setViewingProfile(u.user_id); setSearchQuery(""); setSearchResults([]); }} style={{ padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid var(--border)", color: "var(--text)", fontSize: 14, fontWeight: 600 }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.08)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                >
+                  👤 {u.username}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
@@ -846,9 +1048,12 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
             </div>
             <div style={{ color: "var(--text3)", fontSize: 12 }}>{posts.length > 0 ? `${posts.length} post${posts.length !== 1 ? "s" : ""} from hunters & anglers` : "Be the first to post"}</div>
           </div>
-          <button onClick={() => { if (!user) { openSignIn(); return; } setShowForm(s => !s); }} className="btn-primary" style={{ padding: "9px 18px", fontSize: 13, flexShrink: 0 }}>
-            {showForm ? "Cancel" : "+ Post"}
-          </button>
+          <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+            {user && <button onClick={() => setViewingProfile(user.id)} className="btn-ghost" style={{ padding: "9px 18px", fontSize: 13 }}>My Profile</button>}
+            <button onClick={() => { if (!user) { openSignIn(); return; } setShowForm(s => !s); }} className="btn-primary" style={{ padding: "9px 18px", fontSize: 13 }}>
+              {showForm ? "Cancel" : "+ Post"}
+            </button>
+          </div>
         </div>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           <button onClick={() => setStateFilter("all")} className={`nav-tab ${stateFilter === "all" ? "active" : "inactive"}`} style={{ padding: "5px 12px", fontSize: 11, flexShrink: 0 }}>All States</button>
@@ -858,9 +1063,9 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
             <button onClick={() => setSortBy("top")} className={`nav-tab ${sortBy === "top" ? "active" : "inactive"}`} style={{ padding: "5px 12px", fontSize: 11, flexShrink: 0 }}>🔥 Top</button>
           </div>
         </div>
-      </div>
+      </div>}
 
-      {showForm && (
+      {!viewingProfile && showForm && (
         <div className="card fade-in" style={{ padding: 20 }}>
           <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 14 }}>NEW POST</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -899,9 +1104,9 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
         </div>
       )}
 
-      {loading && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14 }} className="pulse">Loading posts...</div>}
+      {!viewingProfile && loading && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14 }} className="pulse">Loading posts...</div>}
 
-      {!loading && posts.length === 0 && (
+      {!viewingProfile && !loading && posts.length === 0 && (
         <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🌲</div>
           <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>No posts yet</div>
@@ -909,7 +1114,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
         </div>
       )}
 
-      {sortedPosts.map(post => {
+      {!viewingProfile && sortedPosts.map(post => {
         const likeCount = likeCounts[post.id] || 0;
         const isLiked = likedPostIds.has(post.id);
         const isHot = likeCount >= 5;
@@ -920,7 +1125,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
             <div style={{ padding: "14px 16px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
                 <div>
-                  <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{post.username || "Hunter"}</span>
+                  <span onClick={() => setViewingProfile(post.user_id)} style={{ color: "var(--text)", fontWeight: 600, fontSize: 14, cursor: "pointer", textDecoration: "underline", textDecorationColor: "rgba(120,180,80,0.4)" }}>{post.username || "Hunter"}</span>
                   <span style={{ color: "var(--text3)", fontSize: 12, marginLeft: 8 }}>{post.state}</span>
                   <span style={{ color: "var(--text3)", fontSize: 11, marginLeft: 8 }}>{new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
                 </div>
