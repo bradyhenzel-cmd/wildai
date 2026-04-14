@@ -496,6 +496,12 @@ function MapTab({ selectedState, user, onSharePin }) {
   const [dropName, setDropName] = useState("");
   const [dropSpecies, setDropSpecies] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showPinList, setShowPinList] = useState(false);
+  const [groups, setGroups] = useState([]);
+  const [pinFilter, setPinFilter] = useState("all");
+  const [newGroupName, setNewGroupName] = useState("");
+  const [showGroupForm, setShowGroupForm] = useState(false);
+  const [assigningPin, setAssigningPin] = useState(null);
 
   const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
   const STYLES = {
@@ -513,7 +519,13 @@ function MapTab({ selectedState, user, onSharePin }) {
     setPins(data || []);
   };
 
-  useEffect(() => { loadPins(); }, [user]);
+  const loadGroups = async () => {
+    if (!user) return;
+    const { data } = await supabase.from("pin_groups").select("*").eq("user_id", user.id).order("created_at", { ascending: true });
+    setGroups(data || []);
+  };
+
+  useEffect(() => { loadPins(); loadGroups(); }, [user]);
 
   const addLayers = (map, usfs, blm) => {
     if (!map.getSource("usfs")) {
@@ -613,6 +625,27 @@ function MapTab({ selectedState, user, onSharePin }) {
     setSaving(false);
   };
 
+  const createGroup = async () => {
+    if (!newGroupName.trim() || !user) return;
+    const { data } = await supabase.from("pin_groups").insert({ user_id: user.id, name: newGroupName.trim() }).select().single();
+    if (data) setGroups(prev => [...prev, data]);
+    setNewGroupName("");
+    setShowGroupForm(false);
+  };
+
+  const deleteGroup = async (id) => {
+    await supabase.from("pin_groups").delete().eq("id", id);
+    await supabase.from("saved_pins").update({ group_id: null }).eq("group_id", id);
+    setGroups(prev => prev.filter(g => g.id !== id));
+    setPins(prev => prev.map(p => p.group_id === id ? { ...p, group_id: null } : p));
+  };
+
+  const assignGroup = async (pinId, groupId) => {
+    await supabase.from("saved_pins").update({ group_id: groupId || null }).eq("id", pinId);
+    setPins(prev => prev.map(p => p.id === pinId ? { ...p, group_id: groupId || null } : p));
+    setAssigningPin(null);
+  };
+
   const removePin = async (id) => {
     await supabase.from("saved_pins").delete().eq("id", id);
     setPins(prev => prev.filter(p => p.id !== id));
@@ -694,6 +727,91 @@ function MapTab({ selectedState, user, onSharePin }) {
       {user && pins.filter(p => p.lat && p.lng).length === 0 && !dropForm && (
         <div style={{ textAlign: "center", padding: 20, color: "var(--text3)", fontSize: 13 }}>
           Tap anywhere on the map to drop a pin, or save spots from the Community tab
+        </div>
+      )}
+
+      {user && pins.length > 0 && (
+        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+          <button onClick={() => setShowPinList(s => !s)} style={{ width: "100%", padding: "14px 18px", background: "none", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: "var(--font-body)" }}>
+            <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>📍 My Pins ({pins.length})</span>
+            <span style={{ color: "var(--text3)", fontSize: 12 }}>{showPinList ? "▲ Hide" : "▼ Show list"}</span>
+          </button>
+          {showPinList && (
+            <div style={{ borderTop: "1px solid var(--border)" }}>
+              <div style={{ padding: "10px 18px", borderBottom: "1px solid var(--border)", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+                <button onClick={() => setPinFilter("all")} className={`nav-tab ${pinFilter === "all" ? "active" : "inactive"}`} style={{ padding: "4px 12px", fontSize: 11 }}>All</button>
+                <button onClick={() => setPinFilter("public")} className={`nav-tab ${pinFilter === "public" ? "active" : "inactive"}`} style={{ padding: "4px 12px", fontSize: 11 }}>🌐 Public</button>
+                <button onClick={() => setPinFilter("private")} className={`nav-tab ${pinFilter === "private" ? "active" : "inactive"}`} style={{ padding: "4px 12px", fontSize: 11 }}>🔒 Private</button>
+                {groups.map(g => (
+                  <button key={g.id} onClick={() => setPinFilter(g.id)} className={`nav-tab ${pinFilter === g.id ? "active" : "inactive"}`} style={{ padding: "4px 12px", fontSize: 11 }}>📁 {g.name}</button>
+                ))}
+                <button onClick={() => setShowGroupForm(s => !s)} style={{ background: "none", border: "1px dashed var(--border)", borderRadius: "var(--radius-sm)", padding: "4px 12px", fontSize: 11, color: "var(--text3)", cursor: "pointer", fontFamily: "var(--font-body)" }}>+ Group</button>
+              </div>
+              {showGroupForm && (
+                <div style={{ padding: "10px 18px", borderBottom: "1px solid var(--border)", display: "flex", gap: 8 }}>
+                  <input placeholder="Group name..." value={newGroupName} onChange={e => setNewGroupName(e.target.value)} style={{ flex: 1, padding: "6px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+                  <button onClick={createGroup} disabled={!newGroupName.trim()} className="btn-primary" style={{ padding: "6px 14px", fontSize: 12 }}>Create</button>
+                  <button onClick={() => setShowGroupForm(false)} className="btn-ghost" style={{ padding: "6px 10px", fontSize: 12 }}>✕</button>
+                </div>
+              )}
+              {groups.length > 0 && (
+                <div style={{ padding: "8px 18px", borderBottom: "1px solid var(--border)", display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {groups.map(g => (
+                    <span key={g.id} style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", borderRadius: 20, padding: "2px 10px", fontSize: 11, color: "var(--text2)" }}>
+                      📁 {g.name}
+                      <button onClick={() => deleteGroup(g.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.5)", fontSize: 10, padding: 0, marginLeft: 2, fontFamily: "var(--font-body)" }}>✕</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              {pins.filter(pin => {
+                if (pinFilter === "all") return true;
+                if (pinFilter === "public") return !!pin.post_id;
+                if (pinFilter === "private") return !pin.post_id;
+                return pin.group_id === pinFilter;
+              }).map(pin => {
+                const isPublic = !!pin.post_id;
+                const group = groups.find(g => g.id === pin.group_id);
+                return (
+                  <div key={pin.id} style={{ padding: "12px 18px", borderBottom: "1px solid var(--border)" }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                      {pin.photo && <img src={pin.photo} style={{ width: 48, height: 48, objectFit: "cover", borderRadius: "var(--radius-sm)", flexShrink: 0 }} />}
+                      <div style={{ flex: 1, cursor: "pointer" }} onClick={() => {
+                        if (pin.lat && pin.lng && mapInst.current) {
+                          mapInst.current.flyTo({ center: [pin.lng, pin.lat], zoom: 13, duration: 1000 });
+                          setSelected(pin);
+                          setShowPinList(false);
+                        }
+                      }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2, flexWrap: "wrap" }}>
+                          <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 13 }}>{pin.name || "Saved Spot"}</span>
+                          <span style={{ fontSize: 10, padding: "1px 7px", borderRadius: 10, fontWeight: 600, background: isPublic ? "var(--green-dim)" : "rgba(255,255,255,0.06)", color: isPublic ? "var(--green)" : "var(--text3)", border: `1px solid ${isPublic ? "var(--border-accent)" : "var(--border)"}` }}>
+                            {isPublic ? "🌐 Public" : "🔒 Private"}
+                          </span>
+                          {group && <span style={{ fontSize: 10, padding: "1px 7px", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text3)" }}>📁 {group.name}</span>}
+                        </div>
+                        {pin.species && <div style={{ color: "var(--green)", fontSize: 11 }}>{pin.species}</div>}
+                        {pin.location && <div style={{ color: "var(--text3)", fontSize: 11 }}>📍 {pin.location}</div>}
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0, alignItems: "flex-end" }}>
+                        <button onClick={() => setAssigningPin(assigningPin === pin.id ? null : pin.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text3)", fontSize: 11, padding: 0, fontFamily: "var(--font-body)" }}>📁</button>
+                        <a href={`https://www.google.com/maps/dir/?api=1&destination=${pin.lat},${pin.lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 11, fontWeight: 600 }}>↗</a>
+                        <button onClick={() => removePin(pin.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.6)", fontSize: 11, padding: 0, fontFamily: "var(--font-body)" }}>🗑️</button>
+                      </div>
+                    </div>
+                    {assigningPin === pin.id && (
+                      <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        <button onClick={() => assignGroup(pin.id, null)} className={`nav-tab ${!pin.group_id ? "active" : "inactive"}`} style={{ padding: "3px 10px", fontSize: 11 }}>None</button>
+                        {groups.map(g => (
+                          <button key={g.id} onClick={() => assignGroup(pin.id, g.id)} className={`nav-tab ${pin.group_id === g.id ? "active" : "inactive"}`} style={{ padding: "3px 10px", fontSize: 11 }}>📁 {g.name}</button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>
