@@ -1860,7 +1860,7 @@ function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
       {/* Nav */}
       <nav style={{ padding: "18px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--border)", backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 50, background: "rgba(8,15,8,0.86)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <img src="/logo.jpg" style={{ width: 32, height: 32, objectFit: "contain" }} />
+          <img src="/logo.jpg" style={{ width: 32, height: 32, objectFit: "contain", mixBlendMode: "screen" }} />
           <span style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.5px" }}>WildAI</span>
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
@@ -1921,7 +1921,7 @@ function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
 
       <footer style={{ borderTop: "1px solid var(--border)", padding: "18px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, position: "relative", zIndex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <img src="/logo.jpg" style={{ width: 20, height: 20, objectFit: "contain" }} />
+          <img src="/logo.jpg" style={{ width: 20, height: 20, objectFit: "contain", mixBlendMode: "screen" }} />
           <span style={{ fontFamily: "var(--font-display)", fontSize: 15, color: "var(--text2)" }}>WildAI</span>
         </div>
         <div style={{ display: "flex", gap: 20 }}>
@@ -2046,7 +2046,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <button onClick={onBack} className="btn-ghost" style={{ padding: "7px 14px", fontSize: 13 }}>← Home</button>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 20 }}>🦌</span>
+            <img src="/logo.jpg" style={{ width: 28, height: 28, objectFit: "contain", mixBlendMode: "screen" }} />
             <span style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, color: "var(--text)" }}>WildAI</span>
             {selectedState && <span style={{ color: "var(--text3)", fontSize: 13 }}>· {selectedState}</span>}
           </div>
