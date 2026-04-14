@@ -696,10 +696,15 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [stateFilter, setStateFilter] = useState(selectedState || "all");
+  const [sortBy, setSortBy] = useState("newest");
   const [form, setForm] = useState({ species: "", location: "", caption: "", photo: "", pinLat: null, pinLng: null });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [savedPinIds, setSavedPinIds] = useState(new Set());
+  const [likedPostIds, setLikedPostIds] = useState(new Set());
+  const [likeCounts, setLikeCounts] = useState({});
+  const [commentCounts, setCommentCounts] = useState({});
+  const [expandedComments, setExpandedComments] = useState(new Set());
 
   const loadPosts = async () => {
     setLoading(true);
@@ -710,6 +715,25 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
     setLoading(false);
   };
 
+  const loadLikes = async (postList) => {
+    if (!postList?.length) return;
+    const ids = postList.map(p => p.id);
+    const { data } = await supabase.from("likes").select("post_id, user_id").in("post_id", ids);
+    if (!data) return;
+    const counts = {};
+    ids.forEach(id => counts[id] = 0);
+    data.forEach(l => { counts[l.post_id] = (counts[l.post_id] || 0) + 1; });
+    setLikeCounts(counts);
+    if (user) setLikedPostIds(new Set(data.filter(l => l.user_id === user.id).map(l => l.post_id)));
+    const { data: commentData } = await supabase.from("comments").select("post_id").in("post_id", ids);
+    if (commentData) {
+      const cc = {};
+      ids.forEach(id => cc[id] = 0);
+      commentData.forEach(c => { cc[c.post_id] = (cc[c.post_id] || 0) + 1; });
+      setCommentCounts(cc);
+    }
+  };
+
   const loadSavedPins = async () => {
     if (!user) return;
     const { data } = await supabase.from("saved_pins").select("post_id").eq("user_id", user.id);
@@ -717,6 +741,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   };
 
   useEffect(() => { loadPosts(); }, [stateFilter]);
+  useEffect(() => { if (posts.length) loadLikes(posts); }, [posts, user]);
   useEffect(() => {
     if (window._sharePinToComm) {
       const pin = window._sharePinToComm;
@@ -727,14 +752,27 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   }, []);
   useEffect(() => { loadSavedPins(); }, [user]);
 
+  const toggleLike = async (post) => {
+    if (!user) { openSignIn(); return; }
+    const liked = likedPostIds.has(post.id);
+    if (liked) {
+      await supabase.from("likes").delete().eq("post_id", post.id).eq("user_id", user.id);
+      setLikedPostIds(prev => { const n = new Set(prev); n.delete(post.id); return n; });
+      setLikeCounts(prev => ({ ...prev, [post.id]: Math.max(0, (prev[post.id] || 1) - 1) }));
+    } else {
+      await supabase.from("likes").insert({ post_id: post.id, user_id: user.id });
+      setLikedPostIds(prev => new Set([...prev, post.id]));
+      setLikeCounts(prev => ({ ...prev, [post.id]: (prev[post.id] || 0) + 1 }));
+    }
+  };
+
   const submitPost = async () => {
     if (!form.caption && !form.photo) return;
     if (!user) { openSignIn(); return; }
     setSubmitting(true); setError(null);
     let lat = null, lng = null;
     if (form.pinLat && form.pinLng) {
-      lat = form.pinLat;
-      lng = form.pinLng;
+      lat = form.pinLat; lng = form.pinLng;
     } else if (form.location) {
       try {
         const geo = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(form.location)}.json?access_token=${import.meta.env.VITE_MAPBOX_TOKEN}&country=us&limit=1`);
@@ -761,15 +799,10 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
     if (!user) { openSignIn(); return; }
     if (savedPinIds.has(post.id)) return;
     await supabase.from("saved_pins").insert({
-      user_id: user.id,
-      post_id: post.id,
+      user_id: user.id, post_id: post.id,
       name: post.location || post.species || "Saved Spot",
-      location: post.location,
-      species: post.species,
-      photo: post.photo,
-      lat: post.lat,
-      lng: post.lng,
-      state: post.state,
+      location: post.location, species: post.species,
+      photo: post.photo, lat: post.lat, lng: post.lng, state: post.state,
     });
     setSavedPinIds(prev => new Set([...prev, post.id]));
     onPinSaved?.();
@@ -787,6 +820,11 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
     loadPosts();
   };
 
+  const sortedPosts = [...posts].sort((a, b) => {
+    if (sortBy === "top") return (likeCounts[b.id] || 0) - (likeCounts[a.id] || 0);
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
+
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -799,9 +837,13 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
         </button>
       </div>
 
-      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
-        <button onClick={() => setStateFilter("all")} className={`nav-tab ${stateFilter === "all" ? "active" : "inactive"}`} style={{ padding: "6px 14px", fontSize: 12, flexShrink: 0 }}>🌎 All States</button>
+      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, flexWrap: "wrap" }}>
+        <button onClick={() => setStateFilter("all")} className={`nav-tab ${stateFilter === "all" ? "active" : "inactive"}`} style={{ padding: "6px 14px", fontSize: 12, flexShrink: 0 }}>🌎 All</button>
         {selectedState && <button onClick={() => setStateFilter(selectedState)} className={`nav-tab ${stateFilter === selectedState ? "active" : "inactive"}`} style={{ padding: "6px 14px", fontSize: 12, flexShrink: 0 }}>📍 {selectedState}</button>}
+        <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
+          <button onClick={() => setSortBy("newest")} className={`nav-tab ${sortBy === "newest" ? "active" : "inactive"}`} style={{ padding: "6px 14px", fontSize: 12, flexShrink: 0 }}>🕐 New</button>
+          <button onClick={() => setSortBy("top")} className={`nav-tab ${sortBy === "top" ? "active" : "inactive"}`} style={{ padding: "6px 14px", fontSize: 12, flexShrink: 0 }}>🔥 Top</button>
+        </div>
       </div>
 
       {showForm && (
@@ -853,39 +895,124 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
         </div>
       )}
 
-      {posts.map(post => (
-        <div key={post.id} className="card fade-in" style={{ padding: 0, overflow: "hidden" }}>
-          {post.photo && <img src={post.photo} style={{ width: "100%", maxHeight: 300, objectFit: "cover" }} />}
-          <div style={{ padding: "14px 16px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-              <div>
-                <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{post.username || "Hunter"}</span>
-                <span style={{ color: "var(--text3)", fontSize: 12, marginLeft: 8 }}>{post.state}</span>
-                <span style={{ color: "var(--text3)", fontSize: 11, marginLeft: 8 }}>{new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+      {sortedPosts.map(post => {
+        const likeCount = likeCounts[post.id] || 0;
+        const isLiked = likedPostIds.has(post.id);
+        const isHot = likeCount >= 5;
+        return (
+          <div key={post.id} className="card fade-in" style={{ padding: 0, overflow: "hidden", border: isHot ? "1px solid rgba(255,150,0,0.3)" : "1px solid var(--border)" }}>
+            {isHot && <div style={{ background: "rgba(255,120,0,0.12)", padding: "5px 14px", fontSize: 11, color: "#ff9500", fontWeight: 700, letterSpacing: "0.05em" }}>🔥 HOT SPOT · {likeCount} likes</div>}
+            {post.photo && <img src={post.photo} style={{ width: "100%", maxHeight: 300, objectFit: "cover" }} />}
+            <div style={{ padding: "14px 16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                <div>
+                  <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{post.username || "Hunter"}</span>
+                  <span style={{ color: "var(--text3)", fontSize: 12, marginLeft: 8 }}>{post.state}</span>
+                  <span style={{ color: "var(--text3)", fontSize: 11, marginLeft: 8 }}>{new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                </div>
+                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                  {user?.id === post.user_id && <button onClick={() => deletePost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.6)", fontSize: 12, padding: "2px 6px" }}>✕</button>}
+                  <button onClick={() => reportPost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text3)", fontSize: 11, padding: "2px 6px" }}>⚑</button>
+                </div>
               </div>
-              <div style={{ display: "flex", gap: 6 }}>
-                {user?.id === post.user_id && <button onClick={() => deletePost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.6)", fontSize: 12, padding: "2px 6px" }}>✕</button>}
-                <button onClick={() => reportPost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text3)", fontSize: 11, padding: "2px 6px" }}>⚑ Report</button>
+              {(post.species || post.location) && (
+                <div style={{ display: "flex", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
+                  {post.species && <span style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)", padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600 }}>{post.species}</span>}
+                  {post.location && <span style={{ color: "var(--text2)", fontSize: 12 }}>📍 {post.location}</span>}
+                </div>
+              )}
+              {post.caption && <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.6, margin: 0, marginBottom: 10 }}>{post.caption}</p>}
+              <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                <button onClick={() => toggleLike(post)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: isLiked ? "#ff9500" : "var(--text3)", fontSize: 30, padding: 0, fontFamily: "var(--font-body)" }}>
+                  {isLiked ? "🔥" : "🤍"} <span style={{ fontSize: 12 }}>{likeCount > 0 ? likeCount : ""}</span>
+                </button>
+                <button onClick={() => setExpandedComments(prev => { const n = new Set(prev); n.has(post.id) ? n.delete(post.id) : n.add(post.id); return n; })} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: "var(--text3)", fontSize: 30, padding: 0, fontFamily: "var(--font-body)" }}>
+                  💬 <span style={{ fontSize: 12 }}>{commentCounts[post.id] > 0 ? commentCounts[post.id] : ""}</span>
+                </button>
+                {post.lat && post.lng && (
+                  <a href={`https://www.google.com/maps/dir/?api=1&destination=${post.lat},${post.lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 12, fontWeight: 600 }}>🗺️ Directions</a>
+                )}
+                {post.lat && post.lng && (
+                  <button onClick={() => saveToMap(post)} style={{ background: savedPinIds.has(post.id) ? "var(--green-dim)" : "rgba(255,255,255,0.04)", border: `1px solid ${savedPinIds.has(post.id) ? "var(--border-accent)" : "var(--border)"}`, color: savedPinIds.has(post.id) ? "var(--green)" : "var(--text2)", padding: "5px 12px", borderRadius: "var(--radius-sm)", fontSize: 12, cursor: savedPinIds.has(post.id) ? "default" : "pointer", fontFamily: "var(--font-body)" }}>
+                    {savedPinIds.has(post.id) ? "✓ Saved" : "📍 Save to Map"}
+                  </button>
+                )}
               </div>
+              {expandedComments.has(post.id) && (
+                <PostComments postId={post.id} user={user} openSignIn={openSignIn} onCommentAdded={(delta = 1) => setCommentCounts(prev => ({ ...prev, [post.id]: Math.max(0, (prev[post.id] || 0) + delta) }))} />
+              )}
             </div>
-            {(post.species || post.location) && (
-              <div style={{ display: "flex", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
-                {post.species && <span style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)", padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600 }}>{post.species}</span>}
-                {post.location && <span style={{ color: "var(--text2)", fontSize: 12 }}>📍 {post.location}</span>}
-              </div>
-            )}
-            {post.caption && <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.6, margin: 0, marginBottom: 10 }}>{post.caption}</p>}
-            {post.lat && post.lng && (
-              <a href={`https://www.google.com/maps/dir/?api=1&destination=${post.lat},${post.lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 12, fontWeight: 600, display: "inline-block", marginBottom: 8 }}>🗺️ Get Directions →</a>
-            )}
-            {post.lat && post.lng && (
-              <button onClick={() => saveToMap(post)} style={{ background: savedPinIds.has(post.id) ? "var(--green-dim)" : "rgba(255,255,255,0.04)", border: `1px solid ${savedPinIds.has(post.id) ? "var(--border-accent)" : "var(--border)"}`, color: savedPinIds.has(post.id) ? "var(--green)" : "var(--text2)", padding: "6px 14px", borderRadius: "var(--radius-sm)", fontSize: 12, cursor: savedPinIds.has(post.id) ? "default" : "pointer", fontFamily: "var(--font-body)" }}>
-                {savedPinIds.has(post.id) ? "✓ Saved to Map" : "📍 Save to My Map"}
-              </button>
-            )}
           </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── POST COMMENTS ────────────────────────────────────────────────────────────
+function PostComments({ postId, user, openSignIn, onCommentAdded }) {
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [text, setText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const loadComments = async () => {
+    setLoading(true);
+    const { data } = await supabase.from("comments").select("*").eq("post_id", postId).order("created_at", { ascending: true });
+    setComments(data || []);
+    setLoading(false);
+  };
+
+  useEffect(() => { loadComments(); }, [postId]);
+
+  const submit = async () => {
+    if (!text.trim()) return;
+    if (!user) { openSignIn(); return; }
+    setSubmitting(true);
+    await supabase.from("comments").insert({
+      post_id: postId,
+      user_id: user.id,
+      username: user.firstName || user.username || "Hunter",
+      content: text.trim(),
+    });
+    setText("");
+    await loadComments();
+    onCommentAdded?.();
+    setSubmitting(false);
+  };
+
+  const deleteComment = async (id) => {
+    await supabase.from("comments").delete().eq("id", id);
+    setComments(prev => prev.filter(c => c.id !== id));
+    onCommentAdded?.(-1);
+  };
+
+  return (
+    <div style={{ borderTop: "1px solid var(--border)", padding: "12px 16px", background: "rgba(255,255,255,0.02)" }}>
+      {loading && <div style={{ color: "var(--text3)", fontSize: 12, paddingBottom: 8 }} className="pulse">Loading comments...</div>}
+      {comments.map(c => (
+        <div key={c.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+          <div>
+            <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 13 }}>{c.username || "Hunter"} </span>
+            <span style={{ color: "var(--text2)", fontSize: 13 }}>{c.content}</span>
+            <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>{new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</div>
+          </div>
+          {user?.id === c.user_id && <button onClick={() => deleteComment(c.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.5)", fontSize: 11, padding: "0 4px", flexShrink: 0 }}>✕</button>}
         </div>
       ))}
+      {comments.length === 0 && !loading && <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 10 }}>No comments yet — be the first!</div>}
+      <div style={{ display: "flex", gap: 8 }}>
+        <input
+          placeholder="Add a comment..."
+          value={text}
+          onChange={e => setText(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter") submit(); }}
+          style={{ flex: 1, padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }}
+        />
+        <button onClick={submit} disabled={!text.trim() || submitting} className="btn-primary" style={{ padding: "7px 14px", fontSize: 13, opacity: !text.trim() ? 0.5 : 1 }}>
+          {submitting ? "..." : "Post"}
+        </button>
+      </div>
     </div>
   );
 }
