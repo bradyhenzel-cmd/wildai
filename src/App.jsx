@@ -715,6 +715,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn }) {
   const [profileTab, setProfileTab] = useState("posts");
   const [spotRatings, setSpotRatings] = useState({});
   const [userRatings, setUserRatings] = useState({});
+  const [savedPinIds, setSavedPinIds] = useState(new Set());
 
   useEffect(() => {
     const load = async () => {
@@ -753,6 +754,10 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn }) {
           setUserRatings(myRatings);
         }
       }
+      if (currentUser) {
+        const { data: savedData } = await supabase.from("saved_pins").select("post_id").eq("user_id", currentUser.id);
+        setSavedPinIds(new Set((savedData || []).map(p => p.post_id)));
+      }
       setLoading(false);
     };
     load();
@@ -789,6 +794,18 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn }) {
     await supabase.from("profiles").update({ avatar_url: urlData.publicUrl }).eq("user_id", userId);
     setProfile(p => ({ ...p, avatar_url: urlData.publicUrl }));
     setUploadingAvatar(false);
+  };
+
+  const saveToMap = async (post) => {
+    if (!currentUser) { openSignIn(); return; }
+    if (savedPinIds.has(post.id)) return;
+    await supabase.from("saved_pins").insert({
+      user_id: currentUser.id, post_id: post.id,
+      name: post.location || post.species || "Saved Spot",
+      location: post.location, species: post.species,
+      photo: post.photo, lat: post.lat, lng: post.lng, state: post.state,
+    });
+    setSavedPinIds(prev => new Set([...prev, post.id]));
   };
 
   const rateSpot = async (postId, rating) => {
@@ -933,7 +950,12 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn }) {
                       <span style={{ color: "var(--text3)", fontSize: 12 }}>{isOwnProfile ? "No ratings yet" : "Be the first to rate"}</span>
                     )}
                   </div>
-                  <a href={`https://www.google.com/maps/dir/?api=1&destination=${post.lat},${post.lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 12, fontWeight: 600 }}>🗺️ Directions</a>
+                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                    <button onClick={() => saveToMap(post)} style={{ background: "none", border: "none", cursor: savedPinIds.has(post.id) ? "default" : "pointer", color: savedPinIds.has(post.id) ? "var(--text3)" : "var(--green)", fontSize: 12, fontWeight: 600, padding: 0, fontFamily: "var(--font-body)" }}>
+                      {savedPinIds.has(post.id) ? "✓ Saved" : "🗺️ Save to Map"}
+                    </button>
+                    <a href={`https://www.google.com/maps/dir/?api=1&destination=${post.lat},${post.lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 12, fontWeight: 600 }}>Directions →</a>
+                  </div>
                 </div>
               </div>
             </div>
