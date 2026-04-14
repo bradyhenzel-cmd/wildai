@@ -1793,72 +1793,12 @@ function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column", fontFamily: "var(--font-body)", position: "relative", overflow: "hidden" }}>
       {/* Decorative background */}
-      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0, backgroundImage: "url('/bg.jpg')", backgroundSize: "cover", backgroundPosition: "center", opacity: 0.18 }}>
-        <svg width="100%" height="100%" viewBox="0 0 700 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style={{ position: "absolute", inset: 0 }}>
-          <defs>
-            <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#4a7c5a" stopOpacity="0.15" /><stop offset="100%" stopColor="#4a7c5a" stopOpacity="0" /></radialGradient>
-            <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#050f08" /><stop offset="100%" stopColor="#0a1f10" /></linearGradient>
-            <linearGradient id="mtn1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#0d2a12" /><stop offset="100%" stopColor="#0a1f0f" /></linearGradient>
-            <linearGradient id="mtn2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#0b2210" /><stop offset="100%" stopColor="#091a0d" /></linearGradient>
-          </defs>
-          <rect width="700" height="400" fill="url(#skyGrad)" />
-          <circle cx="570" cy="100" r="55" fill="#0f2e18" opacity="0.9" />
-          <circle cx="570" cy="100" r="48" fill="#112a17" opacity="0.95" />
-          <circle cx="570" cy="100" r="200" fill="url(#moonGlow)" />
-          <circle cx="60" cy="40" r="1.2" fill="#78b450" opacity="0.7" />
-          <circle cx="120" cy="25" r="0.8" fill="#a8d888" opacity="0.6" />
-          <circle cx="180" cy="55" r="1" fill="#78b450" opacity="0.5" />
-          <circle cx="240" cy="20" r="1.2" fill="#a8d888" opacity="0.7" />
-          <circle cx="300" cy="45" r="0.8" fill="#78b450" opacity="0.4" />
-          <circle cx="90" cy="80" r="0.8" fill="#a8d888" opacity="0.5" />
-          <circle cx="160" cy="15" r="1" fill="#78b450" opacity="0.6" />
-          <circle cx="420" cy="30" r="1.2" fill="#a8d888" opacity="0.5" />
-          <circle cx="480" cy="60" r="0.8" fill="#78b450" opacity="0.6" />
-          <circle cx="200" cy="90" r="0.8" fill="#a8d888" opacity="0.4" />
-          <circle cx="350" cy="35" r="1" fill="#78b450" opacity="0.5" />
-          <circle cx="50" cy="120" r="0.8" fill="#a8d888" opacity="0.4" />
-          <circle cx="650" cy="40" r="1" fill="#78b450" opacity="0.5" />
-          <circle cx="30" cy="60" r="1.2" fill="#a8d888" opacity="0.6" />
-          <g opacity="0.7">
-            <polygon points="0,280 120,180 240,280" fill="url(#mtn1)" />
-            <polygon points="80,280 220,160 360,280" fill="url(#mtn2)" />
-            <polygon points="200,280 320,185 440,280" fill="url(#mtn1)" />
-            <polygon points="320,280 430,195 540,280" fill="url(#mtn2)" />
-            <polygon points="440,280 560,170 680,280" fill="url(#mtn1)" />
-            <polygon points="560,280 660,190 760,280" fill="url(#mtn2)" />
-          </g>
-          <path d="M0,310 Q100,295 200,305 Q300,315 400,300 Q500,290 600,305 Q650,310 700,305 L700,400 L0,400Z" fill="#0a1f0d" opacity="0.95" />
-          <path d="M0,330 Q150,318 300,325 Q450,332 600,322 Q650,318 700,325 L700,400 L0,400Z" fill="#081808" opacity="1" />
-          <g fill="#061208">
-            <polygon points="30,330 42,295 54,330" /><polygon points="26,330 42,282 58,330" />
-            <polygon points="55,330 65,300 75,330" /><polygon points="52,330 65,288 78,330" />
-            <polygon points="80,330 90,308 100,330" />
-            <polygon points="105,330 118,292 131,330" /><polygon points="101,330 118,278 135,330" />
-            <polygon points="138,330 150,304 162,330" />
-            <polygon points="170,330 182,295 194,330" /><polygon points="166,330 182,280 198,330" />
-            <polygon points="200,330 210,308 220,330" />
-            <polygon points="230,330 244,296 258,330" /><polygon points="226,330 244,282 262,330" />
-            <polygon points="265,330 276,305 287,330" />
-            <polygon points="295,330 308,298 321,330" /><polygon points="291,330 308,284 325,330" />
-            <polygon points="328,330 339,306 350,330" />
-            <polygon points="358,330 370,294 382,330" /><polygon points="354,330 370,280 386,330" />
-            <polygon points="390,330 400,308 410,330" />
-            <polygon points="418,330 430,296 442,330" /><polygon points="414,330 430,282 446,330" />
-            <polygon points="450,330 460,305 470,330" />
-            <polygon points="478,330 490,294 502,330" /><polygon points="474,330 490,280 506,330" />
-            <polygon points="510,330 520,308 530,330" />
-            <polygon points="538,330 550,296 562,330" /><polygon points="534,330 550,282 566,330" />
-            <polygon points="570,330 580,305 590,330" />
-            <polygon points="598,330 610,295 622,330" /><polygon points="594,330 610,281 626,330" />
-            <polygon points="630,330 640,308 650,330" />
-            <polygon points="658,330 670,296 682,330" /><polygon points="654,330 670,282 686,330" />
-          </g>
-          <rect x="0" y="370" width="700" height="30" fill="#050f06" />
-        </svg>
+      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0 }}>
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "url('/bg.jpg')", backgroundSize: "cover", backgroundPosition: "center", opacity: 0.35, zIndex: 1 }} />
       </div>
 
       {/* Nav */}
-      <nav style={{ padding: "18px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--border)", backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 50, background: "rgba(8,15,8,0.86)" }}>
+      <nav style={{ padding: "18px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--border)", backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 50, background: "rgba(8,15,8,0.45)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <img src="/logo.png" style={{ width: 32, height: 32, objectFit: "contain", mixBlendMode: "screen" }} />
           <span style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.5px" }}>WildAI</span>
