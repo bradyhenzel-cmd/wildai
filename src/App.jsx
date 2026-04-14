@@ -2062,7 +2062,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
             <div style={{ overflowY: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 16, minHeight: 340, maxHeight: 500 }}>
               {messages.map((m, i) => (
                 <div key={i} className="fade-in" style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start", gap: 10, alignItems: "flex-end" }}>
-                  {m.role === "assistant" && <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,var(--green),var(--green2))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0, boxShadow: "0 4px 12px rgba(120,180,80,0.25)" }}>🦌</div>}
+                  {m.role === "assistant" && <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,var(--green),var(--green2))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0, boxShadow: "0 4px 12px rgba(120,180,80,0.25)" }}><img src="/logo.png" style={{ width: 20, height: 20, objectFit: "contain" }} /></div>}
                   <div style={{ background: m.role === "user" ? "linear-gradient(135deg,var(--green),var(--green2))" : "rgba(255,255,255,0.05)", border: m.role === "assistant" ? "1px solid var(--border)" : "none", color: "var(--text)", padding: "13px 17px", borderRadius: m.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", maxWidth: "80%", boxShadow: m.role === "user" ? "0 4px 16px rgba(120,180,80,0.2)" : "none" }}>
                     {m.role === "assistant" && m.animate
                       ? <TypewriterText text={m.content} onDone={() => setMessages(prev => prev.map((msg, j) => j === i ? { ...msg, animate: false } : msg))} />
@@ -2072,7 +2072,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
               ))}
               {loading && (
                 <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
-                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,var(--green),var(--green2))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}>🦌</div>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,var(--green),var(--green2))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}><img src="/logo.png" style={{ width: 20, height: 20, objectFit: "contain" }} /></div>
                   <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", padding: "13px 17px", borderRadius: "18px 18px 18px 4px" }}>
                     <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
                       {[0, 1, 2].map(j => <div key={j} style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--green)", animation: `pulse 1.2s ease-in-out ${j * 0.2}s infinite` }} />)}
