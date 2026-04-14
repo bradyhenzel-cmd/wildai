@@ -531,8 +531,9 @@ function MapTab({ selectedState, user, onSharePin }) {
       });
       mapInst.current = map;
       map.addControl(new mapboxgl.NavigationControl(), "top-right");
-      map.addControl(new mapboxgl.GeolocateControl({ positionOptions: { enableHighAccuracy: true } }), "top-right");
-      map.on("load", () => { addLayers(map, true, true); setMapReady(true); });
+      const geolocate = new mapboxgl.GeolocateControl({ positionOptions: { enableHighAccuracy: true }, trackUserLocation: false });
+      map.addControl(geolocate, "top-right");
+      map.on("load", () => { addLayers(map, true, true); setMapReady(true); setTimeout(() => geolocate.trigger(), 500); });
       map.on("click", e => {
         if (!user) return;
         if (e.originalEvent.target.classList.contains("wildai-pin")) return;
