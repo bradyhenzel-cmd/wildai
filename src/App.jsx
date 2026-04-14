@@ -712,6 +712,9 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn }) {
   const [bioInput, setBioInput] = useState("");
   const [savingBio, setSavingBio] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [profileTab, setProfileTab] = useState("posts");
+  const [spotRatings, setSpotRatings] = useState({});
+  const [userRatings, setUserRatings] = useState({});
 
   useEffect(() => {
     const load = async () => {
@@ -733,6 +736,23 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn }) {
         const { data: followCheck } = await supabase.from("follows").select("id").eq("follower_id", currentUser.id).eq("following_id", userId).single();
         setIsFollowing(!!followCheck);
       }
+      const spotPosts = (postData || []).filter(p => p.lat && p.lng);
+      if (spotPosts.length) {
+        const ids = spotPosts.map(p => p.id);
+        const { data: ratingData } = await supabase.from("spot_ratings").select("post_id, rating, user_id").in("post_id", ids);
+        if (ratingData) {
+          const avgRatings = {};
+          const myRatings = {};
+          ids.forEach(id => avgRatings[id] = { sum: 0, count: 0 });
+          ratingData.forEach(r => {
+            avgRatings[r.post_id].sum += r.rating;
+            avgRatings[r.post_id].count += 1;
+            if (currentUser && r.user_id === currentUser.id) myRatings[r.post_id] = r.rating;
+          });
+          setSpotRatings(avgRatings);
+          setUserRatings(myRatings);
+        }
+      }
       setLoading(false);
     };
     load();
@@ -750,11 +770,6 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn }) {
       setFollowerCount(c => c + 1);
     }
   };
-
-  if (loading) return <div style={{ textAlign: "center", padding: 60, color: "var(--text3)" }} className="pulse">Loading profile...</div>;
-
-  const displayName = profile?.username || posts[0]?.username || "Hunter";
-  const isOwnProfile = currentUser?.id === userId;
 
   const saveBio = async () => {
     setSavingBio(true);
@@ -775,6 +790,24 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn }) {
     setProfile(p => ({ ...p, avatar_url: urlData.publicUrl }));
     setUploadingAvatar(false);
   };
+
+  const rateSpot = async (postId, rating) => {
+    if (!currentUser) { openSignIn(); return; }
+    await supabase.from("spot_ratings").upsert({ post_id: postId, user_id: currentUser.id, rating });
+    setUserRatings(prev => ({ ...prev, [postId]: rating }));
+    setSpotRatings(prev => {
+      const cur = prev[postId] || { sum: 0, count: 0 };
+      const wasRated = userRatings[postId];
+      const newSum = wasRated ? cur.sum - wasRated + rating : cur.sum + rating;
+      const newCount = wasRated ? cur.count : cur.count + 1;
+      return { ...prev, [postId]: { sum: newSum, count: newCount } };
+    });
+  };
+
+  if (loading) return <div style={{ textAlign: "center", padding: 60, color: "var(--text3)" }} className="pulse">Loading profile...</div>;
+
+  const displayName = profile?.username || posts[0]?.username || "Hunter";
+  const isOwnProfile = currentUser?.id === userId;
 
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -832,29 +865,81 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn }) {
         </div>
       </div>
 
-      {posts.length === 0 ? (
-        <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14 }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>🌲</div>
-          <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{isOwnProfile ? "You haven't posted yet" : `${displayName} hasn't posted yet`}</div>
-          {isOwnProfile && <div style={{ color: "var(--text3)", fontSize: 13 }}>Share your first hunt or catch in the community feed!</div>}
-        </div>
-      ) : (
-        posts.map(post => (
-          <div key={post.id} className="card fade-in" style={{ padding: 0, overflow: "hidden" }}>
-            {post.photo && <img src={post.photo} style={{ width: "100%", maxHeight: 280, objectFit: "cover" }} />}
-            <div style={{ padding: "14px 16px" }}>
-              {(post.species || post.location) && (
-                <div style={{ display: "flex", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
-                  {post.species && <span style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)", padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600 }}>{post.species}</span>}
-                  {post.location && <span style={{ color: "var(--text2)", fontSize: 12 }}>📍 {post.location}</span>}
-                </div>
-              )}
-              {post.caption && <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.6, margin: 0, marginBottom: 6 }}>{post.caption}</p>}
-              <div style={{ color: "var(--text3)", fontSize: 11 }}>{new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
-            </div>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button onClick={() => setProfileTab("posts")} className={`nav-tab ${profileTab === "posts" ? "active" : "inactive"}`} style={{ padding: "7px 18px", fontSize: 13 }}>Posts</button>
+        <button onClick={() => setProfileTab("spots")} className={`nav-tab ${profileTab === "spots" ? "active" : "inactive"}`} style={{ padding: "7px 18px", fontSize: 13 }}>📍 Spots</button>
+      </div>
+
+      {profileTab === "posts" && (
+        posts.length === 0 ? (
+          <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14 }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>🌲</div>
+            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{isOwnProfile ? "You haven't posted yet" : `${displayName} hasn't posted yet`}</div>
+            {isOwnProfile && <div style={{ color: "var(--text3)", fontSize: 13 }}>Share your first hunt or catch in the community feed!</div>}
           </div>
-        ))
+        ) : (
+          posts.map(post => (
+            <div key={post.id} className="card fade-in" style={{ padding: 0, overflow: "hidden" }}>
+              {post.photo && <img src={post.photo} style={{ width: "100%", maxHeight: 280, objectFit: "cover" }} />}
+              <div style={{ padding: "14px 16px" }}>
+                {(post.species || post.location) && (
+                  <div style={{ display: "flex", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
+                    {post.species && <span style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)", padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600 }}>{post.species}</span>}
+                    {post.location && <span style={{ color: "var(--text2)", fontSize: 12 }}>📍 {post.location}</span>}
+                  </div>
+                )}
+                {post.caption && <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.6, margin: 0, marginBottom: 6 }}>{post.caption}</p>}
+                <div style={{ color: "var(--text3)", fontSize: 11 }}>{new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
+              </div>
+            </div>
+          ))
+        )
       )}
+
+      {profileTab === "spots" && (() => {
+        const spots = posts.filter(p => p.lat && p.lng);
+        if (spots.length === 0) return (
+          <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14 }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>📍</div>
+            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{isOwnProfile ? "No public spots yet" : `${displayName} hasn't shared any spots`}</div>
+            {isOwnProfile && <div style={{ color: "var(--text3)", fontSize: 13 }}>Share a post with a location to add it here!</div>}
+          </div>
+        );
+        return spots.map(post => {
+          const ratingInfo = spotRatings[post.id] || { sum: 0, count: 0 };
+          const avgRating = ratingInfo.count > 0 ? (ratingInfo.sum / ratingInfo.count).toFixed(1) : null;
+          const myRating = userRatings[post.id] || 0;
+          return (
+            <div key={post.id} className="card fade-in" style={{ padding: 0, overflow: "hidden" }}>
+              {post.photo && <img src={post.photo} style={{ width: "100%", maxHeight: 240, objectFit: "cover" }} />}
+              <div style={{ padding: "14px 16px" }}>
+                {(post.species || post.location) && (
+                  <div style={{ display: "flex", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
+                    {post.species && <span style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)", padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600 }}>{post.species}</span>}
+                    {post.location && <span style={{ color: "var(--text2)", fontSize: 12 }}>📍 {post.location}</span>}
+                  </div>
+                )}
+                {post.caption && <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.6, margin: 0, marginBottom: 10 }}>{post.caption}</p>}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ display: "flex", gap: 2 }}>
+                      {[1, 2, 3, 4, 5].map(star => (
+                        <span key={star} onClick={() => !isOwnProfile && rateSpot(post.id, star)} style={{ fontSize: 18, cursor: isOwnProfile ? "default" : "pointer", color: star <= myRating ? "#e8b020" : "rgba(255,255,255,0.2)", transition: "color 0.1s" }}>★</span>
+                      ))}
+                    </div>
+                    {avgRating ? (
+                      <span style={{ color: "var(--text3)", fontSize: 12 }}>{avgRating} · {ratingInfo.count} {ratingInfo.count === 1 ? "rating" : "ratings"}</span>
+                    ) : (
+                      <span style={{ color: "var(--text3)", fontSize: 12 }}>{isOwnProfile ? "No ratings yet" : "Be the first to rate"}</span>
+                    )}
+                  </div>
+                  <a href={`https://www.google.com/maps/dir/?api=1&destination=${post.lat},${post.lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 12, fontWeight: 600 }}>🗺️ Directions</a>
+                </div>
+              </div>
+            </div>
+          );
+        });
+      })()}
     </div>
   );
 }
