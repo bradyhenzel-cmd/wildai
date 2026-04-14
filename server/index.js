@@ -81,8 +81,8 @@ app.post("/create-checkout", async (req, res) => {
                 quantity: 1,
             }],
             mode: "subscription",
-            success_url: "https://wildai-two.vercel.app?upgraded=true",
-            cancel_url: "https://wildai-two.vercel.app",
+            success_url: "https://wildai.app?upgraded=true",
+            cancel_url: "https://wildai.app",
             metadata: { userId },
         });
         res.json({ url: session.url });
@@ -95,7 +95,7 @@ app.post("/customer-portal", async (req, res) => {
     try {
         const session = await stripe.billingPortal.sessions.create({
             customer: customerId,
-            return_url: "https://wildai-two.vercel.app",
+            return_url: "https://wildai.app",
         });
         res.json({ url: session.url });
     } catch (err) {
