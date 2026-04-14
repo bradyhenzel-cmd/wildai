@@ -1793,7 +1793,7 @@ function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column", fontFamily: "var(--font-body)", position: "relative", overflow: "hidden" }}>
       {/* Decorative background */}
-      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0 }}>
+      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0, backgroundImage: "url('/bg.jpg')", backgroundSize: "cover", backgroundPosition: "center", opacity: 0.18 }}>
         <svg width="100%" height="100%" viewBox="0 0 700 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style={{ position: "absolute", inset: 0 }}>
           <defs>
             <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#4a7c5a" stopOpacity="0.15" /><stop offset="100%" stopColor="#4a7c5a" stopOpacity="0" /></radialGradient>
@@ -1860,7 +1860,7 @@ function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
       {/* Nav */}
       <nav style={{ padding: "18px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--border)", backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 50, background: "rgba(8,15,8,0.86)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 24 }} className="float">🦌</span>
+          <img src="/logo.jpg" style={{ width: 32, height: 32, objectFit: "contain" }} />
           <span style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.5px" }}>WildAI</span>
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
@@ -1921,7 +1921,7 @@ function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
 
       <footer style={{ borderTop: "1px solid var(--border)", padding: "18px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, position: "relative", zIndex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span>🦌</span>
+          <img src="/logo.jpg" style={{ width: 20, height: 20, objectFit: "contain" }} />
           <span style={{ fontFamily: "var(--font-display)", fontSize: 15, color: "var(--text2)" }}>WildAI</span>
         </div>
         <div style={{ display: "flex", gap: 20 }}>
