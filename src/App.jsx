@@ -841,7 +841,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L8 8H4l4 4H5l7 7 7-7h-3l4-4h-4z"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L8 8H4l4 4H5l7 7 7-7h-3l4-4h-4z" /><line x1="12" y1="19" x2="12" y2="22" /></svg>
               <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 20, fontFamily: "var(--font-display)" }}>WildAI Community</span>
             </div>
             <div style={{ color: "var(--text3)", fontSize: 12 }}>{posts.length > 0 ? `${posts.length} post${posts.length !== 1 ? "s" : ""} from hunters & anglers` : "Be the first to post"}</div>
@@ -1230,6 +1230,9 @@ function TripPlannerTab({ selectedState, isPro, hitLimit, messageCount, setMessa
     const newCount = messageCount + 1;
     setMessageCount(newCount);
     localStorage.setItem("wildai_message_count", newCount);
+    if (user) {
+      supabase.from("message_counts").upsert({ user_id: user.id, count: newCount, updated_at: new Date().toISOString() });
+    }
     try {
       const prompt = `Create a detailed ${duration}-day ${species} ${activityType} trip plan in ${selectedState || "the US"} for a group of ${groupSize} with ${experience} experience level${startDate ? `, starting ${new Date(startDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}` : ""}.
 
@@ -1948,6 +1951,15 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, onTerm
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
 
+  useEffect(() => {
+    if (!user || isPro) return;
+    const loadCount = async () => {
+      const { data } = await supabase.from("message_counts").select("count").eq("user_id", user.id).single();
+      if (data) setMessageCount(data.count);
+    };
+    loadCount();
+  }, [user]);
+
   const sendMessage = async (text) => {
     const msg = text || input;
     if (!msg.trim() || hitLimit) return;
@@ -1956,6 +1968,9 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, onTerm
     const newCount = messageCount + 1;
     setMessageCount(newCount);
     localStorage.setItem("wildai_message_count", newCount);
+    if (user) {
+      supabase.from("message_counts").upsert({ user_id: user.id, count: newCount, updated_at: new Date().toISOString() });
+    }
     if (tab !== "chat") setTab("chat");
     const now = new Date();
     const moonPhase = () => {
