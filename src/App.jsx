@@ -792,7 +792,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
     }
     const { error } = await supabase.from("posts").insert({
       user_id: user.id,
-      username: user.firstName || user.username || "Hunter",
+      username: user.username || user.firstName || "Hunter",
       state: selectedState || "Unknown",
       species: form.species,
       location: form.location,
@@ -988,7 +988,7 @@ function PostComments({ postId, user, openSignIn, onCommentAdded }) {
     await supabase.from("comments").insert({
       post_id: postId,
       user_id: user.id,
-      username: user.firstName || user.username || "Hunter",
+      username: user.username || user.firstName || "Hunter",
       content: text.trim(),
     });
     setText("");
