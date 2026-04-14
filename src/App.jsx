@@ -837,22 +837,26 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
 
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
-          <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, fontFamily: "var(--font-display)" }}>Community</div>
-          <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 2 }}>Hunters & anglers sharing spots</div>
+      <div style={{ background: "#0a150a", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "18px 20px", marginBottom: 2 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L8 8H4l4 4H5l7 7 7-7h-3l4-4h-4z"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+              <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 20, fontFamily: "var(--font-display)" }}>WildAI Community</span>
+            </div>
+            <div style={{ color: "var(--text3)", fontSize: 12 }}>{posts.length > 0 ? `${posts.length} post${posts.length !== 1 ? "s" : ""} from hunters & anglers` : "Be the first to post"}</div>
+          </div>
+          <button onClick={() => { if (!user) { openSignIn(); return; } setShowForm(s => !s); }} className="btn-primary" style={{ padding: "9px 18px", fontSize: 13, flexShrink: 0 }}>
+            {showForm ? "Cancel" : "+ Post"}
+          </button>
         </div>
-        <button onClick={() => { if (!user) { openSignIn(); return; } setShowForm(s => !s); }} className="btn-primary" style={{ padding: "9px 18px", fontSize: 13 }}>
-          {showForm ? "Cancel" : "+ Post"}
-        </button>
-      </div>
-
-      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, flexWrap: "wrap" }}>
-        <button onClick={() => setStateFilter("all")} className={`nav-tab ${stateFilter === "all" ? "active" : "inactive"}`} style={{ padding: "6px 14px", fontSize: 12, flexShrink: 0 }}>🌎 All</button>
-        {selectedState && <button onClick={() => setStateFilter(selectedState)} className={`nav-tab ${stateFilter === selectedState ? "active" : "inactive"}`} style={{ padding: "6px 14px", fontSize: 12, flexShrink: 0 }}>📍 {selectedState}</button>}
-        <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
-          <button onClick={() => setSortBy("newest")} className={`nav-tab ${sortBy === "newest" ? "active" : "inactive"}`} style={{ padding: "6px 14px", fontSize: 12, flexShrink: 0 }}>🕐 New</button>
-          <button onClick={() => setSortBy("top")} className={`nav-tab ${sortBy === "top" ? "active" : "inactive"}`} style={{ padding: "6px 14px", fontSize: 12, flexShrink: 0 }}>🔥 Top</button>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <button onClick={() => setStateFilter("all")} className={`nav-tab ${stateFilter === "all" ? "active" : "inactive"}`} style={{ padding: "5px 12px", fontSize: 11, flexShrink: 0 }}>All States</button>
+          {selectedState && <button onClick={() => setStateFilter(selectedState)} className={`nav-tab ${stateFilter === selectedState ? "active" : "inactive"}`} style={{ padding: "5px 12px", fontSize: 11, flexShrink: 0 }}>📍 {selectedState}</button>}
+          <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
+            <button onClick={() => setSortBy("newest")} className={`nav-tab ${sortBy === "newest" ? "active" : "inactive"}`} style={{ padding: "5px 12px", fontSize: 11, flexShrink: 0 }}>New</button>
+            <button onClick={() => setSortBy("top")} className={`nav-tab ${sortBy === "top" ? "active" : "inactive"}`} style={{ padding: "5px 12px", fontSize: 11, flexShrink: 0 }}>🔥 Top</button>
+          </div>
         </div>
       </div>
 
@@ -933,11 +937,13 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
               )}
               {post.caption && <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.6, margin: 0, marginBottom: 10 }}>{post.caption}</p>}
               <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                <button onClick={() => toggleLike(post)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: isLiked ? "#ff9500" : "var(--text3)", fontSize: 30, padding: 0, fontFamily: "var(--font-body)" }}>
-                  {isLiked ? "🔥" : "🤍"} <span style={{ fontSize: 12 }}>{likeCount > 0 ? likeCount : ""}</span>
+                <button onClick={() => toggleLike(post)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: isLiked ? "#e8b020" : "var(--text3)", padding: 0, fontFamily: "var(--font-body)", transition: "color 0.15s" }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill={isLiked ? "#e8b020" : "none"} stroke={isLiked ? "#e8b020" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                  <span style={{ fontSize: 12 }}>{likeCount > 0 ? likeCount : ""}</span>
                 </button>
-                <button onClick={() => setExpandedComments(prev => { const n = new Set(prev); n.has(post.id) ? n.delete(post.id) : n.add(post.id); return n; })} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: "var(--text3)", fontSize: 30, padding: 0, fontFamily: "var(--font-body)" }}>
-                  💬 <span style={{ fontSize: 12 }}>{commentCounts[post.id] > 0 ? commentCounts[post.id] : ""}</span>
+                <button onClick={() => setExpandedComments(prev => { const n = new Set(prev); n.has(post.id) ? n.delete(post.id) : n.add(post.id); return n; })} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: expandedComments.has(post.id) ? "var(--green)" : "var(--text3)", padding: 0, fontFamily: "var(--font-body)", transition: "color 0.15s" }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                  <span style={{ fontSize: 12 }}>{commentCounts[post.id] > 0 ? commentCounts[post.id] : ""}</span>
                 </button>
                 {post.lat && post.lng && (
                   <a href={`https://www.google.com/maps/dir/?api=1&destination=${post.lat},${post.lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 12, fontWeight: 600 }}>🗺️ Directions</a>
