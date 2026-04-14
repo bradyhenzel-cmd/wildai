@@ -1922,7 +1922,7 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, onTerm
     return () => clearInterval(interval);
   }, []);
   const [messages, setMessages] = useState([
-    { role: "assistant", content: `Hey, I'm WildAI — your hunting and fishing assistant${selectedState ? ` for ${selectedState}` : ""}. I've got your current location and weather loaded up. Are you hunting or fishing near home, or heading somewhere else? You can update your location anytime in the Weather tab. What are you after?`, animate: false },
+    { role: "assistant", content: `Hey, I'm WildAI — your hunting and fishing assistant${selectedState ? ` for ${selectedState}` : ""}. Ask me anything about gear, tactics, seasons, regulations, or trip planning. If you want location-specific advice, make sure your location is set in the Weather tab. What are you after?`, animate: false },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -1974,7 +1974,9 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 - Today's date: ${now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
 - Time of day: ${timeOfDay}
 - Current moon phase: ${moonPhase()}
-- User's state: ${selectedState || "not specified"}
+- User's selected state: ${selectedState || "not specified"}
+- User's GPS location: ${locationName || "not detected"}
+- Note: If GPS location and selected state conflict, prioritize GPS location for weather and local conditions advice, but use selected state for regulations questions.
 - Season: ${["Winter", "Winter", "Spring", "Spring", "Spring", "Summer", "Summer", "Summer", "Fall", "Fall", "Fall", "Winter"][now.getMonth()]}${weather && locationName ? `\n- Current weather at ${locationName}: ${Math.round(weather.temperature_2m)}°F, wind ${Math.round(weather.wind_speed_10m)}mph, precip ${weather.precipitation}"` : `\n- Current weather: not loaded. If the user asks about current conditions, tell them to enter a location in the Weather tab and then come back to chat.`}`;
     try {
       const res = await fetch("https://wildai-server.onrender.com/chat", {
