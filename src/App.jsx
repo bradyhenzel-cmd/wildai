@@ -349,11 +349,20 @@ function TypewriterText({ text, onDone }) {
   const [displayed, setDisplayed] = useState("");
   useEffect(() => {
     setDisplayed(""); let i = 0;
-    const iv = setInterval(() => {
-      if (i < text.length) { setDisplayed(text.slice(0, i + 1)); i++; }
-      else { clearInterval(iv); onDone?.(); }
-    }, 7);
-    return () => clearInterval(iv);
+    let cancelled = false;
+    const type = () => {
+      if (cancelled) return;
+      if (i < text.length) {
+        const chunk = Math.floor(Math.random() * 3) + 1;
+        i = Math.min(i + chunk, text.length);
+        setDisplayed(text.slice(0, i));
+        setTimeout(type, Math.random() * 20 + 15);
+      } else {
+        onDone?.();
+      }
+    };
+    setTimeout(type, 50);
+    return () => { cancelled = true; };
   }, [text]);
   return <span className="msg-bubble" dangerouslySetInnerHTML={{ __html: displayed.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br/>") }} />;
 }
@@ -2060,7 +2069,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         {/* CHAT */}
         {tab === "chat" && (
           <div className="fade-in card" style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            <div style={{ overflowY: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 16, minHeight: 340, maxHeight: 500 }}>
+            <div style={{ overflowY: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 16, minHeight: 400, maxHeight: "60vh" }}>
               {messages.map((m, i) => (
                 <div key={i} className="fade-in" style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start", gap: 10, alignItems: "flex-end" }}>
                   {m.role === "assistant" && <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,var(--green),var(--green2))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0, boxShadow: "0 4px 12px rgba(120,180,80,0.25)" }}><img src="/logo.png" style={{ width: 20, height: 20, objectFit: "contain" }} /></div>}
