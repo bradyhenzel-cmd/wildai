@@ -2146,13 +2146,44 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                 </div>
               )}
               {hitLimit && (
-                <div style={{ margin: "0 20px 20px", background: "linear-gradient(135deg,rgba(120,180,80,0.08),rgba(90,154,50,0.04))", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)", padding: 24, textAlign: "center" }}>
-                  <div style={{ fontSize: 36, marginBottom: 10 }}>🔒</div>
-                  <div style={{ fontFamily: "var(--font-display)", fontSize: 20, color: "var(--text)", marginBottom: 6 }}>Upgrade to WildAI Pro</div>
-                  <div style={{ color: "var(--text2)", fontSize: 14, marginBottom: 18, lineHeight: 1.6 }}>You've used your free messages. Get unlimited access and advanced features.</div>
-                  <button className="btn-primary" style={{ padding: "13px 32px", fontSize: 15, borderRadius: "var(--radius)", opacity: checkoutLoading ? 0.6 : 1 }} disabled={checkoutLoading} onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }}>
-                    {checkoutLoading ? "Loading..." : "Upgrade for $4.99/month →"}
-                  </button>
+                <div style={{ margin: "0 20px 20px", background: "#0d1a0d", border: "1px solid rgba(180,140,60,0.25)", borderRadius: 18, overflow: "hidden" }}>
+                  <div style={{ background: "#0a150a", padding: "24px 24px 20px", borderBottom: "1px solid rgba(255,255,255,0.05)", textAlign: "center" }}>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(180,140,60,0.1)", border: "1px solid rgba(180,140,60,0.35)", borderRadius: 20, padding: "5px 14px", marginBottom: 16 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#e8b020" }} />
+                      <span style={{ color: "#e8b020", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em" }}>WILDAI PRO</span>
+                    </div>
+                    <div style={{ fontFamily: "var(--font-display)", fontSize: 21, color: "#f4f4f0", marginBottom: 6, lineHeight: 1.2 }}>Every season. Every state.<br /><span style={{ color: "#e8b020" }}>Every question.</span></div>
+                    <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>You've hit your free limit — unlock everything</div>
+                  </div>
+                  <div style={{ margin: "16px 20px", background: "rgba(120,180,80,0.06)", border: "1px solid rgba(232,176,32,0.3)", borderRadius: 12, padding: 16 }}>
+                    <div style={{ color: "#78b450", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 8 }}>★ COMMUNITY — OUR BIGGEST FEATURE</div>
+                    <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, lineHeight: 1.6, marginBottom: 10 }}>Post harvest photos, drop public hotspot pins, and see what hunters and anglers near you are tagging. A real community built for the field.</div>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      {["Harvest photos", "Public hotspots", "Live posts"].map((t, i) => (
+                        <div key={i} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "3px 10px", fontSize: 11, color: "rgba(255,255,255,0.4)" }}>{t}</div>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ padding: "0 20px 4px" }}>
+                    {["Unlimited AI chat — no message limits", "State regulations & official season dates", "Public land maps with saved pins", "AI trip planner & harvest log", "Live weather with real conditions", "And more added regularly"].map((f, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                        <div style={{ width: 16, height: 16, borderRadius: "50%", background: "rgba(120,180,80,0.12)", border: "1px solid rgba(120,180,80,0.35)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <span style={{ color: "#78b450", fontSize: 9, fontWeight: 700 }}>✓</span>
+                        </div>
+                        <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ padding: "20px 20px 24px", textAlign: "center" }}>
+                    <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 4, marginBottom: 14 }}>
+                      <span style={{ color: "#f4f4f0", fontSize: 28, fontWeight: 700 }}>$4.99</span>
+                      <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>/ month</span>
+                    </div>
+                    <button style={{ width: "100%", padding: "15px", background: "#e8b020", border: "none", borderRadius: 12, color: "#0a1200", fontSize: 15, fontWeight: 700, cursor: "pointer", opacity: checkoutLoading ? 0.6 : 1 }} disabled={checkoutLoading} onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }}>
+                      {checkoutLoading ? "Loading..." : "Upgrade to Pro →"}
+                    </button>
+                    <div style={{ marginTop: 10, fontSize: 11, color: "rgba(255,255,255,0.2)" }}>Cancel anytime · Secure payment via Stripe</div>
+                  </div>
                 </div>
               )}
               {!hitLimit && (
