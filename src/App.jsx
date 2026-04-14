@@ -217,7 +217,7 @@ const PUBLIC_LANDS = [
   { name: "Lake Pleasant", lat: 33.8, lng: -112.3, type: "fishing", state: "Arizona", species: ["Bass", "Striped Bass", "Catfish"], desc: "Phoenix metro bass fishing" },
 ];
 
-const FREE_LIMIT = 5;
+const FREE_LIMIT = 25;
 
 // ─── SVG NATURE DECORATIONS ───────────────────────────────────────────────────
 const DeerSVG = ({ style: s = {} }) => (
@@ -1853,7 +1853,7 @@ function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
             {STATES.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           <button onClick={onStart} className="btn-primary" style={{ width: "100%", padding: 16, fontSize: 16, borderRadius: "var(--radius)" }}>Start Asking WildAI →</button>
-          <p style={{ color: "var(--text3)", fontSize: 12, marginTop: 10, textAlign: "center" }}>No account needed · 5 free messages</p>
+          <p style={{ color: "var(--text3)", fontSize: 12, marginTop: 10, textAlign: "center" }}>No account needed · 25 free messages</p>
         </div>
         <div className="slide-up" style={{ animationDelay: "0.3s", width: "100%", maxWidth: 760, marginTop: 60 }}>
           <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 20 }}>EVERYTHING YOU NEED IN THE FIELD</div>
