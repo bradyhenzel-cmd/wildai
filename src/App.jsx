@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from './supabase';
 import { useUser, SignIn, SignUp, UserButton, useClerk } from '@clerk/react';
+import "mapbox-gl/dist/mapbox-gl.css";
+
 
 const STATES = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
 
@@ -336,7 +338,7 @@ const css = `
   .checklist-item.checked { background:var(--green-dim); border-color:rgba(120,180,80,0.3); color:var(--green); text-decoration:line-through; opacity:0.6; }
   .weather-stat { display:flex; flex-direction:column; align-items:center; gap:4px; padding:16px; flex:1;
     background:rgba(255,255,255,0.03); border-radius:var(--radius-sm); border:1px solid var(--border); }
-  #wildai-map { height:380px; width:100%; }
+  .mapboxgl-map { height:100%; width:100%; }
   .leaflet-container { background:#0d1a0d !important; }
   .leaflet-tile { filter:brightness(0.55) saturate(0.45) hue-rotate(55deg) !important; }
   .custom-marker { background:none !important; border:none !important; }
@@ -469,193 +471,277 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
 }
 
 // ─── MAP TAB ──────────────────────────────────────────────────────────────────
-function MapTab({ selectedState }) {
+function MapTab({ selectedState, user, onSharePin }) {
   const mapRef = useRef(null);
   const mapInst = useRef(null);
-  const markers = useRef([]);
-  const [leafletReady, setLeafletReady] = useState(false);
+  const markersRef = useRef([]);
+  const selectedRef = useRef(null);
   const [selected, setSelected] = useState(null);
-  const [activityType, setActivityType] = useState("hunting");
-  const [species, setSpecies] = useState("");
-  const [speciesList, setSpeciesList] = useState([]);
-  const [loadingSpecies, setLoadingSpecies] = useState(false);
-  const [lands, setLands] = useState([]);
-  const [loadingLands, setLoadingLands] = useState(false);
-  const [error, setError] = useState(null);
-  const speciesCache = useRef({});
+  const [mapStyle, setMapStyle] = useState("satellite");
+  const [showUSFS, setShowUSFS] = useState(true);
+  const [showBLM, setShowBLM] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [pins, setPins] = useState([]);
+  const [mapReady, setMapReady] = useState(false);
+  const [dropForm, setDropForm] = useState(null);
+  const [dropName, setDropName] = useState("");
+  const [dropSpecies, setDropSpecies] = useState("");
+  const [saving, setSaving] = useState(false);
 
+  const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+  const STYLES = {
+    satellite: "mapbox://styles/mapbox/satellite-streets-v12",
+    terrain: "mapbox://styles/mapbox/outdoors-v12",
+    street: "mapbox://styles/mapbox/dark-v11",
+  };
+
+  // Keep selectedRef in sync so marker click handlers can access current value
+  useEffect(() => { selectedRef.current = selected; }, [selected]);
+
+  const loadPins = async () => {
+    if (!user) return;
+    const { data } = await supabase.from("saved_pins").select("*").eq("user_id", user.id);
+    setPins(data || []);
+  };
+
+  useEffect(() => { loadPins(); }, [user]);
+
+  const addLayers = (map, usfs, blm) => {
+    if (!map.getSource("usfs")) {
+      map.addSource("usfs", { type: "raster", tiles: ["https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_ForestSystemBoundaries_01/MapServer/tile/{z}/{x}/{y}"], tileSize: 256 });
+      map.addLayer({ id: "usfs-layer", type: "raster", source: "usfs", paint: { "raster-opacity": 0.55 }, layout: { visibility: usfs ? "visible" : "none" } });
+    }
+    if (!map.getSource("blm")) {
+      map.addSource("blm", { type: "raster", tiles: ["https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_Cached_BLM_Only/MapServer/tile/{z}/{x}/{y}"], tileSize: 256 });
+      map.addLayer({ id: "blm-layer", type: "raster", source: "blm", paint: { "raster-opacity": 0.55 }, layout: { visibility: blm ? "visible" : "none" } });
+    }
+  };
+
+  // Init map
   useEffect(() => {
-    if (window.L) { setLeafletReady(true); return; }
-    const lnk = document.createElement("link");
-    lnk.rel = "stylesheet"; lnk.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-    document.head.appendChild(lnk);
-    const sc = document.createElement("script");
-    sc.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-    sc.onload = () => setLeafletReady(true);
-    document.head.appendChild(sc);
+    if (!mapRef.current || mapInst.current) return;
+    import("mapbox-gl").then(({ default: mapboxgl }) => {
+      mapboxgl.accessToken = MAPBOX_TOKEN;
+      const coords = selectedState && STATE_COORDS[selectedState];
+      const map = new mapboxgl.Map({
+        container: mapRef.current,
+        style: STYLES.satellite,
+        center: coords ? [coords[1], coords[0]] : [-98.35, 39.5],
+        zoom: coords ? 6 : 4,
+      });
+      mapInst.current = map;
+      map.addControl(new mapboxgl.NavigationControl(), "top-right");
+      map.addControl(new mapboxgl.GeolocateControl({ positionOptions: { enableHighAccuracy: true } }), "top-right");
+      map.on("load", () => { addLayers(map, true, true); setMapReady(true); });
+      map.on("click", e => {
+        if (!user) return;
+        if (e.originalEvent.target.classList.contains("wildai-pin")) return;
+        setDropForm({ lng: e.lngLat.lng, lat: e.lngLat.lat });
+        setDropName(""); setDropSpecies(""); setSelected(null);
+      });
+    });
+    return () => { if (mapInst.current) { mapInst.current.remove(); mapInst.current = null; setMapReady(false); } };
   }, []);
 
+  // USFS/BLM toggles
   useEffect(() => {
-    if (!leafletReady || !mapRef.current) return;
-    const L = window.L;
-    if (mapInst.current) { mapInst.current.remove(); mapInst.current = null; }
-    const center = selectedState && STATE_COORDS[selectedState] ? STATE_COORDS[selectedState] : [39.5, -98.35];
-    const zoom = selectedState ? 7 : 4;
-    const map = L.map(mapRef.current, { zoomControl: true, scrollWheelZoom: true }).setView(center, zoom);
-    mapInst.current = map;
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap", maxZoom: 18 }).addTo(map);
-    L.tileLayer("https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_ForestSystemBoundaries_01/MapServer/tile/{z}/{y}/{x}", { opacity: 1.0, attribution: "USFS" }).addTo(map);
-    L.tileLayer("https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_Cached_BLM_Only/MapServer/tile/{z}/{y}/{x}", { opacity: 1.0, attribution: "BLM" }).addTo(map);
-    return () => { if (mapInst.current) { mapInst.current.remove(); mapInst.current = null; } };
-  }, [leafletReady, selectedState]);
+    if (!mapReady || !mapInst.current) return;
+    try { mapInst.current.setLayoutProperty("usfs-layer", "visibility", showUSFS ? "visible" : "none"); } catch { }
+  }, [showUSFS, mapReady]);
 
   useEffect(() => {
-    if (!leafletReady || !mapInst.current || !window.L) return;
-    const L = window.L;
-    markers.current.forEach(m => m.remove());
-    markers.current = [];
-    lands.forEach(loc => {
-      const color = activityType === "hunting" ? "#d4930a" : "#4a90d9";
-      const em = activityType === "hunting" ? "🎯" : "🎣";
-      const icon = L.divIcon({
-        className: "custom-marker",
-        html: `<div style="width:38px;height:38px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${color};border:2px solid rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(0,0,0,0.5);cursor:pointer"><span style="transform:rotate(45deg);font-size:17px;display:block">${em}</span></div>`,
-        iconSize: [38, 38], iconAnchor: [19, 38]
+    if (!mapReady || !mapInst.current) return;
+    try { mapInst.current.setLayoutProperty("blm-layer", "visibility", showBLM ? "visible" : "none"); } catch { }
+  }, [showBLM, mapReady]);
+
+  // Style change
+  const changeStyle = (style) => {
+    if (!mapInst.current || style === mapStyle) return;
+    setMapStyle(style);
+    setMapReady(false);
+    mapInst.current.setStyle(STYLES[style]);
+    mapInst.current.once("style.load", () => { addLayers(mapInst.current, showUSFS, showBLM); setMapReady(true); });
+  };
+
+  // Draw pins — use requestAnimationFrame to avoid lag
+  useEffect(() => {
+    if (!mapReady || !mapInst.current) return;
+    const frame = requestAnimationFrame(() => {
+      import("mapbox-gl").then(({ default: mapboxgl }) => {
+        markersRef.current.forEach(m => m.remove());
+        markersRef.current = [];
+        pins.filter(p => p.lat && p.lng).forEach(pin => {
+          const el = document.createElement("div");
+          el.className = "wildai-pin";
+          el.style.cssText = "width:14px;height:14px;border-radius:50%;background:#78b450;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.6);cursor:pointer;";
+          el.addEventListener("mouseenter", () => { el.style.background = "#d4930a"; });
+          el.addEventListener("mouseleave", () => { el.style.background = "#78b450"; });
+          el.addEventListener("click", e => {
+            e.stopPropagation();
+            setSelected(pin);
+            setDropForm(null);
+          });
+          const marker = new mapboxgl.Marker({ element: el, anchor: "center" }).setLngLat([pin.lng, pin.lat]).addTo(mapInst.current);
+          markersRef.current.push(marker);
+        });
       });
-      const m = L.marker([loc.lat, loc.lng], { icon }).addTo(mapInst.current)
-        .bindPopup(`<div style="font-family:'DM Sans',sans-serif;min-width:210px;padding:6px 2px">
-          <div style="font-weight:700;font-size:14px;margin-bottom:5px;color:#111">${loc.name}</div>
-          <div style="font-size:12px;color:#555;margin-bottom:8px;line-height:1.5">${loc.desc}</div>
-          <div style="font-size:11px;color:#888;margin-top:6px">📍 ${loc.state || selectedState}</div>
-        </div>`, { maxWidth: 250 })
-        .on("click", () => setSelected(loc));
-      markers.current.push(m);
     });
-  }, [lands, leafletReady]);
+    return () => cancelAnimationFrame(frame);
+  }, [pins, mapReady]);
 
-  useEffect(() => {
-    if (!selectedState) return;
-    setSpeciesList([]); setSpecies(""); setLands([]); setError(null);
-    setLoadingSpecies(true);
-    const prompt = `Return ONLY a JSON array of strings of the 20 most commonly ${activityType === "hunting" ? "hunted game animals and birds (NO fish)" : "fished species (NO game animals)"} in ${selectedState}. Only popular species most hunters/anglers target. No markdown, no explanation, just the JSON array.`;
-    fetch("https://wildai-server.onrender.com/chat", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages: [{ role: "user", content: prompt }], system: "Return only a valid JSON array of strings. No markdown. No explanation." })
-    })
-      .then(r => r.json())
-      .then(d => {
-        const text = d.reply.replace(/```json|```/g, "").trim();
-        const parsed = JSON.parse(text);
-        setSpeciesList(parsed);
-      })
-      .catch(() => setError("Couldn't load species list. Try again."))
-      .finally(() => setLoadingSpecies(false));
-  }, [selectedState, activityType]);
-  const search = async () => {
-    if (!species) return;
-    setLoadingLands(true); setError(null); setLands([]); setSelected(null);
-    try {
-      const prompt = `You are a hunting and fishing public land expert. Return ONLY a JSON array (no markdown, no explanation) of the 8 best public land locations for ${species} ${activityType} in ${selectedState || "the US"}. Each object must have: name (string), lat (number), lng (number), desc (string, 1 sentence), state (string). Use accurate real coordinates for real public lands like national forests, BLM land, state WMAs, wildlife management areas, or public boat ramps/fishing access sites.`;
-      const res = await fetch("https://wildai-server.onrender.com/chat", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [{ role: "user", content: prompt }], system: "Return only valid JSON. No markdown. No explanation." })
-      });
-      const d = await res.json();
-      const text = d.reply.replace(/```json|```/g, "").trim();
-      const parsed = JSON.parse(text);
-      setLands(parsed);
-      if (mapInst.current && parsed.length > 0) {
-        mapInst.current.setView([parsed[0].lat, parsed[0].lng], 7);
-      }
-    } catch { setError("Couldn't load recommendations. Try again."); }
-    setLoadingLands(false);
+  const saveDropPin = async () => {
+    if (!dropName.trim() || !user) return;
+    setSaving(true);
+    await supabase.from("saved_pins").insert({
+      user_id: user.id, name: dropName, species: dropSpecies,
+      lat: dropForm.lat, lng: dropForm.lng,
+      state: selectedState || "",
+      location: `${dropForm.lat.toFixed(5)}, ${dropForm.lng.toFixed(5)}`,
+    });
+    await loadPins();
+    setDropForm(null);
+    setSaving(false);
+  };
+
+  const removePin = async (id) => {
+    await supabase.from("saved_pins").delete().eq("id", id);
+    setPins(prev => prev.filter(p => p.id !== id));
+    setSelected(null);
   };
 
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div className="card" style={{ padding: "16px 18px" }}>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 12 }}>
-          {["hunting", "fishing"].map(t => (
-            <button key={t} onClick={() => { setActivityType(t); setSpecies(""); setLands([]); }} className={`nav-tab ${activityType === t ? "active" : "inactive"}`} style={{ padding: "6px 16px", fontSize: 12 }}>
-              {t === "hunting" ? "🎯 Hunting" : "🎣 Fishing"}
-            </button>
-          ))}
-        </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          <select value={species} onChange={e => setSpecies(e.target.value)} disabled={loadingSpecies} style={{ flex: 1, padding: "9px 12px", borderRadius: "var(--radius-sm)", fontSize: 13, minWidth: 140, opacity: loadingSpecies ? 0.5 : 1 }}>
-            <option value="">{loadingSpecies ? "Loading species..." : !selectedState ? "Select a state first" : "Select species..."}</option>
-            {speciesList.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <button onClick={search} disabled={!species || loadingLands} className="btn-primary" style={{ padding: "9px 20px", fontSize: 13, opacity: (!species || loadingLands) ? 0.5 : 1 }}>
-            {loadingLands ? "Finding..." : "🔍 Find Public Lands"}
-          </button>
-        </div>
-        {error && <div style={{ color: "var(--amber)", fontSize: 13, marginTop: 10 }}>{error}</div>}
-        <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 8 }}>Don't see your species? Ask the AI in the Chat tab →</div>
-      </div>
-
-      <div className="card" style={{ overflow: "hidden", padding: 0 }}>
-        <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 16 }}>🗺️</span>
-          <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>Public Lands Map</span>
-          {selectedState && <span style={{ color: "var(--text3)", fontSize: 13 }}>· {selectedState}</span>}
-          <div style={{ display: "flex", gap: 12, marginLeft: "auto" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 5 }}><div style={{ width: 10, height: 10, background: "rgba(0,100,0,0.5)", border: "1px solid green" }} /><span style={{ color: "var(--text3)", fontSize: 11 }}>USFS</span></div>
-            <div style={{ display: "flex", alignItems: "center", gap: 5 }}><div style={{ width: 10, height: 10, background: "rgba(150,100,0,0.5)", border: "1px solid orange" }} /><span style={{ color: "var(--text3)", fontSize: 11 }}>BLM</span></div>
+      <div className="card" style={{ padding: "14px 18px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+          <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>🗺️ My Hunting Map</span>
+          <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
+            {[["satellite", "🛰️"], ["terrain", "🏔️"], ["street", "🌙"]].map(([s, icon]) => (
+              <button key={s} onClick={() => changeStyle(s)} style={{ padding: "5px 10px", borderRadius: "var(--radius-sm)", border: `1px solid ${mapStyle === s ? "var(--green)" : "var(--border)"}`, background: mapStyle === s ? "var(--green-dim)" : "var(--card)", color: mapStyle === s ? "var(--green)" : "var(--text3)", fontSize: 14, cursor: "pointer" }}>{icon}</button>
+            ))}
           </div>
         </div>
-        {!leafletReady && <div style={{ height: 380, display: "flex", alignItems: "center", justifyContent: "center", background: "#0d1a0d" }}><div style={{ color: "var(--text3)", fontSize: 13 }} className="pulse">Loading map...</div></div>}
-        <div ref={mapRef} id="wildai-map" style={{ display: leafletReady ? "block" : "none" }} />
+        <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 12, color: "var(--text2)" }}>
+            <input type="checkbox" checked={showUSFS} onChange={e => setShowUSFS(e.target.checked)} />
+            <span style={{ width: 10, height: 10, background: "rgba(0,140,0,0.8)", borderRadius: 2, display: "inline-block" }} />
+            National Forest
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 12, color: "var(--text2)" }}>
+            <input type="checkbox" checked={showBLM} onChange={e => setShowBLM(e.target.checked)} />
+            <span style={{ width: 10, height: 10, background: "rgba(200,120,0,0.8)", borderRadius: 2, display: "inline-block" }} />
+            BLM Land
+          </label>
+          <span style={{ color: "var(--text3)", fontSize: 11, marginLeft: "auto" }}>{pins.filter(p => p.lat && p.lng).length} pins</span>
+        </div>
       </div>
+
+      <div style={{ position: "relative", borderRadius: "var(--radius)", overflow: "hidden", border: "1px solid var(--border)" }}>
+        <div ref={mapRef} style={{ height: isFullscreen ? "calc(100vh - 160px)" : 500, width: "100%" }} />
+        <button onClick={() => { setIsFullscreen(f => !f); setTimeout(() => mapInst.current?.resize(), 150); }} style={{ position: "absolute", top: 10, left: 10, zIndex: 10, background: "rgba(8,15,8,0.9)", border: "1px solid var(--border)", color: "var(--text2)", borderRadius: "var(--radius-sm)", padding: "6px 12px", fontSize: 11, cursor: "pointer", backdropFilter: "blur(8px)", fontFamily: "var(--font-body)" }}>
+          {isFullscreen ? "⊡ Compact" : "⊞ Expand"}
+        </button>
+        {user && <div style={{ position: "absolute", bottom: 10, left: 10, zIndex: 10, background: "rgba(8,15,8,0.9)", border: "1px solid var(--border)", color: "var(--text3)", borderRadius: "var(--radius-sm)", padding: "5px 10px", fontSize: 10, backdropFilter: "blur(8px)" }}>Tap map to drop a pin</div>}
+      </div>
+
+      {dropForm && user && (
+        <div className="card fade-in" style={{ padding: "16px 20px" }}>
+          <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 12 }}>DROP PIN · {dropForm.lat.toFixed(4)}, {dropForm.lng.toFixed(4)}</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <input placeholder="Name this spot *" value={dropName} onChange={e => setDropName(e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+            <input placeholder="Species (optional)" value={dropSpecies} onChange={e => setDropSpecies(e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={saveDropPin} disabled={!dropName.trim() || saving} className="btn-primary" style={{ flex: 1, padding: "9px", fontSize: 13, opacity: !dropName.trim() ? 0.5 : 1 }}>{saving ? "Saving..." : "📍 Save Pin"}</button>
+              <button onClick={() => setDropForm(null)} className="btn-ghost" style={{ padding: "9px 16px", fontSize: 13 }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {selected && (
         <div className="card fade-in" style={{ padding: "18px 20px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
-              <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>{selected.name}</span>
-              <span className={`tag tag-${activityType === "hunting" ? "hunt" : "fish"}`}>{activityType}</span>
-            </div>
-            <div style={{ color: "var(--text2)", fontSize: 13, marginBottom: 10 }}>{selected.desc}</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{selected.name || "Saved Spot"}</div>
+            {selected.species && <div style={{ color: "var(--green)", fontSize: 12, marginBottom: 4 }}>{selected.species}</div>}
+            {selected.location && <div style={{ color: "var(--text2)", fontSize: 13, marginBottom: 8 }}>📍 {selected.location}</div>}
+            {selected.photo && <img src={selected.photo} style={{ width: "100%", maxHeight: 180, objectFit: "cover", borderRadius: "var(--radius-sm)", marginBottom: 8 }} />}
+            <a href={`https://www.google.com/maps/dir/?api=1&destination=${selected.lat},${selected.lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 12, fontWeight: 600 }}>Get Directions →</a>
+            <button onClick={() => onSharePin(selected)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text2)", fontSize: 12, fontFamily: "var(--font-body)", marginTop: 6, display: "block" }}>📤 Share to Community →</button>
           </div>
-          <button onClick={() => setSelected(null)} className="btn-ghost" style={{ padding: "6px 12px", fontSize: 12, flexShrink: 0 }}>✕</button>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <button onClick={() => removePin(selected.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.7)", fontSize: 11, padding: "4px 8px", fontFamily: "var(--font-body)" }}>🗑️ Remove</button>
+            <button onClick={() => setSelected(null)} className="btn-ghost" style={{ padding: "5px 10px", fontSize: 12 }}>✕</button>
+          </div>
         </div>
       )}
-      {lands.length === 0 && !loadingLands && (
+
+      {!user && (
         <div style={{ textAlign: "center", padding: 24, color: "var(--text3)", fontSize: 14 }}>
-          <div style={{ fontSize: 36, marginBottom: 10 }}>🗺️</div>
-          {!selectedState ? "Go back and select your state to get started" : "Select a species and hit search — AI will find the best public lands"}
+          <div style={{ fontSize: 36, marginBottom: 10 }}>📍</div>
+          Sign in to save and drop pins on your map
         </div>
       )}
-      <div style={{ color: "var(--text3)", fontSize: 11, textAlign: "center" }}>💡 Green = National Forest · Orange = BLM Land · Always verify access before visiting</div>
+
+      {user && pins.filter(p => p.lat && p.lng).length === 0 && !dropForm && (
+        <div style={{ textAlign: "center", padding: 20, color: "var(--text3)", fontSize: 13 }}>
+          Tap anywhere on the map to drop a pin, or save spots from the Community tab
+        </div>
+      )}
     </div>
   );
 }
 
 // ─── COMMUNITY TAB ────────────────────────────────────────────────────────────
-function CommunityTab({ selectedState, user, openSignIn }) {
+function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [stateFilter, setStateFilter] = useState(selectedState || "all");
-  const [form, setForm] = useState({ species: "", location: "", caption: "", photo: "" });
+  const [form, setForm] = useState({ species: "", location: "", caption: "", photo: "", pinLat: null, pinLng: null });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [savedPinIds, setSavedPinIds] = useState(new Set());
 
   const loadPosts = async () => {
     setLoading(true);
     let query = supabase.from("posts").select("*").order("created_at", { ascending: false });
     if (stateFilter !== "all") query = query.eq("state", stateFilter);
-    const { data, error } = await query.limit(50);
-    if (!error) setPosts(data || []);
+    const { data } = await query.limit(50);
+    setPosts(data || []);
     setLoading(false);
   };
 
+  const loadSavedPins = async () => {
+    if (!user) return;
+    const { data } = await supabase.from("saved_pins").select("post_id").eq("user_id", user.id);
+    setSavedPinIds(new Set((data || []).map(p => p.post_id)));
+  };
+
   useEffect(() => { loadPosts(); }, [stateFilter]);
+  useEffect(() => {
+    if (window._sharePinToComm) {
+      const pin = window._sharePinToComm;
+      setForm(f => ({ ...f, location: pin.name || pin.location || "", species: pin.species || "", pinLat: pin.lat, pinLng: pin.lng }));
+      setShowForm(true);
+      window._sharePinToComm = null;
+    }
+  }, []);
+  useEffect(() => { loadSavedPins(); }, [user]);
 
   const submitPost = async () => {
     if (!form.caption && !form.photo) return;
     if (!user) { openSignIn(); return; }
     setSubmitting(true); setError(null);
+    let lat = null, lng = null;
+    if (form.pinLat && form.pinLng) {
+      lat = form.pinLat;
+      lng = form.pinLng;
+    } else if (form.location) {
+      try {
+        const geo = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(form.location)}.json?access_token=${import.meta.env.VITE_MAPBOX_TOKEN}&country=us&limit=1`);
+        const gd = await geo.json();
+        if (gd.features?.[0]) { lng = gd.features[0].center[0]; lat = gd.features[0].center[1]; }
+      } catch { }
+    }
     const { error } = await supabase.from("posts").insert({
       user_id: user.id,
       username: user.firstName || user.username || "Hunter",
@@ -664,10 +750,30 @@ function CommunityTab({ selectedState, user, openSignIn }) {
       location: form.location,
       caption: form.caption,
       photo: form.photo,
+      lat, lng,
     });
     if (error) { setError("Failed to post. Try again."); }
-    else { setForm({ species: "", location: "", caption: "", photo: "" }); setShowForm(false); loadPosts(); }
+    else { setForm({ species: "", location: "", caption: "", photo: "", pinLat: null, pinLng: null }); setShowForm(false); loadPosts(); }
     setSubmitting(false);
+  };
+
+  const saveToMap = async (post) => {
+    if (!user) { openSignIn(); return; }
+    if (savedPinIds.has(post.id)) return;
+    await supabase.from("saved_pins").insert({
+      user_id: user.id,
+      post_id: post.id,
+      name: post.location || post.species || "Saved Spot",
+      location: post.location,
+      species: post.species,
+      photo: post.photo,
+      lat: post.lat,
+      lng: post.lng,
+      state: post.state,
+    });
+    setSavedPinIds(prev => new Set([...prev, post.id]));
+    onPinSaved?.();
+    alert("📍 Saved to your map!");
   };
 
   const reportPost = async (postId) => {
@@ -722,7 +828,7 @@ function CommunityTab({ selectedState, user, openSignIn }) {
               </div>
               <div>
                 <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>LOCATION</div>
-                <input placeholder="e.g. Flathead NF" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+                <input placeholder="e.g. Flathead NF, Montana" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
               </div>
             </div>
             <div>
@@ -768,7 +874,15 @@ function CommunityTab({ selectedState, user, openSignIn }) {
                 {post.location && <span style={{ color: "var(--text2)", fontSize: 12 }}>📍 {post.location}</span>}
               </div>
             )}
-            {post.caption && <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.6, margin: 0 }}>{post.caption}</p>}
+            {post.caption && <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.6, margin: 0, marginBottom: 10 }}>{post.caption}</p>}
+            {post.lat && post.lng && (
+              <a href={`https://www.google.com/maps/dir/?api=1&destination=${post.lat},${post.lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 12, fontWeight: 600, display: "inline-block", marginBottom: 8 }}>🗺️ Get Directions →</a>
+            )}
+            {post.lat && post.lng && (
+              <button onClick={() => saveToMap(post)} style={{ background: savedPinIds.has(post.id) ? "var(--green-dim)" : "rgba(255,255,255,0.04)", border: `1px solid ${savedPinIds.has(post.id) ? "var(--border-accent)" : "var(--border)"}`, color: savedPinIds.has(post.id) ? "var(--green)" : "var(--text2)", padding: "6px 14px", borderRadius: "var(--radius-sm)", fontSize: 12, cursor: savedPinIds.has(post.id) ? "default" : "pointer", fontFamily: "var(--font-body)" }}>
+                {savedPinIds.has(post.id) ? "✓ Saved to Map" : "📍 Save to My Map"}
+              </button>
+            )}
           </div>
         </div>
       ))}
@@ -1938,7 +2052,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           </div>
         )}
 
-        {tab === "map" && <MapTab selectedState={selectedState} />}
+        {tab === "map" && <MapTab selectedState={selectedState} user={user} onSharePin={(pin) => { window._sharePinToComm = pin; setTab("community"); }} />}
 
         {tab === "regs" && <RegulationsTab selectedState={selectedState} />}
         {tab === "licenses" && <LicensesTab selectedState={selectedState} />}
