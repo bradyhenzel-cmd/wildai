@@ -1894,8 +1894,35 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, onTerm
   const [tab, setTab] = useState("chat");
   const [weather, setWeather] = useState(null);
   const [locationName, setLocationName] = useState("");
+
+  useEffect(() => {
+    let lat, lon;
+    const fetchWeather = async () => {
+      if (!lat || !lon) return;
+      try {
+        const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,precipitation&wind_speed_unit=mph&temperature_unit=fahrenheit&timezone=auto`);
+        const d = await r.json();
+        if (d.current) setWeather(d.current);
+      } catch { }
+    };
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        lat = pos.coords.latitude;
+        lon = pos.coords.longitude;
+        try {
+          const geo = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+          const geoData = await geo.json();
+          const name = geoData.address?.city || geoData.address?.town || geoData.address?.village || "Your Location";
+          setLocationName(name);
+          await fetchWeather();
+        } catch { }
+      });
+    }
+    const interval = setInterval(fetchWeather, 10 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
   const [messages, setMessages] = useState([
-    { role: "assistant", content: `Hey, I'm WildAI — your hunting and fishing assistant${selectedState ? ` for ${selectedState}` : ""}. Ask me anything about gear, tactics, seasons, regulations, or trip planning. What are you after?`, animate: false },
+    { role: "assistant", content: `Hey, I'm WildAI — your hunting and fishing assistant${selectedState ? ` for ${selectedState}` : ""}. I've got your current location and weather loaded up. Are you hunting or fishing near home, or heading somewhere else? You can update your location anytime in the Weather tab. What are you after?`, animate: false },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -2074,56 +2101,68 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 
         {/* CHAT */}
         {tab === "chat" && (
-          <div className="fade-in card" style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            <div style={{ overflowY: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 16, minHeight: 400, maxHeight: "60vh" }}>
-              {messages.map((m, i) => (
-                <div key={i} className="fade-in" style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start", gap: 10, alignItems: "flex-end" }}>
-                  {m.role === "assistant" && <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,var(--green),var(--green2))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0, boxShadow: "0 4px 12px rgba(120,180,80,0.25)" }}><img src="/logo.png" style={{ width: 20, height: 20, objectFit: "contain" }} /></div>}
-                  <div style={{ background: m.role === "user" ? "linear-gradient(135deg,var(--green),var(--green2))" : "rgba(255,255,255,0.05)", border: m.role === "assistant" ? "1px solid var(--border)" : "none", color: "var(--text)", padding: "13px 17px", borderRadius: m.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", maxWidth: "80%", boxShadow: m.role === "user" ? "0 4px 16px rgba(120,180,80,0.2)" : "none" }}>
-                    {m.role === "assistant" && m.animate
-                      ? <TypewriterText text={m.content} onDone={() => setMessages(prev => prev.map((msg, j) => j === i ? { ...msg, animate: false } : msg))} />
-                      : fmtMsg(m.content)}
-                  </div>
-                </div>
-              ))}
-              {loading && (
-                <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
-                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,var(--green),var(--green2))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}><img src="/logo.png" style={{ width: 20, height: 20, objectFit: "contain" }} /></div>
-                  <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", padding: "13px 17px", borderRadius: "18px 18px 18px 4px" }}>
-                    <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-                      {[0, 1, 2].map(j => <div key={j} style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--green)", animation: `pulse 1.2s ease-in-out ${j * 0.2}s infinite` }} />)}
+          <>
+            {weather && (
+              <div onClick={() => setTab("weather")} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", cursor: "pointer", marginBottom: 4 }}>
+                <span style={{ fontSize: 18 }}>{weather.weather_code === 0 ? "☀️" : weather.weather_code <= 3 ? "⛅" : weather.weather_code <= 48 ? "🌫️" : weather.weather_code <= 67 ? "🌧️" : weather.weather_code <= 77 ? "❄️" : "⛈️"}</span>
+                <span style={{ color: "var(--text)", fontSize: 13, fontWeight: 600 }}>{Math.round(weather.temperature_2m)}°F</span>
+                <span style={{ color: "var(--text3)", fontSize: 12 }}>{locationName}</span>
+                <span style={{ marginLeft: "auto", fontSize: 12, fontWeight: 600, color: weather.wind_speed_10m < 10 && weather.temperature_2m < 50 ? "var(--green)" : weather.wind_speed_10m > 20 || weather.temperature_2m > 70 ? "var(--amber)" : "var(--text2)" }}>
+                  {weather.weather_code === 0 ? "Clear" : weather.weather_code <= 3 ? "Partly cloudy" : weather.weather_code <= 48 ? "Foggy" : weather.weather_code <= 67 ? "Rain" : weather.weather_code <= 77 ? "Snow" : weather.weather_code <= 82 ? "Showers" : "Thunderstorms"} · {Math.round(weather.wind_speed_10m)} mph wind
+                </span>
+              </div>
+            )}
+            <div className="fade-in card" style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
+              <div style={{ overflowY: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 16, minHeight: 400, maxHeight: "60vh" }}>
+                {messages.map((m, i) => (
+                  <div key={i} className="fade-in" style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start", gap: 10, alignItems: "flex-end" }}>
+                    {m.role === "assistant" && <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,var(--green),var(--green2))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0, boxShadow: "0 4px 12px rgba(120,180,80,0.25)" }}><img src="/logo.png" style={{ width: 20, height: 20, objectFit: "contain" }} /></div>}
+                    <div style={{ background: m.role === "user" ? "linear-gradient(135deg,var(--green),var(--green2))" : "rgba(255,255,255,0.05)", border: m.role === "assistant" ? "1px solid var(--border)" : "none", color: "var(--text)", padding: "13px 17px", borderRadius: m.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", maxWidth: "80%", boxShadow: m.role === "user" ? "0 4px 16px rgba(120,180,80,0.2)" : "none" }}>
+                      {m.role === "assistant" && m.animate
+                        ? <TypewriterText text={m.content} onDone={() => setMessages(prev => prev.map((msg, j) => j === i ? { ...msg, animate: false } : msg))} />
+                        : fmtMsg(m.content)}
                     </div>
                   </div>
+                ))}
+                {loading && (
+                  <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,var(--green),var(--green2))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}><img src="/logo.png" style={{ width: 20, height: 20, objectFit: "contain" }} /></div>
+                    <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", padding: "13px 17px", borderRadius: "18px 18px 18px 4px" }}>
+                      <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+                        {[0, 1, 2].map(j => <div key={j} style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--green)", animation: `pulse 1.2s ease-in-out ${j * 0.2}s infinite` }} />)}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={bottomRef} />
+              </div>
+              {messages.length <= 2 && !hitLimit && (
+                <div style={{ padding: "0 20px 16px", display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {[`Best ${selectedState || "local"} elk setup?`, "What's biting right now?", "Plan me a 3-day hunt", "Deer scouting tips"].map((s, i) => (
+                    <button key={i} onClick={() => sendMessage(s)} className="btn-ghost" style={{ padding: "7px 14px", fontSize: 12, borderRadius: 20 }}>{s}</button>
+                  ))}
                 </div>
               )}
-              <div ref={bottomRef} />
+              {hitLimit && (
+                <div style={{ margin: "0 20px 20px", background: "linear-gradient(135deg,rgba(120,180,80,0.08),rgba(90,154,50,0.04))", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)", padding: 24, textAlign: "center" }}>
+                  <div style={{ fontSize: 36, marginBottom: 10 }}>🔒</div>
+                  <div style={{ fontFamily: "var(--font-display)", fontSize: 20, color: "var(--text)", marginBottom: 6 }}>Upgrade to WildAI Pro</div>
+                  <div style={{ color: "var(--text2)", fontSize: 14, marginBottom: 18, lineHeight: 1.6 }}>You've used your free messages. Get unlimited access and advanced features.</div>
+                  <button className="btn-primary" style={{ padding: "13px 32px", fontSize: 15, borderRadius: "var(--radius)", opacity: checkoutLoading ? 0.6 : 1 }} disabled={checkoutLoading} onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }}>
+                    {checkoutLoading ? "Loading..." : "Upgrade for $4.99/month →"}
+                  </button>
+                </div>
+              )}
+              {!hitLimit && (
+                <div style={{ padding: "14px 20px", borderTop: "1px solid var(--border)", display: "flex", gap: 10, alignItems: "center" }}>
+                  <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && sendMessage()}
+                    placeholder={`Ask anything about hunting & fishing${selectedState ? ` in ${selectedState}` : ""}...`}
+                    style={{ flex: 1, padding: "13px 18px", borderRadius: "var(--radius-sm)", fontSize: 14 }} />
+                  <button onClick={() => sendMessage()} className="btn-primary" style={{ padding: "13px 22px", fontSize: 14, borderRadius: "var(--radius-sm)", flexShrink: 0 }}>Send →</button>
+                </div>
+              )}
             </div>
-            {messages.length <= 2 && !hitLimit && (
-              <div style={{ padding: "0 20px 16px", display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {[`Best ${selectedState || "local"} elk setup?`, "What's biting right now?", "Plan me a 3-day hunt", "Deer scouting tips"].map((s, i) => (
-                  <button key={i} onClick={() => sendMessage(s)} className="btn-ghost" style={{ padding: "7px 14px", fontSize: 12, borderRadius: 20 }}>{s}</button>
-                ))}
-              </div>
-            )}
-            {hitLimit && (
-              <div style={{ margin: "0 20px 20px", background: "linear-gradient(135deg,rgba(120,180,80,0.08),rgba(90,154,50,0.04))", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)", padding: 24, textAlign: "center" }}>
-                <div style={{ fontSize: 36, marginBottom: 10 }}>🔒</div>
-                <div style={{ fontFamily: "var(--font-display)", fontSize: 20, color: "var(--text)", marginBottom: 6 }}>Upgrade to WildAI Pro</div>
-                <div style={{ color: "var(--text2)", fontSize: 14, marginBottom: 18, lineHeight: 1.6 }}>You've used your free messages. Get unlimited access and advanced features.</div>
-                <button className="btn-primary" style={{ padding: "13px 32px", fontSize: 15, borderRadius: "var(--radius)", opacity: checkoutLoading ? 0.6 : 1 }} disabled={checkoutLoading} onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }}>
-                  {checkoutLoading ? "Loading..." : "Upgrade for $4.99/month →"}
-                </button>
-              </div>
-            )}
-            {!hitLimit && (
-              <div style={{ padding: "14px 20px", borderTop: "1px solid var(--border)", display: "flex", gap: 10, alignItems: "center" }}>
-                <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && sendMessage()}
-                  placeholder={`Ask anything about hunting & fishing${selectedState ? ` in ${selectedState}` : ""}...`}
-                  style={{ flex: 1, padding: "13px 18px", borderRadius: "var(--radius-sm)", fontSize: 14 }} />
-                <button onClick={() => sendMessage()} className="btn-primary" style={{ padding: "13px 22px", fontSize: 14, borderRadius: "var(--radius-sm)", flexShrink: 0 }}>Send →</button>
-              </div>
-            )}
-          </div>
+          </>
         )}
 
         {tab === "weather" && (
