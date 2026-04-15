@@ -2510,8 +2510,7 @@ function RegulationsTab({ selectedState, currentUser }) {
             </button>
           </div>
         )}
-        {!currentUser && <div style={{ fontSize: 10, color: "var(--text3)" }}>not logged in</div>}
-        {currentUser && currentUser.id !== ADMIN_USER_ID && <div style={{ fontSize: 10, color: "var(--text3)" }}>id: {currentUser.id}</div>}
+        
       </div>
 
       {(loading || generating) && (
