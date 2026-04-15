@@ -282,18 +282,24 @@ const css = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
   * { box-sizing:border-box; margin:0; padding:0; }
   :root {
-    --bg:#080f08; --bg2:#0d1a0d;
-    --card:rgba(255,255,255,0.03); --card-hover:rgba(255,255,255,0.06);
-    --border:rgba(255,255,255,0.07); --border-accent:rgba(120,180,80,0.25);
+    --bg:#070e07; --bg2:#0d1a0d;
+    --card:rgba(255,255,255,0.04); --card-hover:rgba(255,255,255,0.07);
+    --border:rgba(255,255,255,0.08); --border-accent:rgba(120,180,80,0.3);
+    --border-top:rgba(255,255,255,0.13);
     --green:#78b450; --green2:#5a9a32; --green-dim:rgba(120,180,80,0.12);
     --amber:#d4930a; --amber-dim:rgba(212,147,10,0.12);
     --text:#eef5e8; --text2:rgba(238,245,232,0.6); --text3:rgba(238,245,232,0.35);
     --font-display:'Playfair Display',Georgia,serif;
     --font-body:'DM Sans',system-ui,sans-serif;
     --radius:16px; --radius-sm:10px;
+    --green-glow:rgba(120,180,80,0.15);
   }
   body { background:var(--bg); color:var(--text); font-family:var(--font-body); }
-  .grain { position:fixed; inset:0; pointer-events:none; z-index:100; opacity:0.025;
+  body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background:radial-gradient(ellipse 90% 50% at 50% -10%, rgba(40,80,25,0.6) 0%, transparent 65%),
+               radial-gradient(ellipse 50% 30% at 15% 60%, rgba(20,50,15,0.25) 0%, transparent 55%),
+               radial-gradient(ellipse 40% 25% at 85% 40%, rgba(25,45,10,0.2) 0%, transparent 50%); }
+  .grain { position:fixed; inset:0; pointer-events:none; z-index:100; opacity:0.03;
     background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size:180px; }
   .fade-in { animation:fadeIn 0.4s ease forwards; }
@@ -306,13 +312,18 @@ const css = `
   @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
   .btn-primary { background:linear-gradient(135deg,var(--green),var(--green2)); color:white; border:none;
     border-radius:var(--radius-sm); font-family:var(--font-body); font-weight:600; cursor:pointer;
-    transition:all 0.2s; box-shadow:0 4px 20px rgba(120,180,80,0.3); }
-  .btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 28px rgba(120,180,80,0.4); }
-  .btn-ghost { background:var(--card); border:1px solid var(--border); color:var(--text2);
-    border-radius:var(--radius-sm); font-family:var(--font-body); cursor:pointer; transition:all 0.2s; }
-  .btn-ghost:hover { background:var(--card-hover); border-color:var(--border-accent); color:var(--text); }
-  .card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); transition:all 0.2s; }
-  .card:hover { background:var(--card-hover); border-color:var(--border-accent); }
+    transition:all 0.2s; box-shadow:0 4px 20px rgba(120,180,80,0.3), inset 0 1px 0 rgba(255,255,255,0.18); }
+  .btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 28px rgba(120,180,80,0.45), inset 0 1px 0 rgba(255,255,255,0.18); }
+  .btn-ghost { background:linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.15) 100%);
+    border:1px solid var(--border); border-top-color:rgba(255,255,255,0.12); color:var(--text2);
+    border-radius:var(--radius-sm); font-family:var(--font-body); cursor:pointer; transition:all 0.2s;
+    box-shadow:0 1px 6px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06); }
+  .btn-ghost:hover { background:rgba(255,255,255,0.07); border-color:var(--border-accent); color:var(--text); }
+  .card { background:linear-gradient(160deg, rgba(255,255,255,0.055) 0%, rgba(20,14,8,0.35) 100%);
+    border:1px solid var(--border); border-top-color:rgba(255,255,255,0.13);
+    border-radius:var(--radius); transition:all 0.2s;
+    box-shadow:0 2px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.07); }
+  .card:hover { border-color:var(--border-accent); box-shadow:0 6px 24px rgba(0,0,0,0.45), 0 0 20px rgba(120,180,80,0.05), inset 0 1px 0 rgba(255,255,255,0.09); }
   .tag { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px;
     font-size:11px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; }
   .tag-hunt { background:rgba(212,147,10,0.15); color:var(--amber); border:1px solid rgba(212,147,10,0.2); }
@@ -326,9 +337,9 @@ const css = `
   .nav-tab { padding:8px 18px; border-radius:30px; font-size:13px; font-weight:500;
     cursor:pointer; transition:all 0.2s; border:1px solid transparent;
     font-family:var(--font-body); white-space:nowrap; }
-  .nav-tab.active { background:linear-gradient(135deg,var(--green),var(--green2)); color:white; box-shadow:0 4px 16px rgba(120,180,80,0.25); }
-  .nav-tab.inactive { background:var(--card); border-color:var(--border); color:var(--text3); }
-  .nav-tab.inactive:hover { color:var(--text2); border-color:var(--border-accent); background:var(--card-hover); }
+  .nav-tab.active { background:linear-gradient(135deg,var(--green),var(--green2)); color:white; box-shadow:0 4px 16px rgba(120,180,80,0.3), inset 0 1px 0 rgba(255,255,255,0.2); }
+  .nav-tab.inactive { background:rgba(255,255,255,0.03); border-color:var(--border); color:var(--text3); }
+  .nav-tab.inactive:hover { color:var(--text2); border-color:var(--border-accent); background:rgba(255,255,255,0.06); }
   .msg-bubble { line-height:1.75; font-size:14px; }
   .msg-bubble strong { color:var(--green); font-weight:600; }
   .checklist-item { display:flex; align-items:center; gap:12px; padding:11px 16px;
@@ -337,7 +348,8 @@ const css = `
   .checklist-item:hover { background:var(--green-dim); border-color:var(--border-accent); color:var(--text); }
   .checklist-item.checked { background:var(--green-dim); border-color:rgba(120,180,80,0.3); color:var(--green); text-decoration:line-through; opacity:0.6; }
   .weather-stat { display:flex; flex-direction:column; align-items:center; gap:4px; padding:16px; flex:1;
-    background:rgba(255,255,255,0.03); border-radius:var(--radius-sm); border:1px solid var(--border); }
+    background:linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.1) 100%);
+    border-radius:var(--radius-sm); border:1px solid var(--border); border-top-color:rgba(255,255,255,0.1); }
   .mapboxgl-map { height:100%; width:100%; }
   .leaflet-container { background:#0d1a0d !important; }
   .leaflet-tile { filter:brightness(0.55) saturate(0.45) hue-rotate(55deg) !important; }
@@ -678,7 +690,7 @@ function MapTab({ selectedState, user, onSharePin }) {
         </div>
       </div>
 
-      <div style={{ position: "relative", borderRadius: "var(--radius)", overflow: "hidden", border: "1px solid var(--border)" }}>
+      <div style={{ position: "relative", borderRadius: isFullscreen ? 0 : "var(--radius)", overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)", borderTopColor: "rgba(255,255,255,0.14)", boxShadow: isFullscreen ? "none" : "0 8px 40px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07)" }}>
         <div ref={mapRef} style={{ height: isFullscreen ? "calc(100vh - 160px)" : 500, width: "100%" }} />
         <button onClick={() => { setIsFullscreen(f => !f); setTimeout(() => mapInst.current?.resize(), 150); }} style={{ position: "absolute", top: 10, left: 10, zIndex: 10, background: "rgba(8,15,8,0.9)", border: "1px solid var(--border)", color: "var(--text2)", borderRadius: "var(--radius-sm)", padding: "6px 12px", fontSize: 11, cursor: "pointer", backdropFilter: "blur(8px)", fontFamily: "var(--font-body)" }}>
           {isFullscreen ? "⊡ Compact" : "⊞ Expand"}
@@ -926,6 +938,11 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn }) {
     setSavedPinIds(prev => new Set([...prev, post.id]));
   };
 
+  const deletePost = async (postId) => {
+    await supabase.from("posts").delete().eq("id", postId);
+    setPosts(prev => prev.filter(p => p.id !== postId));
+  };
+
   const rateSpot = async (postId, rating) => {
     if (!currentUser) { openSignIn(); return; }
     await supabase.from("spot_ratings").upsert({ post_id: postId, user_id: currentUser.id, rating });
@@ -946,56 +963,70 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn }) {
 
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div className="card" style={{ padding: 24 }}>
-        <button onClick={onBack} className="btn-ghost" style={{ padding: "6px 14px", fontSize: 12, marginBottom: 16 }}>← Back</button>
-        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20, textAlign: "left" }}>
-          <div style={{ position: "relative", flexShrink: 0 }}>
-            <div style={{ width: 64, height: 64, borderRadius: "50%", background: "var(--green-dim)", border: "2px solid var(--border-accent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, overflow: "hidden" }}>
-              {profile?.avatar_url ? <img src={profile.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "🦌"}
-            </div>
-            {isOwnProfile && (
-              <label style={{ position: "absolute", bottom: 0, right: 0, width: 22, height: 22, borderRadius: "50%", background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 12 }}>
-                {uploadingAvatar ? "..." : "📷"}
-                <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => uploadAvatar(e.target.files[0])} />
-              </label>
-            )}
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 20, fontFamily: "var(--font-display)", textAlign: "left" }}>{displayName}</div>
-            {!editingBio && (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
-                <div style={{ color: "var(--text2)", fontSize: 13 }}>{profile?.bio || (isOwnProfile ? "Add a bio..." : "")}</div>
-                {isOwnProfile && <button onClick={() => { setEditingBio(true); setBioInput(profile?.bio || ""); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 11, cursor: "pointer", padding: 0 }}>✏️</button>}
-              </div>
-            )}
-            {editingBio && (
-              <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 6 }}>
-                <textarea value={bioInput} onChange={e => setBioInput(e.target.value)} placeholder="Write a short bio..." maxLength={150} style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", fontSize: 13, minHeight: 60, resize: "none", background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
-                <div style={{ display: "flex", gap: 6 }}>
-                  <button onClick={saveBio} disabled={savingBio} className="btn-primary" style={{ padding: "5px 14px", fontSize: 12 }}>{savingBio ? "Saving..." : "Save"}</button>
-                  <button onClick={() => setEditingBio(false)} className="btn-ghost" style={{ padding: "5px 14px", fontSize: 12 }}>Cancel</button>
-                </div>
-              </div>
-            )}
-          </div>
+      <div style={{ borderRadius: "var(--radius)", overflow: "hidden", border: "1px solid var(--border)", borderTopColor: "rgba(255,255,255,0.13)", boxShadow: "0 2px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.07)" }}>
+        {/* Header banner */}
+        <div style={{ height: 100, background: "linear-gradient(135deg, rgba(35,70,15,0.9) 0%, rgba(15,35,8,0.95) 50%, rgba(25,55,12,0.85) 100%)", position: "relative", overflow: "hidden" }}>
+          <svg viewBox="0 0 400 100" style={{ position: "absolute", bottom: 0, left: 0, right: 0, width: "100%", opacity: 0.15 }} preserveAspectRatio="none">
+            <polygon points="0,100 60,40 120,65 180,20 240,55 300,30 360,50 400,35 400,100" fill="rgba(120,180,80,0.6)" />
+            <polygon points="0,100 40,60 90,75 150,45 210,70 270,50 330,65 400,45 400,100" fill="rgba(80,140,50,0.4)" />
+          </svg>
+          <button onClick={onBack} className="btn-ghost" style={{ position: "absolute", top: 12, left: 12, padding: "5px 12px", fontSize: 12 }}>← Back</button>
           {!isOwnProfile && (
-            <button onClick={toggleFollow} className={isFollowing ? "btn-ghost" : "btn-primary"} style={{ padding: "8px 18px", fontSize: 13, flexShrink: 0 }}>
+            <button onClick={toggleFollow} className={isFollowing ? "btn-ghost" : "btn-primary"} style={{ position: "absolute", top: 12, right: 12, padding: "6px 18px", fontSize: 13 }}>
               {isFollowing ? "Following" : "Follow"}
             </button>
           )}
         </div>
-        <div style={{ display: "flex", gap: 24 }}>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18 }}>{posts.length}</div>
-            <div style={{ color: "var(--text3)", fontSize: 11 }}>Posts</div>
+
+        {/* Avatar + info — centered layout */}
+        <div style={{ padding: "0 20px 24px", background: "linear-gradient(160deg, rgba(255,255,255,0.045) 0%, rgba(20,14,8,0.3) 100%)", textAlign: "center" }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+            <div style={{ position: "relative", marginTop: -44 }}>
+              <div style={{ width: 88, height: 88, borderRadius: "50%", background: "linear-gradient(135deg, #1e4010, #0f2408)", border: "4px solid rgba(8,15,8,1)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.6), 0 0 0 1px rgba(120,180,80,0.2)" }}>
+                {profile?.avatar_url ? <img src={profile.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 36, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700, lineHeight: 1 }}>{displayName[0]?.toUpperCase()}</span>}
+              </div>
+              {isOwnProfile && (
+                <label style={{ position: "absolute", bottom: 4, right: 4, width: 24, height: 24, borderRadius: "50%", background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.5)", border: "2px solid rgba(8,15,8,1)" }}>
+                  {uploadingAvatar ? "·" : "📷"}
+                  <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => uploadAvatar(e.target.files[0])} />
+                </label>
+              )}
+            </div>
           </div>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18 }}>{followerCount}</div>
-            <div style={{ color: "var(--text3)", fontSize: 11 }}>Followers</div>
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18 }}>{followingCount}</div>
-            <div style={{ color: "var(--text3)", fontSize: 11 }}>Following</div>
+
+          <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 24, fontFamily: "var(--font-display)", marginBottom: 6 }}>{displayName}</div>
+
+          {!editingBio && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 16 }}>
+              <div style={{ color: profile?.bio ? "var(--text2)" : "var(--text3)", fontSize: 13, fontStyle: profile?.bio ? "normal" : "italic" }}>
+                {profile?.bio || (isOwnProfile ? "Add a bio to tell your story..." : "")}
+              </div>
+              {isOwnProfile && <button onClick={() => { setEditingBio(true); setBioInput(profile?.bio || ""); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 11, cursor: "pointer", padding: 0 }}>✏️</button>}
+            </div>
+          )}
+          {editingBio && (
+            <div style={{ marginBottom: 16, display: "flex", flexDirection: "column", gap: 6, textAlign: "left" }}>
+              <textarea value={bioInput} onChange={e => setBioInput(e.target.value)} placeholder="Write a short bio..." maxLength={150} style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", fontSize: 13, minHeight: 60, resize: "none", background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
+              <div style={{ display: "flex", gap: 6 }}>
+                <button onClick={saveBio} disabled={savingBio} className="btn-primary" style={{ padding: "5px 14px", fontSize: 12 }}>{savingBio ? "Saving..." : "Save"}</button>
+                <button onClick={() => setEditingBio(false)} className="btn-ghost" style={{ padding: "5px 14px", fontSize: 12 }}>Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {!isOwnProfile && (
+            <button onClick={toggleFollow} className={isFollowing ? "btn-ghost" : "btn-primary"} style={{ padding: "8px 28px", fontSize: 13, marginBottom: 16 }}>
+              {isFollowing ? "Following" : "Follow"}
+            </button>
+          )}
+
+          <div style={{ display: "flex", gap: 0, borderTop: "1px solid var(--border)", paddingTop: 16 }}>
+            {[["Posts", posts.length], ["Followers", followerCount], ["Following", followingCount]].map(([label, val], i) => (
+              <div key={i} style={{ flex: 1, textAlign: "center", borderRight: i < 2 ? "1px solid var(--border)" : "none" }}>
+                <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 22, fontFamily: "var(--font-display)" }}>{val}</div>
+                <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2, letterSpacing: "0.06em" }}>{label.toUpperCase()}</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -1024,7 +1055,10 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn }) {
                   </div>
                 )}
                 {post.caption && <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.6, margin: 0, marginBottom: 6 }}>{post.caption}</p>}
-                <div style={{ color: "var(--text3)", fontSize: 11 }}>{new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ color: "var(--text3)", fontSize: 11 }}>{new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
+                  {isOwnProfile && <button onClick={() => deletePost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.5)", fontSize: 12, padding: 0, fontFamily: "var(--font-body)" }}>Delete</button>}
+                </div>
               </div>
             </div>
           ))
@@ -1073,6 +1107,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn }) {
                       {savedPinIds.has(post.id) ? "✓ Saved" : "🗺️ Save to Map"}
                     </button>
                     <a href={`https://www.google.com/maps/dir/?api=1&destination=${post.lat},${post.lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 12, fontWeight: 600 }}>Directions →</a>
+                    {isOwnProfile && <button onClick={() => deletePost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.5)", fontSize: 12, padding: 0, fontFamily: "var(--font-body)" }}>Delete</button>}
                   </div>
                 </div>
               </div>
@@ -1135,11 +1170,8 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   const searchUsers = async (query) => {
     if (!query.trim()) { setSearchResults([]); return; }
     setSearching(true);
-    const { data } = await supabase.from("posts").select("user_id, username").ilike("username", `%${query}%`).limit(20);
-    if (data) {
-      const unique = Object.values(data.reduce((acc, p) => { if (!acc[p.user_id]) acc[p.user_id] = p; return acc; }, {}));
-      setSearchResults(unique);
-    }
+    const { data } = await supabase.from("profiles").select("user_id, username, avatar_url").ilike("username", `%${query}%`).limit(20);
+    if (data) setSearchResults(data.filter(u => u.username));
     setSearching(false);
   };
 
@@ -1255,11 +1287,14 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
           {searchResults.length > 0 && (
             <div style={{ marginTop: 8, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", overflow: "hidden" }}>
               {searchResults.map(u => (
-                <div key={u.user_id} onClick={() => { setViewingProfile(u.user_id); setSearchQuery(""); setSearchResults([]); }} style={{ padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid var(--border)", color: "var(--text)", fontSize: 14, fontWeight: 600 }}
+                <div key={u.user_id} onClick={() => { setViewingProfile(u.user_id); setSearchQuery(""); setSearchResults([]); }} style={{ padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid var(--border)", color: "var(--text)", fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 10 }}
                   onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.08)"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                 >
-                  👤 {u.username}
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", overflow: "hidden", background: "linear-gradient(135deg, #1e4010, #0f2408)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "1px solid var(--border-accent)" }}>
+                    {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 14, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700 }}>{u.username?.[0]?.toUpperCase()}</span>}
+                  </div>
+                  {u.username}
                 </div>
               ))}
             </div>
@@ -1385,7 +1420,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
                 )}
               </div>
               {expandedComments.has(post.id) && (
-                <PostComments postId={post.id} user={user} openSignIn={openSignIn} onCommentAdded={(delta = 1) => setCommentCounts(prev => ({ ...prev, [post.id]: Math.max(0, (prev[post.id] || 0) + delta) }))} />
+                <PostComments postId={post.id} postOwnerId={post.user_id} user={user} openSignIn={openSignIn} onCommentAdded={(delta = 1) => setCommentCounts(prev => ({ ...prev, [post.id]: Math.max(0, (prev[post.id] || 0) + delta) }))} />
               )}
             </div>
           </div>
@@ -1396,7 +1431,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
 }
 
 // ─── POST COMMENTS ────────────────────────────────────────────────────────────
-function PostComments({ postId, user, openSignIn, onCommentAdded }) {
+function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState("");
@@ -1443,7 +1478,7 @@ function PostComments({ postId, user, openSignIn, onCommentAdded }) {
             <span style={{ color: "var(--text2)", fontSize: 13 }}>{c.content}</span>
             <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>{new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</div>
           </div>
-          {user?.id === c.user_id && <button onClick={() => deleteComment(c.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.5)", fontSize: 11, padding: "0 4px", flexShrink: 0 }}>✕</button>}
+          {(user?.id === c.user_id || user?.id === postOwnerId) && <button onClick={() => deleteComment(c.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.5)", fontSize: 11, padding: "0 4px", flexShrink: 0 }}>✕</button>}
         </div>
       ))}
       {comments.length === 0 && !loading && <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 10 }}>No comments yet — be the first!</div>}
@@ -2472,7 +2507,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0 }}>
       </div>
 
-      <header style={{ borderBottom: "1px solid var(--border)", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", backdropFilter: "blur(12px)", background: "rgba(8,15,8,0.92)", position: "sticky", top: 0, zIndex: 50 }}>
+      <header style={{ borderBottom: "1px solid rgba(120,180,80,0.1)", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", backdropFilter: "blur(24px)", background: "rgba(5,10,5,0.88)", position: "sticky", top: 0, zIndex: 50, boxShadow: "0 4px 24px rgba(0,0,0,0.3), 0 1px 0 rgba(120,180,80,0.08)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <button onClick={onBack} className="btn-ghost" style={{ padding: "7px 14px", fontSize: 13 }}>← Home</button>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -2510,14 +2545,15 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
       </header>
 
       {/* BOTTOM NAV */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, background: "rgba(8,15,8,0.97)", borderTop: "1px solid var(--border)", display: "flex", alignItems: "stretch", height: 64, backdropFilter: "blur(12px)" }}>
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, background: "rgba(5,10,5,0.92)", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "stretch", height: 64, backdropFilter: "blur(24px)", boxShadow: "0 -4px 24px rgba(0,0,0,0.4), 0 -1px 0 rgba(120,180,80,0.08)" }}>
         {[
           { id: "chat", icon: "💬", label: "Chat" },
           { id: "map", icon: "🗺️", label: "Map" },
           { id: "community", icon: "🌲", label: "Community" },
           { id: "more", icon: "☰", label: "More" },
         ].map(t => (
-          <button key={t.id} onClick={() => { setTab(t.id); setShowMore(false); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, background: "none", border: "none", cursor: "pointer", color: tab === t.id ? "var(--green)" : "var(--text3)", transition: "color 0.2s" }}>
+          <button key={t.id} onClick={() => { setTab(t.id); setShowMore(false); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, background: "none", border: "none", cursor: "pointer", color: tab === t.id ? "var(--green)" : "var(--text3)", transition: "color 0.2s", position: "relative" }}>
+            {tab === t.id && <div style={{ position: "absolute", top: 6, width: 4, height: 4, borderRadius: "50%", background: "var(--green)", boxShadow: "0 0 8px rgba(120,180,80,0.9)" }} />}
             <span style={{ fontSize: 20 }}>{t.icon}</span>
             <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.04em" }}>{t.label}</span>
           </button>
