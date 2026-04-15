@@ -852,7 +852,7 @@ function MapTab({ selectedState, user, onSharePin }) {
 }
 
 // ─── USER PROFILE ─────────────────────────────────────────────────────────────
-function UserProfilePage({ userId, currentUser, onBack, openSignIn }) {
+function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser }) {
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [followerCount, setFollowerCount] = useState(0);
@@ -867,6 +867,9 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn }) {
   const [spotRatings, setSpotRatings] = useState({});
   const [userRatings, setUserRatings] = useState({});
   const [savedPinIds, setSavedPinIds] = useState(new Set());
+  const [showFollowList, setShowFollowList] = useState(null); // 'followers' or 'following'
+  const [followList, setFollowList] = useState([]);
+  const [loadingFollowList, setLoadingFollowList] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -913,6 +916,26 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn }) {
     };
     load();
   }, [userId]);
+
+  const openFollowList = async (type) => {
+    setShowFollowList(type);
+    setLoadingFollowList(true);
+    let userIds = [];
+    if (type === 'followers') {
+      const { data } = await supabase.from("follows").select("follower_id").eq("following_id", userId);
+      userIds = (data || []).map(r => r.follower_id);
+    } else {
+      const { data } = await supabase.from("follows").select("following_id").eq("follower_id", userId);
+      userIds = (data || []).map(r => r.following_id);
+    }
+    if (userIds.length) {
+      const { data: profiles } = await supabase.from("profiles").select("user_id, username, avatar_url").in("user_id", userIds);
+      setFollowList(profiles || []);
+    } else {
+      setFollowList([]);
+    }
+    setLoadingFollowList(false);
+  };
 
   const toggleFollow = async () => {
     if (!currentUser) { openSignIn(); return; }
@@ -1042,13 +1065,39 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn }) {
           )}
 
           <div style={{ display: "flex", gap: 0, borderTop: "1px solid var(--border)", paddingTop: 16 }}>
-            {[["Posts", posts.length], ["Followers", followerCount], ["Following", followingCount]].map(([label, val], i) => (
-              <div key={i} style={{ flex: 1, textAlign: "center", borderRight: i < 2 ? "1px solid var(--border)" : "none" }}>
+            {[["Posts", posts.length, null], ["Followers", followerCount, "followers"], ["Following", followingCount, "following"]].map(([label, val, type], i) => (
+              <div key={i} onClick={() => type && openFollowList(type)} style={{ flex: 1, textAlign: "center", borderRight: i < 2 ? "1px solid var(--border)" : "none", cursor: type ? "pointer" : "default" }}>
                 <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 22, fontFamily: "var(--font-display)" }}>{val}</div>
-                <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2, letterSpacing: "0.06em" }}>{label.toUpperCase()}</div>
+                <div style={{ color: type ? "var(--green)" : "var(--text3)", fontSize: 11, marginTop: 2, letterSpacing: "0.06em" }}>{label.toUpperCase()}</div>
               </div>
             ))}
           </div>
+
+          {showFollowList && (
+            <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 200, display: "flex", alignItems: "flex-end" }} onClick={() => setShowFollowList(null)}>
+              <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxHeight: "70vh", background: "#0d1a0d", borderRadius: "20px 20px 0 0", padding: 24, overflowY: "auto", border: "1px solid var(--border)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                  <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, fontFamily: "var(--font-display)" }}>{showFollowList === "followers" ? "Followers" : "Following"}</div>
+                  <button onClick={() => setShowFollowList(null)} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 20, cursor: "pointer", padding: 0 }}>✕</button>
+                </div>
+                {loadingFollowList && <div style={{ textAlign: "center", padding: 20, color: "var(--text3)" }} className="pulse">Loading...</div>}
+                {!loadingFollowList && followList.length === 0 && (
+                  <div style={{ textAlign: "center", padding: 20, color: "var(--text3)", fontSize: 13 }}>No {showFollowList} yet</div>
+                )}
+                {followList.map(u => (
+                  <div key={u.user_id} onClick={() => { setShowFollowList(null); onViewUser(u.user_id); }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid var(--border)", cursor: "pointer" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                  >
+                    <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, #1e4010, #0f2408)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0, border: "1px solid var(--border-accent)" }}>
+                      {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 16, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700 }}>{u.username?.[0]?.toUpperCase()}</span>}
+                    </div>
+                    <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{u.username}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1295,6 +1344,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
           currentUser={user}
           onBack={() => setViewingProfile(null)}
           openSignIn={openSignIn}
+          onViewUser={(id) => setViewingProfile(id)}
         />
       )}
       {!viewingProfile && <div style={{ background: "#0a150a", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "18px 20px", marginBottom: 2 }}>
@@ -2359,7 +2409,52 @@ const STATE_REGULATIONS = {
   },
 };
 
-function RegulationsTab({ selectedState }) {
+const ADMIN_USER_ID = "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a";
+
+function RegulationsTab({ selectedState, currentUser }) {
+  const [regs, setRegs] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+
+  useEffect(() => {
+    if (!selectedState) return;
+    const load = async () => {
+      setLoading(true);
+      setRegs(null);
+      const { data } = await supabase.from("regulations_cache").select("*").eq("state", selectedState).single();
+      if (data) {
+        setRegs(data);
+      } else {
+        await generate();
+      }
+      setLoading(false);
+    };
+    load();
+  }, [selectedState]);
+
+  const generate = async () => {
+    setGenerating(true);
+    try {
+      const prompt = `Provide current ${new Date().getFullYear()} hunting and fishing regulations for ${selectedState}. Return a JSON object with exactly these three keys: "hunting" (key species season dates and bag limits), "fishing" (key species seasons and limits), "general" (license costs and important notes). Keep each value under 300 characters. No markdown, just the JSON object.`;
+      const res = await fetch("https://wildai-server.onrender.com/chat", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [{ role: "user", content: prompt }], system: "Return only a valid JSON object with hunting, fishing, and general keys. No markdown. No explanation." })
+      });
+      const d = await res.json();
+      const text = d.reply.replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(text);
+      await supabase.from("regulations_cache").upsert({ state: selectedState, hunting: parsed.hunting, fishing: parsed.fishing, general: parsed.general, updated_at: new Date().toISOString() });
+      setRegs({ ...parsed, state: selectedState });
+    } catch { }
+    setGenerating(false);
+  };
+
+  const refresh = async () => {
+    await supabase.from("regulations_cache").delete().eq("state", selectedState);
+    setRegs(null);
+    await generate();
+  };
+
   if (!selectedState) return (
     <div className="card" style={{ padding: 40, textAlign: "center" }}>
       <div style={{ fontSize: 48, marginBottom: 16 }}>📋</div>
@@ -2368,16 +2463,28 @@ function RegulationsTab({ selectedState }) {
     </div>
   );
 
-  const regs = STATE_REGULATIONS[selectedState];
-
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div className="card" style={{ padding: "16px 20px" }}>
-        <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 4 }}>REGULATIONS OVERVIEW</div>
-        <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 16 }}>{selectedState}</div>
+      <div className="card" style={{ padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 4 }}>REGULATIONS OVERVIEW</div>
+          <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 16 }}>{selectedState}</div>
+          {regs?.updated_at && <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>Updated {new Date(regs.updated_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })}</div>}
+        </div>
+        {currentUser?.id === ADMIN_USER_ID && (
+          <button onClick={refresh} disabled={generating} className="btn-ghost" style={{ padding: "6px 14px", fontSize: 12, opacity: generating ? 0.5 : 1 }}>
+            {generating ? "⏳ Updating..." : "🔄 Refresh"}
+          </button>
+        )}
       </div>
 
-      {regs ? (
+      {(loading || generating) && (
+        <div style={{ textAlign: "center", padding: 40, color: "var(--text3)" }} className="pulse">
+          {generating ? `Generating ${selectedState} regulations...` : "Loading..."}
+        </div>
+      )}
+
+      {regs && !loading && !generating && (
         <>
           <div className="card" style={{ padding: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
@@ -2401,8 +2508,6 @@ function RegulationsTab({ selectedState }) {
             <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.8 }}>{regs.general}</p>
           </div>
         </>
-      ) : (
-        <div className="card" style={{ padding: 24, textAlign: "center", color: "var(--text3)" }}>No regulations data available for this state.</div>
       )}
 
       <div style={{ padding: "16px 20px", background: "var(--amber-dim)", border: "1px solid rgba(212,147,10,0.2)", borderRadius: "var(--radius)" }}>
@@ -2675,20 +2780,34 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
       return;
     }
     setLoadingStateSpecies(true);
-    const prompt = `Return ONLY a JSON array of objects for the 30 most commonly hunted and fished species in ${selectedState}. Each object must have: name (string), type ("hunting" or "fishing"), desc (string, max 5 words). No markdown, no explanation, just the JSON array.`;
-    fetch("https://wildai-server.onrender.com/chat", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages: [{ role: "user", content: prompt }], system: "Return only a valid JSON array. No markdown. No explanation." })
-    })
-      .then(r => r.json())
-      .then(d => {
+    const loadSpecies = async () => {
+      try {
+        // Check Supabase cache first
+        const { data: cached } = await supabase.from("species_cache").select("species").eq("state", selectedState).single();
+        if (cached) {
+          setStateSpecies(cached.species);
+          speciesTabCache.current[cacheKey] = cached.species;
+          setLoadingStateSpecies(false);
+          return;
+        }
+        // Not cached — call API
+        const res = await fetch("https://wildai-server.onrender.com/chat", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: [{ role: "user", content: `Return ONLY a JSON array of objects for the 30 most commonly hunted and fished species in ${selectedState}. Each object must have: name (string), type ("hunting" or "fishing"), desc (string, max 5 words). No markdown, no explanation, just the JSON array.` }], system: "Return only a valid JSON array. No markdown. No explanation." })
+        });
+        const d = await res.json();
         const text = d.reply.replace(/```json|```/g, "").trim();
         const parsed = JSON.parse(text);
         setStateSpecies(parsed);
         speciesTabCache.current[cacheKey] = parsed;
-      })
-      .catch(() => setStateSpecies([]))
-      .finally(() => setLoadingStateSpecies(false));
+        // Save to Supabase cache
+        await supabase.from("species_cache").insert({ state: selectedState, species: parsed });
+      } catch {
+        setStateSpecies([]);
+      }
+      setLoadingStateSpecies(false);
+    };
+    loadSpecies();
   }, [selectedState]);
   const toggleCheck = (cl, item) => {
     const k = `${cl}::${item}`;
@@ -2870,7 +2989,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           <MapTab selectedState={selectedState} user={user} onSharePin={(pin) => { window._sharePinToComm = pin; setTab("community"); }} />
         </div>
 
-        {tab === "regs" && <RegulationsTab selectedState={selectedState} />}
+        {tab === "regs" && <RegulationsTab selectedState={selectedState} currentUser={user} />}
         {tab === "licenses" && <LicensesTab selectedState={selectedState} />}
         {tab === "trip" && <TripPlannerTab selectedState={selectedState} user={user} isPro={isPro} hitLimit={hitLimit} messageCount={messageCount} setMessageCount={setMessageCount} onUpgrade={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }} />}
         {tab === "species" && (
