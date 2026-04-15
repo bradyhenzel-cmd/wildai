@@ -1518,7 +1518,7 @@ function HarvestLogTab({ user, openSignIn }) {
   const [showForm, setShowForm] = useState(false);
   const [logFilter, setLogFilter] = useState("all");
   const [logSort, setLogSort] = useState("newest");
-  const [form, setForm] = useState({ type: "hunting", species: "", date: "", location: "", size: "", weight: "", notes: "", photo: "" });
+  const [form, setForm] = useState({ type: "hunting", species: "", date: "", location: "", state: "", size: "", weight: "", notes: "", photo: "" });
   const [submittedIds, setSubmittedIds] = useState(new Set());
   const [submittingTrophy, setSubmittingTrophy] = useState(null);
 
@@ -1549,12 +1549,13 @@ function HarvestLogTab({ user, openSignIn }) {
       species: form.species,
       date: form.date,
       location: form.location,
+      state: form.state,
       size: form.size,
       weight: form.weight,
       notes: form.notes,
       photo: photoUrl,
     });
-    setForm({ type: "hunting", species: "", date: "", location: "", size: "", weight: "", notes: "", photo: "", photoFile: null });
+    setForm({ type: "hunting", species: "", date: "", location: "", state: "", size: "", weight: "", notes: "", photo: "", photoFile: null });
     setShowForm(false);
     loadEntries();
   };
@@ -1649,6 +1650,13 @@ function HarvestLogTab({ user, openSignIn }) {
               <input placeholder="e.g. Flathead NF" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
             </div>
             <div>
+              <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>STATE</div>
+              <select value={form.state} onChange={e => setForm(f => ({ ...f, state: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }}>
+                <option value="">Select state...</option>
+                {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
               <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>{form.type === "fishing" ? "LENGTH (in)" : "ANTLERS/SCORE"}</div>
               <input placeholder={form.type === "fishing" ? "e.g. 18" : "e.g. 8-point"} value={form.size} onChange={e => setForm(f => ({ ...f, size: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
             </div>
@@ -1669,6 +1677,9 @@ function HarvestLogTab({ user, openSignIn }) {
           <div style={{ marginBottom: 12 }}>
             <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>NOTES</div>
             <textarea placeholder="Weather conditions, tactics used, memorable details..." value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13, minHeight: 70, resize: "vertical", background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)" }} />
+          </div>
+          <div style={{ padding: "10px 14px", background: "rgba(212,147,10,0.08)", border: "1px solid rgba(212,147,10,0.2)", borderRadius: "var(--radius-sm)", marginBottom: 10 }}>
+            <p style={{ color: "var(--amber)", fontSize: 12, margin: 0, lineHeight: 1.6 }}>🏆 To submit to the Trophy Board, fill out all fields and include a photo.</p>
           </div>
           <button onClick={save} disabled={!form.species || !form.date} className="btn-primary" style={{ width: "100%", padding: "10px", fontSize: 14, opacity: (!form.species || !form.date) ? 0.5 : 1 }}>
             Save Entry
