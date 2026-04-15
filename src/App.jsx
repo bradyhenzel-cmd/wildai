@@ -217,7 +217,7 @@ const PUBLIC_LANDS = [
   { name: "Lake Pleasant", lat: 33.8, lng: -112.3, type: "fishing", state: "Arizona", species: ["Bass", "Striped Bass", "Catfish"], desc: "Phoenix metro bass fishing" },
 ];
 
-const FREE_LIMIT = 25;
+const FREE_LIMIT = 5;
 
 // ─── SVG NATURE DECORATIONS ───────────────────────────────────────────────────
 const DeerSVG = ({ style: s = {} }) => (
@@ -296,12 +296,17 @@ const css = `
   }
   body { background:var(--bg); color:var(--text); font-family:var(--font-body); }
   body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
-    background:radial-gradient(ellipse 90% 50% at 50% -10%, rgba(40,80,25,0.6) 0%, transparent 65%),
-               radial-gradient(ellipse 50% 30% at 15% 60%, rgba(20,50,15,0.25) 0%, transparent 55%),
-               radial-gradient(ellipse 40% 25% at 85% 40%, rgba(25,45,10,0.2) 0%, transparent 50%); }
-  .grain { position:fixed; inset:0; pointer-events:none; z-index:100; opacity:0.03;
-    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-size:180px; }
+    background:
+      radial-gradient(ellipse 90% 50% at 50% -10%, rgba(40,80,25,0.65) 0%, transparent 65%),
+      radial-gradient(ellipse 50% 30% at 15% 60%, rgba(20,50,15,0.3) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 25% at 85% 40%, rgba(25,45,10,0.25) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 40% at 50% 100%, rgba(10,25,8,0.4) 0%, transparent 60%); }
+  body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(120,180,80,0.008) 2px, rgba(120,180,80,0.008) 4px),
+      repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(120,180,80,0.005) 2px, rgba(120,180,80,0.005) 4px); }
+  .grain { position:fixed; inset:0; pointer-events:none; z-index:100; opacity:0.045;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:160px; }
   .fade-in { animation:fadeIn 0.4s ease forwards; }
   @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
   .slide-up { animation:slideUp 0.55s cubic-bezier(0.16,1,0.3,1) forwards; opacity:0; }
@@ -310,15 +315,17 @@ const css = `
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
   .float { animation:float 5s ease-in-out infinite; }
   @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-  .btn-primary { background:linear-gradient(135deg,var(--green),var(--green2)); color:white; border:none;
+  .btn-primary { background:linear-gradient(135deg, #8acc5a 0%, var(--green) 40%, var(--green2) 100%); color:white; border:none;
     border-radius:var(--radius-sm); font-family:var(--font-body); font-weight:600; cursor:pointer;
-    transition:all 0.2s; box-shadow:0 4px 20px rgba(120,180,80,0.3), inset 0 1px 0 rgba(255,255,255,0.18); }
-  .btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 28px rgba(120,180,80,0.45), inset 0 1px 0 rgba(255,255,255,0.18); }
-  .btn-ghost { background:linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.15) 100%);
-    border:1px solid var(--border); border-top-color:rgba(255,255,255,0.12); color:var(--text2);
+    transition:all 0.2s; box-shadow:0 4px 20px rgba(120,180,80,0.35), 0 1px 0 rgba(255,255,255,0.15), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -2px 0 rgba(0,0,0,0.15); }
+  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(120,180,80,0.5), 0 1px 0 rgba(255,255,255,0.15), inset 0 1px 0 rgba(255,255,255,0.25); }
+  .btn-primary:active { transform:translateY(0px); box-shadow:0 2px 8px rgba(120,180,80,0.3), inset 0 2px 4px rgba(0,0,0,0.2); }
+  .btn-ghost { background:linear-gradient(160deg, rgba(255,255,255,0.07) 0%, rgba(0,0,0,0.2) 100%);
+    border:1px solid var(--border); border-top-color:rgba(255,255,255,0.14); color:var(--text2);
     border-radius:var(--radius-sm); font-family:var(--font-body); cursor:pointer; transition:all 0.2s;
-    box-shadow:0 1px 6px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06); }
-  .btn-ghost:hover { background:rgba(255,255,255,0.07); border-color:var(--border-accent); color:var(--text); }
+    box-shadow:0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.15); }
+  .btn-ghost:hover { background:rgba(255,255,255,0.09); border-color:var(--border-accent); color:var(--text); transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.4); }
+  .btn-ghost:active { transform:translateY(0px); }
   .card { background:linear-gradient(160deg, rgba(255,255,255,0.055) 0%, rgba(20,14,8,0.35) 100%);
     border:1px solid var(--border); border-top-color:rgba(255,255,255,0.13);
     border-radius:var(--radius); transition:all 0.2s;
@@ -354,6 +361,7 @@ const css = `
   .leaflet-container { background:#0d1a0d !important; }
   .leaflet-tile { filter:brightness(0.55) saturate(0.45) hue-rotate(55deg) !important; }
   .custom-marker { background:none !important; border:none !important; }
+  
   @media (max-width: 640px) {
     .mobile-home-btn { padding:5px 10px !important; font-size:12px !important; }
     .mobile-header-badge { padding:4px 8px !important; font-size:11px !important; }
@@ -1450,7 +1458,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
         return (
           <div key={post.id} className="card fade-in" style={{ padding: 0, overflow: "hidden", border: isHot ? "1px solid rgba(255,150,0,0.3)" : "1px solid var(--border)" }}>
             {isHot && <div style={{ background: "rgba(255,120,0,0.12)", padding: "5px 14px", fontSize: 11, color: "#ff9500", fontWeight: 700, letterSpacing: "0.05em" }}>🔥 HOT SPOT · {likeCount} likes</div>}
-            {post.photo && <img src={post.photo} style={{ width: "100%", maxHeight: 420, objectFit: "contain", background: "rgba(0,0,0,0.3)" }} />}
+            {post.photo && <img src={post.photo} style={{ width: "100%", maxHeight: 420, objectFit: "cover" }} />}
             <div style={{ padding: "14px 16px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
                 <div>
@@ -2510,7 +2518,7 @@ function RegulationsTab({ selectedState, currentUser }) {
             </button>
           </div>
         )}
-        
+
       </div>
 
       {(loading || generating) && (
@@ -2683,7 +2691,7 @@ function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
             {STATES.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           <button onClick={onStart} className="btn-primary" style={{ width: "100%", padding: 16, fontSize: 16, borderRadius: "var(--radius)" }}>Start Asking WildAI →</button>
-          <p style={{ color: "var(--text3)", fontSize: 12, marginTop: 10, textAlign: "center" }}>No account needed · 25 free messages</p>
+          <p style={{ color: "var(--text3)", fontSize: 12, marginTop: 10, textAlign: "center" }}>No account needed · {FREE_LIMIT} free messages</p>
         </div>
         <div className="slide-up" style={{ animationDelay: "0.3s", width: "100%", maxWidth: 760, marginTop: 60 }}>
           <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 20 }}>EVERYTHING YOU NEED IN THE FIELD</div>
@@ -2760,9 +2768,30 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
   const bottomRef = useRef(null);
   const { user, isLoaded } = useUser();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
   const { openSignIn } = useClerk();
   const isPro = user?.publicMetadata?.isPro === true;
   const hitLimit = !isPro && messageCount >= FREE_LIMIT;
+
+  useEffect(() => {
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone;
+    setIsIOS(ios);
+    if (ios) { setShowInstallBanner(true); return; }
+    const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); setShowInstallBanner(true); };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      setDeferredPrompt(null);
+      setShowInstallBanner(false);
+    }
+  };
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
 
@@ -2890,9 +2919,15 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div className="mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: hitLimit ? "rgba(255,100,100,0.1)" : "var(--green-dim)", border: `1px solid ${hitLimit ? "rgba(255,100,100,0.2)" : "var(--border-accent)"}`, color: hitLimit ? "#ff6b6b" : "var(--green)" }}>
-            {hitLimit ? "Limit reached" : isPro ? "Pro ✓" : `${Math.max(0, FREE_LIMIT - messageCount)} msgs left`}
-          </div>
+          {hitLimit ? (
+            <button onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }} className="mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: "linear-gradient(135deg,#e8b020,#c49010)", border: "none", color: "#0a1200", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+              {checkoutLoading ? "..." : "Go Pro →"}
+            </button>
+          ) : (
+            <div className="mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)" }}>
+              {isPro ? "Pro ✓" : `${Math.max(0, FREE_LIMIT - messageCount)} msgs left`}
+            </div>
+          )}
           {!user ? (
             <button onClick={() => openSignIn()} className="btn-ghost" style={{ padding: "7px 14px", fontSize: 13 }}>Sign In</button>
           ) : (
@@ -2933,6 +2968,33 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 
 
       <div style={{ flex: 1, padding: 20, paddingBottom: 80, maxWidth: 760, width: "100%", margin: "0 auto", display: "flex", flexDirection: "column", gap: 16, position: "relative", zIndex: 1 }}>
+
+        {showInstallBanner && !window.navigator.standalone && (
+          <div style={{ background: "linear-gradient(135deg, rgba(120,180,80,0.12), rgba(80,140,50,0.08))", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 13 }}>Add WildAI to your home screen</div>
+              {isIOS
+                ? <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>Tap <strong style={{ color: "var(--text2)" }}>Share ⬆</strong> → <strong style={{ color: "var(--text2)" }}>Add to Home Screen</strong></div>
+                : <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>Install for the best experience</div>}
+            </div>
+            {!isIOS && <button onClick={handleInstall} className="btn-primary" style={{ padding: "6px 14px", fontSize: 12, flexShrink: 0 }}>Install</button>}
+            <button onClick={() => setShowInstallBanner(false)} style={{ background: "none", border: "none", color: "var(--text3)", cursor: "pointer", fontSize: 16, padding: 0, flexShrink: 0 }}>✕</button>
+          </div>
+        )}
+
+        {!isPro && !hitLimit && (
+          <div style={{ background: "linear-gradient(135deg, rgba(212,147,10,0.1), rgba(180,120,5,0.06))", border: "1px solid rgba(212,147,10,0.2)", borderRadius: "var(--radius)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 20, flexShrink: 0 }}>⚡</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: "var(--amber)", fontWeight: 600, fontSize: 13 }}>Upgrade to Pro</div>
+              <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>Unlimited messages · $4.99/mo</div>
+            </div>
+            <button onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }} style={{ background: "none", border: "1px solid rgba(212,147,10,0.3)", borderRadius: "var(--radius-sm)", padding: "6px 14px", fontSize: 12, color: "var(--amber)", cursor: "pointer", flexShrink: 0, fontFamily: "var(--font-body)", fontWeight: 600 }}>
+              {checkoutLoading ? "..." : "Go Pro →"}
+            </button>
+          </div>
+        )}
 
         {/* CHAT */}
         {tab === "chat" && (
