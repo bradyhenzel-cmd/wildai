@@ -2566,7 +2566,7 @@ function RegulationsTab({ selectedState, currentUser }) {
       )}
 
       <div style={{ padding: "16px 20px", background: "var(--amber-dim)", border: "1px solid rgba(212,147,10,0.2)", borderRadius: "var(--radius)" }}>
-        <p style={{ color: "rgba(212,147,10,0.9)", fontSize: 13, lineHeight: 1.7 }}>⚠️ <strong>Important:</strong> Regulations change annually. Always verify with your state's official wildlife agency before hunting or fishing.</p>
+        <p style={{ color: "rgba(212,147,10,0.9)", fontSize: 13, lineHeight: 1.7 }}>⚠️ <strong>Info is generally accurate but dates and limits may vary.</strong> Always click the official links below for exact current regulations before heading out.</p>
         {STATE_WILDLIFE_AGENCIES[selectedState] && (
           <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
             <a href={STATE_WILDLIFE_AGENCIES[selectedState].hunting} target="_blank" rel="noopener noreferrer" style={{ padding: "8px 16px", background: "rgba(212,147,10,0.15)", border: "1px solid rgba(212,147,10,0.3)", borderRadius: "var(--radius-sm)", color: "rgba(212,147,10,0.9)", fontSize: 12, fontWeight: 600, textDecoration: "none" }}>🎯 Official Hunting Regs →</a>
