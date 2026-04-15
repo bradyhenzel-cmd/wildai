@@ -2415,6 +2415,9 @@ function RegulationsTab({ selectedState, currentUser }) {
   const [regs, setRegs] = useState(null);
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [scrapeStatus, setScrapeStatus] = useState({});
+  const [scraping, setScraping] = useState(false);
 
   useEffect(() => {
     if (!selectedState) return;
@@ -2455,6 +2458,32 @@ function RegulationsTab({ selectedState, currentUser }) {
     await generate();
   };
 
+  const scrapeAllStates = async () => {
+    setScraping(true);
+    setScrapeStatus({});
+    for (const state of STATES) {
+      setScrapeStatus(prev => ({ ...prev, [state]: "loading" }));
+      const agency = STATE_WILDLIFE_AGENCIES[state];
+      try {
+        const res = await fetch("https://wildai-server.onrender.com/scrape-regulations", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ state, huntingUrl: agency.hunting, fishingUrl: agency.fishing })
+        });
+        const d = await res.json();
+        if (d.success) {
+          await supabase.from("regulations_cache").upsert({ state, hunting: d.data.hunting, fishing: d.data.fishing, general: d.data.general, updated_at: new Date().toISOString() });
+          setScrapeStatus(prev => ({ ...prev, [state]: "done" }));
+        } else {
+          setScrapeStatus(prev => ({ ...prev, [state]: "error" }));
+        }
+      } catch {
+        setScrapeStatus(prev => ({ ...prev, [state]: "error" }));
+      }
+      await new Promise(r => setTimeout(r, 1000));
+    }
+    setScraping(false);
+  };
+
   if (!selectedState) return (
     <div className="card" style={{ padding: 40, textAlign: "center" }}>
       <div style={{ fontSize: 48, marginBottom: 16 }}>📋</div>
@@ -2472,10 +2501,17 @@ function RegulationsTab({ selectedState, currentUser }) {
           {regs?.updated_at && <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>Updated {new Date(regs.updated_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })}</div>}
         </div>
         {currentUser?.id === ADMIN_USER_ID && (
-          <button onClick={refresh} disabled={generating} className="btn-ghost" style={{ padding: "6px 14px", fontSize: 12, opacity: generating ? 0.5 : 1 }}>
-            {generating ? "⏳ Updating..." : "🔄 Refresh"}
-          </button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={refresh} disabled={generating} className="btn-ghost" style={{ padding: "6px 14px", fontSize: 12, opacity: generating ? 0.5 : 1 }}>
+              {generating ? "⏳ Updating..." : "🔄 Refresh"}
+            </button>
+            <button onClick={() => setShowAdmin(s => !s)} className="btn-ghost" style={{ padding: "6px 14px", fontSize: 12 }}>
+              {showAdmin ? "✕ Close" : "⚙️ All States"}
+            </button>
+          </div>
         )}
+        {!currentUser && <div style={{ fontSize: 10, color: "var(--text3)" }}>not logged in</div>}
+        {currentUser && currentUser.id !== ADMIN_USER_ID && <div style={{ fontSize: 10, color: "var(--text3)" }}>id: {currentUser.id}</div>}
       </div>
 
       {(loading || generating) && (
@@ -2508,6 +2544,26 @@ function RegulationsTab({ selectedState, currentUser }) {
             <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.8 }}>{regs.general}</p>
           </div>
         </>
+      )}
+
+      {showAdmin && currentUser?.id === ADMIN_USER_ID && (
+        <div className="card" style={{ padding: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>⚙️ Admin — Scrape All States</div>
+            <button onClick={scrapeAllStates} disabled={scraping} className="btn-primary" style={{ padding: "8px 18px", fontSize: 13, opacity: scraping ? 0.5 : 1 }}>
+              {scraping ? "⏳ Running..." : "▶ Run All 50 States"}
+            </button>
+          </div>
+          <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 12 }}>Fetches each state's official site and generates structured regulations. Takes ~5 minutes.</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 6 }}>
+            {STATES.map(s => (
+              <div key={s} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 8px", borderRadius: "var(--radius-sm)", background: scrapeStatus[s] === "done" ? "var(--green-dim)" : scrapeStatus[s] === "error" ? "rgba(255,100,100,0.1)" : scrapeStatus[s] === "loading" ? "rgba(212,147,10,0.1)" : "rgba(255,255,255,0.03)", border: "1px solid var(--border)" }}>
+                <span style={{ fontSize: 10 }}>{scrapeStatus[s] === "done" ? "✅" : scrapeStatus[s] === "error" ? "❌" : scrapeStatus[s] === "loading" ? "⏳" : "⬜"}</span>
+                <span style={{ fontSize: 11, color: "var(--text2)" }}>{s}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       <div style={{ padding: "16px 20px", background: "var(--amber-dim)", border: "1px solid rgba(212,147,10,0.2)", borderRadius: "var(--radius)" }}>
