@@ -497,6 +497,7 @@ function MapTab({ selectedState, user, onSharePin }) {
   const mapInst = useRef(null);
   const markersRef = useRef([]);
   const selectedRef = useRef(null);
+  const dropMarkerRef = useRef(null);
   const [selected, setSelected] = useState(null);
   const [mapStyle, setMapStyle] = useState("satellite");
   const [showUSFS, setShowUSFS] = useState(true);
@@ -577,6 +578,18 @@ function MapTab({ selectedState, user, onSharePin }) {
     return () => { if (mapInst.current) { mapInst.current.remove(); mapInst.current = null; setMapReady(false); } };
   }, []);
 
+  // Temporary drop marker
+  useEffect(() => {
+    import("mapbox-gl").then(({ default: mapboxgl }) => {
+      if (dropMarkerRef.current) { dropMarkerRef.current.remove(); dropMarkerRef.current = null; }
+      if (dropForm && mapInst.current) {
+        const el = document.createElement("div");
+        el.style.cssText = "width:18px;height:18px;border-radius:50%;background:#d4930a;border:3px solid white;box-shadow:0 2px 12px rgba(212,147,10,0.6);cursor:pointer;animation:pulse 1.5s ease-in-out infinite;";
+        dropMarkerRef.current = new mapboxgl.Marker({ element: el, anchor: "center" }).setLngLat([dropForm.lng, dropForm.lat]).addTo(mapInst.current);
+      }
+    });
+  }, [dropForm]);
+
   // USFS/BLM toggles
   useEffect(() => {
     if (!mapReady || !mapInst.current) return;
@@ -626,6 +639,7 @@ function MapTab({ selectedState, user, onSharePin }) {
   const saveDropPin = async () => {
     if (!dropName.trim() || !user) return;
     setSaving(true);
+    if (dropMarkerRef.current) { dropMarkerRef.current.remove(); dropMarkerRef.current = null; }
     await supabase.from("saved_pins").insert({
       user_id: user.id, name: dropName, species: dropSpecies,
       lat: dropForm.lat, lng: dropForm.lng,
@@ -2670,7 +2684,9 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           </div>
         )}
 
-        {tab === "map" && <MapTab selectedState={selectedState} user={user} onSharePin={(pin) => { window._sharePinToComm = pin; setTab("community"); }} />}
+        <div style={{ display: tab === "map" ? "block" : "none" }}>
+          <MapTab selectedState={selectedState} user={user} onSharePin={(pin) => { window._sharePinToComm = pin; setTab("community"); }} />
+        </div>
 
         {tab === "regs" && <RegulationsTab selectedState={selectedState} />}
         {tab === "licenses" && <LicensesTab selectedState={selectedState} />}
