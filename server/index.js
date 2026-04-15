@@ -136,4 +136,29 @@ app.post("/webhook", async (req, res) => {
     res.json({ received: true });
 });
 
+app.post("/scrape-regulations", async (req, res) => {
+    const { state, huntingUrl, fishingUrl } = req.body;
+    try {
+        let rawText = "";
+        try {
+            const r = await fetch(huntingUrl, { headers: { "User-Agent": "Mozilla/5.0" }, signal: AbortSignal.timeout(8000) });
+            const html = await r.text();
+            rawText += html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").slice(0, 8000);
+        } catch { rawText += `Could not fetch ${huntingUrl}. `; }
+        const response = await callAnthropicWithRetry({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 1000,
+            messages: [{
+                role: "user",
+                content: `Based on this official ${state} wildlife agency content, extract the key hunting and fishing regulations. Return ONLY a JSON object with three keys: "hunting" (key species, season dates, bag limits - max 300 chars), "fishing" (key species, seasons, size/bag limits - max 300 chars), "general" (license costs, hunter ed requirements, key notes - max 300 chars). If content is insufficient, use your best knowledge of ${state} regulations for ${new Date().getFullYear()}. No markdown, just JSON.\n\nContent: ${rawText}`
+            }]
+        });
+        const text = response.content[0].text.replace(/```json|```/g, "").trim();
+        const parsed = JSON.parse(text);
+        res.json({ success: true, data: parsed });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 app.listen(3001, () => console.log("Server running on port 3001"));
