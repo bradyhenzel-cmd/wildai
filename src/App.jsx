@@ -2478,14 +2478,14 @@ function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
       </div>
 
       {/* Nav */}
-      <nav style={{ padding: "18px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--border)", backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 50, background: "rgba(8,15,8,0.45)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <img src="/logo.png" style={{ width: 32, height: 32, objectFit: "contain", mixBlendMode: "screen" }} />
-          <span style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.5px" }}>WildAI</span>
+      <nav style={{ padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--border)", backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 50, background: "rgba(8,15,8,0.45)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <img src="/logo.png" className="mobile-header-logo-img" style={{ width: 32, height: 32, objectFit: "contain", mixBlendMode: "screen" }} />
+          <span className="mobile-header-logo" style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.5px" }}>WildAI</span>
         </div>
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <button onClick={onTerms} className="btn-ghost" style={{ padding: "8px 16px", fontSize: 13 }}>Terms</button>
-          <button onClick={onStart} className="btn-primary" style={{ padding: "9px 22px", fontSize: 14 }}>Launch App →</button>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <button onClick={onTerms} className="btn-ghost mobile-home-btn" style={{ padding: "8px 16px", fontSize: 13 }}>Terms</button>
+          <button onClick={onStart} className="btn-primary mobile-home-btn" style={{ padding: "9px 22px", fontSize: 14 }}>Launch App →</button>
         </div>
       </nav>
 
