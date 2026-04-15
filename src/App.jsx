@@ -2323,7 +2323,7 @@ function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
 }
 
 // ─── CHAT PAGE ────────────────────────────────────────────────────────────────
-function ChatPage({ onBack, messageCount, setMessageCount, selectedState, onTerms }) {
+function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSelectedState, onTerms }) {
   const [tab, setTab] = useState("chat");
   const [weather, setWeather] = useState(null);
   const [locationName, setLocationName] = useState("");
@@ -2478,7 +2478,10 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <img src="/logo.png" style={{ width: 28, height: 28, objectFit: "contain", mixBlendMode: "screen" }} />
             <span style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, color: "var(--text)" }}>WildAI</span>
-            {selectedState && <span style={{ color: "var(--text3)", fontSize: 13 }}>· {selectedState}</span>}
+            <select value={selectedState} onChange={e => setSelectedState && setSelectedState(e.target.value)} style={{ background: "transparent", border: "none", color: selectedState ? "var(--text3)" : "var(--text3)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)", outline: "none", maxWidth: 120 }}>
+              <option value="">· State</option>
+              {STATES.map(s => <option key={s} value={s} style={{ background: "#0a150a" }}>· {s}</option>)}
+            </select>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -2514,35 +2517,14 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           { id: "community", icon: "🌲", label: "Community" },
           { id: "more", icon: "☰", label: "More" },
         ].map(t => (
-          <button key={t.id} onClick={() => { if (t.id === "more") { setShowMore(s => !s); } else { setTab(t.id); setShowMore(false); } }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, background: "none", border: "none", cursor: "pointer", color: tab === t.id && t.id !== "more" ? "var(--green)" : showMore && t.id === "more" ? "var(--green)" : "var(--text3)", transition: "color 0.2s" }}>
+          <button key={t.id} onClick={() => { setTab(t.id); setShowMore(false); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, background: "none", border: "none", cursor: "pointer", color: tab === t.id ? "var(--green)" : "var(--text3)", transition: "color 0.2s" }}>
             <span style={{ fontSize: 20 }}>{t.icon}</span>
             <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.04em" }}>{t.label}</span>
           </button>
         ))}
       </div>
 
-      {/* MORE DRAWER */}
-      {showMore && (
-        <div style={{ position: "fixed", bottom: 64, left: 0, right: 0, zIndex: 99, background: "rgba(8,15,8,0.98)", borderTop: "1px solid var(--border)", padding: "16px 20px", backdropFilter: "blur(12px)" }} onClick={() => setShowMore(false)}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, maxWidth: 760, margin: "0 auto" }}>
-            {[
-              { id: "species", icon: "🎯", label: "Species" },
-              { id: "regs", icon: "📋", label: "Regulations" },
-              { id: "trip", icon: "🧭", label: "Trip Planner" },
-              { id: "gear", icon: "🎒", label: "Gear" },
-              { id: "licenses", icon: "🪪", label: "Licenses" },
-              { id: "harvest", icon: "📓", label: "Harvest Log" },
-              { id: "weather", icon: "🌤️", label: "Weather" },
-              { id: "about", icon: "ℹ️", label: "About" },
-            ].map(t => (
-              <button key={t.id} onClick={(e) => { e.stopPropagation(); setTab(t.id); setShowMore(false); }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: tab === t.id ? "var(--green-dim)" : "rgba(255,255,255,0.03)", border: `1px solid ${tab === t.id ? "var(--border-accent)" : "var(--border)"}`, borderRadius: "var(--radius-sm)", cursor: "pointer", color: tab === t.id ? "var(--green)" : "var(--text2)", fontFamily: "var(--font-body)", fontSize: 14, fontWeight: 500, transition: "all 0.15s" }}>
-                <span style={{ fontSize: 20 }}>{t.icon}</span>
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+
 
       <div style={{ flex: 1, padding: 20, paddingBottom: 80, maxWidth: 760, width: "100%", margin: "0 auto", display: "flex", flexDirection: "column", gap: 16, position: "relative", zIndex: 1 }}>
 
@@ -2739,6 +2721,31 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
             )}
           </div>
         )}
+        {tab === "more" && (
+          <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 4 }}>TOOLS & FEATURES</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              {[
+                { id: "species", icon: "🎯", label: "Species", desc: "Hunting & fishing guides" },
+                { id: "regs", icon: "📋", label: "Regulations", desc: "State-specific rules" },
+                { id: "trip", icon: "🧭", label: "Trip Planner", desc: "AI-generated plans" },
+                { id: "gear", icon: "🎒", label: "Gear", desc: "Pack checklists" },
+                { id: "licenses", icon: "🪪", label: "Licenses", desc: "Buy state licenses" },
+                { id: "harvest", icon: "📓", label: "Harvest Log", desc: "Track your catches" },
+                { id: "weather", icon: "🌤️", label: "Weather", desc: "Live conditions" },
+                { id: "about", icon: "ℹ️", label: "About", desc: "App info & account" },
+              ].map(t => (
+                <button key={t.id} onClick={() => setTab(t.id)} className="card" style={{ padding: "18px 16px", textAlign: "left", cursor: "pointer", border: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 14 }}>
+                  <span style={{ fontSize: 28, flexShrink: 0 }}>{t.icon}</span>
+                  <div>
+                    <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{t.label}</div>
+                    <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>{t.desc}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {tab === "harvest" && <HarvestLogTab user={user} openSignIn={openSignIn} />}
         {tab === "community" && <CommunityTab selectedState={selectedState} user={user} openSignIn={openSignIn} />}
         {tab === "about" && (
@@ -2781,29 +2788,41 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 
 // ─── ROOT ─────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [page, setPage] = useState("landing");
+  const [page, setPage] = useState(() => {
+    const savedState = localStorage.getItem("wildai_selected_state");
+    return savedState ? "chat" : "landing";
+  });
   const [prevPage, setPrevPage] = useState("landing");
   const [messageCount, setMessageCount] = useState(() => {
     const saved = localStorage.getItem("wildai_message_count");
     return saved ? parseInt(saved) : 0;
   });
+  const [selectedState, setSelectedState] = useState(() => {
+    return localStorage.getItem("wildai_selected_state") || "";
+  });
+
+  const handleSetSelectedState = (state) => {
+    setSelectedState(state);
+    if (state) localStorage.setItem("wildai_selected_state", state);
+    else localStorage.removeItem("wildai_selected_state");
+  };
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("upgraded") === "true") {
-
       window.history.replaceState({}, "", "/");
       setPage("chat");
     }
   }, []);
-  const [selectedState, setSelectedState] = useState("");
+
   const goTo = (p) => { setPrevPage(page); setPage(p); };
   return (
     <>
       <style>{css}</style>
       <div className="grain" />
       {page === "terms" && <TermsPage onBack={() => setPage(prevPage === "chat" ? "chat" : "landing")} />}
-      {page === "landing" && <LandingPage onStart={() => goTo("chat")} selectedState={selectedState} setSelectedState={setSelectedState} onTerms={() => goTo("terms")} />}
-      {page === "chat" && <ChatPage onBack={() => goTo("landing")} messageCount={messageCount} setMessageCount={setMessageCount} selectedState={selectedState} onTerms={() => goTo("terms")} />}
+      {page === "landing" && <LandingPage onStart={() => goTo("chat")} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} />}
+      {page === "chat" && <ChatPage onBack={() => { localStorage.removeItem("wildai_selected_state"); setSelectedState(""); goTo("landing"); }} messageCount={messageCount} setMessageCount={setMessageCount} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} />}
     </>
   );
 }
