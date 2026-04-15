@@ -569,7 +569,6 @@ function MapTab({ selectedState, user, onSharePin }) {
       map.addControl(geolocate, "top-right");
       map.on("load", () => { addLayers(map, true, true); setMapReady(true); setTimeout(() => geolocate.trigger(), 500); });
       map.on("click", e => {
-        if (!user) return;
         if (e.originalEvent.target.classList.contains("wildai-pin")) return;
         setDropForm({ lng: e.lngLat.lng, lat: e.lngLat.lat });
         setDropName(""); setDropSpecies(""); setSelected(null);
@@ -2684,7 +2683,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           </div>
         )}
 
-        <div style={{ display: tab === "map" ? "block" : "none" }}>
+        <div style={{ display: tab === "map" ? "block" : "none" }} ref={el => { if (el && tab === "map") setTimeout(() => window.dispatchEvent(new Event('resize')), 100); }}>
           <MapTab selectedState={selectedState} user={user} onSharePin={(pin) => { window._sharePinToComm = pin; setTab("community"); }} />
         </div>
 
