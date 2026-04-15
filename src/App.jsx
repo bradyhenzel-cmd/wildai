@@ -354,6 +354,14 @@ const css = `
   .leaflet-container { background:#0d1a0d !important; }
   .leaflet-tile { filter:brightness(0.55) saturate(0.45) hue-rotate(55deg) !important; }
   .custom-marker { background:none !important; border:none !important; }
+  @media (max-width: 640px) {
+    .mobile-home-btn { padding:5px 10px !important; font-size:12px !important; }
+    .mobile-header-badge { padding:4px 8px !important; font-size:11px !important; }
+    .mobile-header-logo { font-size:15px !important; }
+    .mobile-header-logo-img { width:22px !important; height:22px !important; }
+    .mobile-state-select { display:none !important; }
+    .mobile-header-center { position:absolute !important; left:50% !important; transform:translateX(-50%) !important; }
+  }
 `;
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
@@ -1313,17 +1321,15 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
             </div>
           )}
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L8 8H4l4 4H5l7 7 7-7h-3l4-4h-4z" /><line x1="12" y1="19" x2="12" y2="22" /></svg>
-              <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 20, fontFamily: "var(--font-display)" }}>WildAI Community</span>
-            </div>
-            <div style={{ color: "var(--text3)", fontSize: 12 }}>{posts.length > 0 ? `${posts.length} post${posts.length !== 1 ? "s" : ""} from hunters & anglers` : "Be the first to post"}</div>
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L8 8H4l4 4H5l7 7 7-7h-3l4-4h-4z" /><line x1="12" y1="19" x2="12" y2="22" /></svg>
+            <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, fontFamily: "var(--font-display)" }}>WildAI Community</span>
           </div>
-          <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-            {user && <button onClick={() => setViewingProfile(user.id)} className="btn-ghost" style={{ padding: "9px 18px", fontSize: 13 }}>My Profile</button>}
-            <button onClick={() => { if (!user) { openSignIn(); return; } setShowForm(s => !s); }} className="btn-primary" style={{ padding: "9px 18px", fontSize: 13 }}>
+          <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 10 }}>{posts.length > 0 ? `${posts.length} post${posts.length !== 1 ? "s" : ""} from hunters & anglers` : "Be the first to post"}</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            {user && <button onClick={() => setViewingProfile(user.id)} className="btn-ghost" style={{ padding: "7px 14px", fontSize: 13 }}>My Profile</button>}
+            <button onClick={() => { if (!user) { openSignIn(); return; } setShowForm(s => !s); }} className="btn-primary" style={{ padding: "7px 14px", fontSize: 13 }}>
               {showForm ? "Cancel" : "+ Post"}
             </button>
           </div>
@@ -2697,20 +2703,20 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0 }}>
       </div>
 
-      <header style={{ borderBottom: "1px solid rgba(120,180,80,0.1)", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", backdropFilter: "blur(24px)", background: "rgba(5,10,5,0.88)", position: "sticky", top: 0, zIndex: 50, boxShadow: "0 4px 24px rgba(0,0,0,0.3), 0 1px 0 rgba(120,180,80,0.08)" }}>
+      <header style={{ borderBottom: "1px solid rgba(120,180,80,0.1)", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", backdropFilter: "blur(24px)", background: "rgba(5,10,5,0.88)", position: "sticky", top: 0, zIndex: 50, boxShadow: "0 4px 24px rgba(0,0,0,0.3), 0 1px 0 rgba(120,180,80,0.08)", overflow: "visible" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <button onClick={onBack} className="btn-ghost" style={{ padding: "7px 14px", fontSize: 13 }}>← Home</button>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <img src="/logo.png" style={{ width: 28, height: 28, objectFit: "contain", mixBlendMode: "screen" }} />
-            <span style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, color: "var(--text)" }}>WildAI</span>
-            <select value={selectedState} onChange={e => setSelectedState && setSelectedState(e.target.value)} style={{ background: "transparent", border: "none", color: selectedState ? "var(--text3)" : "var(--text3)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)", outline: "none", maxWidth: 120 }}>
+          <button onClick={onBack} className="btn-ghost mobile-home-btn" style={{ padding: "7px 14px", fontSize: 13 }}>← Home</button>
+          <div className="mobile-header-center" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <img src="/logo.png" className="mobile-header-logo-img" style={{ width: 28, height: 28, objectFit: "contain", mixBlendMode: "screen" }} />
+            <span className="mobile-header-logo" style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, color: "var(--text)" }}>WildAI</span>
+            <select className="mobile-state-select" value={selectedState} onChange={e => setSelectedState && setSelectedState(e.target.value)} style={{ background: "transparent", border: "none", color: selectedState ? "var(--text3)" : "var(--text3)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)", outline: "none", maxWidth: 120 }}>
               <option value="">· State</option>
               {STATES.map(s => <option key={s} value={s} style={{ background: "#0a150a" }}>· {s}</option>)}
             </select>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: hitLimit ? "rgba(255,100,100,0.1)" : "var(--green-dim)", border: `1px solid ${hitLimit ? "rgba(255,100,100,0.2)" : "var(--border-accent)"}`, color: hitLimit ? "#ff6b6b" : "var(--green)" }}>
+          <div className="mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: hitLimit ? "rgba(255,100,100,0.1)" : "var(--green-dim)", border: `1px solid ${hitLimit ? "rgba(255,100,100,0.2)" : "var(--border-accent)"}`, color: hitLimit ? "#ff6b6b" : "var(--green)" }}>
             {hitLimit ? "Limit reached" : isPro ? "Pro ✓" : `${Math.max(0, FREE_LIMIT - messageCount)} msgs left`}
           </div>
           {!user ? (
@@ -2842,7 +2848,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
               {!hitLimit && (
                 <div style={{ padding: "14px 20px", borderTop: "1px solid var(--border)", display: "flex", gap: 10, alignItems: "center" }}>
                   <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && sendMessage()}
-                    placeholder={`Ask anything about hunting & fishing${selectedState ? ` in ${selectedState}` : ""}...`}
+                    placeholder={`Ask about hunting & fishing${selectedState ? ` in ${selectedState}` : ""}...`}
                     style={{ flex: 1, padding: "13px 18px", borderRadius: "var(--radius-sm)", fontSize: 14 }} />
                   <button onClick={() => sendMessage()} className="btn-primary" style={{ padding: "13px 22px", fontSize: 14, borderRadius: "var(--radius-sm)", flexShrink: 0 }}>Send →</button>
                 </div>
@@ -3009,7 +3015,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         )}
       </div>
 
-      <footer style={{ borderTop: "1px solid var(--border)", padding: "14px 20px", textAlign: "center", position: "relative", zIndex: 1 }}>
+      <footer style={{ borderTop: "1px solid var(--border)", padding: "14px 20px", textAlign: "center", position: "relative", zIndex: 1, display: "none" }}>
         <span style={{ color: "var(--text3)", fontSize: 11 }}>WildAI · Powered by AI · Always verify regulations with your state agency</span>
       </footer>
     </div>
