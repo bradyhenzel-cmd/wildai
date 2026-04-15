@@ -2848,7 +2848,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
               {!hitLimit && (
                 <div style={{ padding: "14px 20px", borderTop: "1px solid var(--border)", display: "flex", gap: 10, alignItems: "center" }}>
                   <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && sendMessage()}
-                    placeholder={`Ask about hunting & fishing${selectedState ? ` in ${selectedState}` : ""}...`}
+                    placeholder={`Ask anything...`}
                     style={{ flex: 1, padding: "13px 18px", borderRadius: "var(--radius-sm)", fontSize: 14 }} />
                   <button onClick={() => sendMessage()} className="btn-primary" style={{ padding: "13px 22px", fontSize: 14, borderRadius: "var(--radius-sm)", flexShrink: 0 }}>Send →</button>
                 </div>
