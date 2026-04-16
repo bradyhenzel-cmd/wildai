@@ -520,6 +520,98 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
 }
 
 // ─── MAP TAB ──────────────────────────────────────────────────────────────────
+function PinsPage({ pins, onBack, onSelectPin }) {
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 1010, background: "#070e07", display: "flex", flexDirection: "column", fontFamily: "var(--font-body)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", borderBottom: "1px solid var(--border)", background: "rgba(8,15,8,0.98)" }}>
+        <button onClick={onBack} className="btn-ghost" style={{ padding: "6px 12px", fontSize: 13 }}>← Back</button>
+        <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 16 }}>📍 My Pins</span>
+        <span style={{ color: "var(--text3)", fontSize: 12, marginLeft: 4 }}>({pins.length})</span>
+      </div>
+      <div style={{ flex: 1, overflowY: "auto", padding: "12px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+        {pins.length === 0 && (
+          <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14 }}>
+            <div style={{ fontSize: 36, marginBottom: 10 }}>📍</div>
+            No pins yet. Tap the map to drop one.
+          </div>
+        )}
+        {pins.map(pin => (
+          <button key={pin.id} onClick={() => onSelectPin(pin)} className="card" style={{ width: "100%", textAlign: "left", padding: "14px 16px", cursor: "pointer", background: "none", border: "1px solid var(--border)", borderRadius: "var(--radius)", display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--green)", flexShrink: 0 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 14, marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{pin.name || "Unnamed Spot"}</div>
+              {pin.species && <div style={{ color: "var(--green)", fontSize: 12 }}>{pin.species}</div>}
+              {pin.location && <div style={{ color: "var(--text3)", fontSize: 11 }}>{pin.location}</div>}
+            </div>
+            <span style={{ color: "var(--text3)", fontSize: 18 }}>›</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PinDetailPage({ pin, onBack, onDelete, onSharePin, onSave }) {
+  const [name, setName] = useState(pin.name || "");
+  const [species, setSpecies] = useState(pin.species || "");
+  const [notes, setNotes] = useState(pin.notes || "");
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    await onSave(pin.id, { name, species, notes });
+    setSaving(false);
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm("Delete this pin?")) return;
+    setDeleting(true);
+    await onDelete(pin.id);
+  };
+
+  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${pin.lat},${pin.lng}`;
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 1020, background: "#070e07", display: "flex", flexDirection: "column", fontFamily: "var(--font-body)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", borderBottom: "1px solid var(--border)", background: "rgba(8,15,8,0.98)" }}>
+        <button onClick={onBack} className="btn-ghost" style={{ padding: "6px 12px", fontSize: 13 }}>← Back</button>
+        <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 16 }}>Pin Detail</span>
+        <button onClick={handleDelete} disabled={deleting} style={{ marginLeft: "auto", background: "none", border: "none", color: "rgba(255,100,100,0.75)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)", padding: "6px 10px" }}>
+          {deleting ? "..." : "🗑️ Delete"}
+        </button>
+      </div>
+      <div style={{ flex: 1, overflowY: "auto", padding: "20px 18px", display: "flex", flexDirection: "column", gap: 16 }}>
+        <div>
+          <label style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 6 }}>Name</label>
+          <input value={name} onChange={e => setName(e.target.value)} style={{ width: "100%", padding: "11px 14px", borderRadius: "var(--radius-sm)", fontSize: 14, boxSizing: "border-box" }} />
+        </div>
+        <div>
+          <label style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 6 }}>Species / Type</label>
+          <input value={species} onChange={e => setSpecies(e.target.value)} placeholder="e.g. Elk, Trout, Duck..." style={{ width: "100%", padding: "11px 14px", borderRadius: "var(--radius-sm)", fontSize: 14, boxSizing: "border-box" }} />
+        </div>
+        <div>
+          <label style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 6 }}>Notes</label>
+          <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Conditions, access, scouting notes..." rows={4} style={{ width: "100%", padding: "11px 14px", borderRadius: "var(--radius-sm)", fontSize: 14, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text)", outline: "none", resize: "vertical", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
+        </div>
+        <div style={{ padding: "14px 16px", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)" }}>
+          <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Coordinates</div>
+          <div style={{ color: "var(--text2)", fontSize: 13, fontFamily: "monospace" }}>{pin.lat?.toFixed(5)}, {pin.lng?.toFixed(5)}</div>
+        </div>
+        <button onClick={handleSave} disabled={saving} className="btn-primary" style={{ padding: "13px", fontSize: 14 }}>
+          {saving ? "Saving..." : "Save Changes"}
+        </button>
+        <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="btn-ghost" style={{ padding: "13px", fontSize: 14, textAlign: "center", display: "block", textDecoration: "none", color: "var(--text2)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)" }}>
+          🧭 Get Directions
+        </a>
+        <button onClick={() => onSharePin(pin)} style={{ background: "none", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", color: "var(--text2)", fontSize: 14, padding: "13px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+          📤 Share to Community
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function MapTab({ selectedState, user, onSharePin }) {
   const mapRef = useRef(null);
   const mapInst = useRef(null);
@@ -642,6 +734,7 @@ function MapTab({ selectedState, user, onSharePin }) {
             e.stopPropagation();
             setSelected(pin);
             setDropForm(null);
+            setShowPinsPage(false);
             setViewingPin(pin);
           });
           const marker = new mapboxgl.Marker({ element: el, anchor: "center" }).setLngLat([pin.lng, pin.lat]).addTo(mapInst.current);
@@ -692,10 +785,37 @@ function MapTab({ selectedState, user, onSharePin }) {
     await supabase.from("saved_pins").delete().eq("id", id);
     setPins(prev => prev.filter(p => p.id !== id));
     setSelected(null);
+    setViewingPin(null);
+    setShowPinsPage(false);
+  };
+
+  const updatePin = async (id, fields) => {
+    await supabase.from("saved_pins").update(fields).eq("id", id);
+    setPins(prev => prev.map(p => p.id === id ? { ...p, ...fields } : p));
+    setViewingPin(prev => prev?.id === id ? { ...prev, ...fields } : prev);
   };
 
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      {showPinsPage && !viewingPin && (
+        <PinsPage
+          pins={pins}
+          onBack={() => setShowPinsPage(false)}
+          onSelectPin={(pin) => setViewingPin(pin)}
+        />
+      )}
+      {viewingPin && (
+        <PinDetailPage
+          pin={viewingPin}
+          onBack={() => {
+            if (showPinsPage) { setViewingPin(null); }
+            else { setViewingPin(null); }
+          }}
+          onDelete={async (id) => { await removePin(id); }}
+          onSave={updatePin}
+          onSharePin={(pin) => { setViewingPin(null); setShowPinsPage(false); onSharePin(pin); }}
+        />
+      )}
       <div className="card" style={{ padding: "14px 18px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
           <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>🗺️ My Hunting Map</span>
