@@ -728,14 +728,21 @@ function MapTab({ selectedState, user, onSharePin }) {
       </div>
 
       {dropForm && user && (
-        <div className="card fade-in" style={{ padding: "16px 20px" }}>
-          <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 12 }}>DROP PIN · {dropForm.lat.toFixed(4)}, {dropForm.lng.toFixed(4)}</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <input placeholder="Name this spot *" value={dropName} onChange={e => setDropName(e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
-            <input placeholder="Species (optional)" value={dropSpecies} onChange={e => setDropSpecies(e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={saveDropPin} disabled={!dropName.trim() || saving} className="btn-primary" style={{ flex: 1, padding: "9px", fontSize: 13, opacity: !dropName.trim() ? 0.5 : 1 }}>{saving ? "Saving..." : "📍 Save Pin"}</button>
-              <button onClick={() => setDropForm(null)} className="btn-ghost" style={{ padding: "9px 16px", fontSize: 13 }}>Cancel</button>
+        <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "flex-end" }} onClick={() => setDropForm(null)}>
+          <div onClick={e => e.stopPropagation()} className="fade-in" style={{ width: "100%", background: "#0d1a0d", borderRadius: "20px 20px 0 0", padding: "20px 20px 36px", border: "1px solid var(--border)", borderBottom: "none", boxShadow: "0 -8px 40px rgba(0,0,0,0.6)" }}>
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.15)", margin: "0 auto 18px" }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+              <span style={{ fontSize: 18 }}>📍</span>
+              <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>Drop a Pin</div>
+              <div style={{ color: "var(--text3)", fontSize: 11, marginLeft: 4 }}>{dropForm.lat.toFixed(4)}, {dropForm.lng.toFixed(4)}</div>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <input placeholder="Name this spot *" value={dropName} onChange={e => setDropName(e.target.value)} autoFocus style={{ width: "100%", padding: "12px 14px", borderRadius: "var(--radius-sm)", fontSize: 14 }} />
+              <input placeholder="Species (optional)" value={dropSpecies} onChange={e => setDropSpecies(e.target.value)} style={{ width: "100%", padding: "12px 14px", borderRadius: "var(--radius-sm)", fontSize: 14 }} />
+              <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                <button onClick={saveDropPin} disabled={!dropName.trim() || saving} className="btn-primary" style={{ flex: 1, padding: "12px", fontSize: 14, opacity: !dropName.trim() ? 0.5 : 1 }}>{saving ? "Saving..." : "Save Pin"}</button>
+                <button onClick={() => setDropForm(null)} className="btn-ghost" style={{ padding: "12px 18px", fontSize: 14 }}>Cancel</button>
+              </div>
             </div>
           </div>
         </div>
@@ -1922,6 +1929,125 @@ function TrophyBoardTab({ user, openSignIn, selectedState }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+// ─── BALLISTICS TAB ───────────────────────────────────────────────────────────
+function BallisticsTab() {
+  const [form, setForm] = useState({ label: "", weight: "", velocity: "", bc: "", zero: "100", scopeHeight: "1.5", wind: "" });
+  const [results, setResults] = useState(null);
+
+  const calculate = () => {
+    const mv = parseFloat(form.velocity);
+    const bc = parseFloat(form.bc);
+    const weight = parseFloat(form.weight);
+    const zero = parseInt(form.zero);
+    const sh = parseFloat(form.scopeHeight) / 12; // convert to feet
+    const wind = parseFloat(form.wind) || 0;
+    if (!mv || !bc || !weight) return;
+
+    const g = 32.174; // gravity ft/s²
+    const rows = [];
+
+    for (let yd = 0; yd <= 500; yd += 100) {
+      const ft = yd * 3;
+      const t = ft / mv; // simplified time of flight
+      const drop_ft = 0.5 * g * t * t;
+      const drop_in_raw = drop_ft * 12;
+
+      // Velocity using G1 drag (simplified)
+      const vr = mv * Math.pow(Math.E, -0.00003 * ft / bc);
+
+      // Energy in ft-lbs
+      const energy = (weight * vr * vr) / 450400;
+
+      // Wind drift (simplified)
+      const drift = (wind * (t - ft / mv)) * 12 * 0.3;
+
+      rows.push({ yd, drop_in_raw, vr: Math.round(vr), energy: Math.round(energy), drift: Math.round(drift * 10) / 10 });
+    }
+
+    // Zero correction
+    const zeroRow = rows.find(r => r.yd === zero) || rows[1];
+    const zeroOffset = zeroRow.drop_in_raw - (sh * 12);
+    const corrected = rows.map(r => ({ ...r, drop: Math.round((r.drop_in_raw - zeroOffset - (sh * 12)) * 10) / 10 }));
+    setResults(corrected);
+  };
+
+  return (
+    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div className="card" style={{ padding: "20px 24px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+          <span style={{ fontSize: 24 }}>🎯</span>
+          <div>
+            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, fontFamily: "var(--font-display)" }}>Ballistics Calculator</div>
+            <div style={{ color: "var(--text3)", fontSize: 12 }}>Bullet drop & wind drift at range</div>
+          </div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+          <div style={{ gridColumn: "1 / -1" }}>
+            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>LOAD NAME (optional)</div>
+            <input placeholder="e.g. .308 Win 168gr Federal" value={form.label} onChange={e => setForm(f => ({ ...f, label: e.target.value }))} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+          </div>
+          <div>
+            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>BULLET WEIGHT (gr)</div>
+            <input type="number" placeholder="e.g. 168" value={form.weight} onChange={e => setForm(f => ({ ...f, weight: e.target.value }))} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+          </div>
+          <div>
+            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>MUZZLE VELOCITY (fps)</div>
+            <input type="number" placeholder="e.g. 2650" value={form.velocity} onChange={e => setForm(f => ({ ...f, velocity: e.target.value }))} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+          </div>
+          <div>
+            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>BALLISTIC COEFF (G1)</div>
+            <input type="number" placeholder="e.g. 0.47" value={form.bc} onChange={e => setForm(f => ({ ...f, bc: e.target.value }))} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+          </div>
+          <div>
+            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>ZERO DISTANCE (yd)</div>
+            <select value={form.zero} onChange={e => setForm(f => ({ ...f, zero: e.target.value }))} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }}>
+              <option value="50">50 yards</option>
+              <option value="100">100 yards</option>
+              <option value="200">200 yards</option>
+            </select>
+          </div>
+          <div>
+            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>WIND SPEED (mph)</div>
+            <input type="number" placeholder="e.g. 10" value={form.wind} onChange={e => setForm(f => ({ ...f, wind: e.target.value }))} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+          </div>
+        </div>
+        <button onClick={calculate} disabled={!form.weight || !form.velocity || !form.bc} className="btn-primary" style={{ width: "100%", padding: "11px", fontSize: 14, opacity: (!form.weight || !form.velocity || !form.bc) ? 0.5 : 1 }}>
+          Calculate Drop Chart
+        </button>
+      </div>
+
+      {results && (
+        <div className="card fade-in" style={{ padding: "20px 24px", overflowX: "auto" }}>
+          {form.label && <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15, marginBottom: 14, fontFamily: "var(--font-display)" }}>{form.label}</div>}
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+            <thead>
+              <tr>
+                {["Range", "Drop", "Velocity", "Energy", form.wind ? "Wind Drift" : null].filter(Boolean).map(h => (
+                  <th key={h} style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textAlign: "center", padding: "6px 8px", borderBottom: "1px solid var(--border)" }}>{h.toUpperCase()}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {results.map((r, i) => (
+                <tr key={r.yd} style={{ background: i % 2 === 0 ? "rgba(255,255,255,0.02)" : "transparent" }}>
+                  <td style={{ color: "var(--green)", fontWeight: 700, textAlign: "center", padding: "10px 8px" }}>{r.yd} yd</td>
+                  <td style={{ color: r.drop > 0 ? "rgba(255,100,100,0.8)" : r.drop < 0 ? "var(--green)" : "var(--text)", textAlign: "center", padding: "10px 8px", fontWeight: 600 }}>{r.drop > 0 ? "+" : ""}{r.drop}"</td>
+                  <td style={{ color: "var(--text2)", textAlign: "center", padding: "10px 8px" }}>{r.vr} fps</td>
+                  <td style={{ color: "var(--text2)", textAlign: "center", padding: "10px 8px" }}>{r.energy} ft-lb</td>
+                  {form.wind && <td style={{ color: "var(--amber)", textAlign: "center", padding: "10px 8px" }}>{r.drift}"</td>}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div style={{ marginTop: 12, padding: "10px 14px", background: "var(--amber-dim)", border: "1px solid rgba(212,147,10,0.2)", borderRadius: "var(--radius-sm)" }}>
+            <p style={{ color: "rgba(212,147,10,0.8)", fontSize: 11, margin: 0 }}>⚠️ Simplified G1 model — use as a field reference only. Always confirm with actual range data.</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -3229,6 +3355,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                 { id: "licenses", icon: "🪪", label: "Licenses", desc: "Buy state licenses" },
                 { id: "harvest", icon: "📓", label: "Harvest Log", desc: "Track your catches" },
                 { id: "trophy", icon: "🏆", label: "Trophy Board", desc: "Community verified harvests" },
+                { id: "ballistics", icon: "🎯", label: "Ballistics", desc: "Bullet drop calculator" },
                 { id: "weather", icon: "🌤️", label: "Weather", desc: "Live conditions" },
                 { id: "about", icon: "ℹ️", label: "About", desc: "App info & account" },
               ].map(t => (
@@ -3244,6 +3371,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           </div>
         )}
         {tab === "harvest" && <HarvestLogTab user={user} openSignIn={openSignIn} />}
+        {tab === "ballistics" && <BallisticsTab />}
         {tab === "trophy" && <TrophyBoardTab user={user} openSignIn={openSignIn} selectedState={selectedState} />}
         {tab === "community" && <CommunityTab selectedState={selectedState} user={user} openSignIn={openSignIn} />}
         {tab === "about" && (
