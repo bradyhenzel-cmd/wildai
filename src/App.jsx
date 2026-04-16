@@ -1177,6 +1177,80 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser }
 }
 
 // ─── COMMUNITY TAB ────────────────────────────────────────────────────────────
+function HotspotsTab({ posts, loading, user, selectedState, savedPinIds, saveToMap, openSignIn }) {
+  const [filter, setFilter] = useState("all");
+  const [userCoords, setUserCoords] = useState(null);
+  const [locating, setLocating] = useState(false);
+
+  const hotspots = posts.filter(p => p.lat && p.lng);
+
+  const getDistance = (lat1, lng1, lat2, lng2) => {
+    const R = 3958.8;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
+
+  const handleNearMe = () => {
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(pos => {
+      setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      setFilter("nearme");
+      setLocating(false);
+    }, () => { alert("Couldn't get your location."); setLocating(false); });
+  };
+
+  const filtered = hotspots
+    .filter(p => filter === "state" ? p.state === selectedState : true)
+    .map(p => ({ ...p, distance: userCoords ? getDistance(userCoords.lat, userCoords.lng, p.lat, p.lng) : null }))
+    .sort((a, b) => filter === "nearme" && a.distance != null ? a.distance - b.distance : new Date(b.created_at) - new Date(a.created_at));
+
+  return (
+    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button onClick={() => setFilter("all")} style={{ padding: "7px 14px", borderRadius: 20, border: filter === "all" ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: filter === "all" ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: filter === "all" ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: filter === "all" ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>All</button>
+          {selectedState && <button onClick={() => setFilter("state")} style={{ padding: "7px 14px", borderRadius: 20, border: filter === "state" ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: filter === "state" ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: filter === "state" ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: filter === "state" ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>📍 {selectedState}</button>}
+        </div>
+        <button onClick={handleNearMe} style={{ padding: "7px 14px", borderRadius: 20, border: filter === "nearme" ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: filter === "nearme" ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: filter === "nearme" ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: filter === "nearme" ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+          {locating ? "Locating..." : "📡 Near Me"}
+        </button>
+      </div>
+      {loading && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14 }} className="pulse">Loading hotspots...</div>}
+      {!loading && filtered.length === 0 && (
+        <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>📍</div>
+          <div style={{ color: "var(--text)", fontWeight: 600, marginBottom: 6 }}>No hotspots yet</div>
+          Posts with a location show up here
+        </div>
+      )}
+      {filtered.map(post => (
+        <div key={post.id} className="card fade-in" style={{ padding: 0, overflow: "hidden" }}>
+          {post.photo && <img src={post.photo} style={{ width: "100%", maxHeight: 200, objectFit: "cover" }} />}
+          <div style={{ padding: "12px 14px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+              <div>
+                {post.species && <span style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)", padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600, marginRight: 6 }}>{post.species}</span>}
+                <span style={{ color: "var(--text3)", fontSize: 11 }}>{post.state}</span>
+              </div>
+              {post.distance != null && <span style={{ color: "var(--green)", fontSize: 12, fontWeight: 600 }}>{Math.round(post.distance)} mi</span>}
+            </div>
+            {post.location && <div style={{ color: "var(--text2)", fontSize: 13, marginBottom: 4 }}>📍 {post.location}</div>}
+            {post.caption && <p style={{ color: "var(--text2)", fontSize: 13, lineHeight: 1.5, margin: "0 0 8px" }}>{post.caption}</p>}
+            <div style={{ display: "flex", gap: 8 }}>
+              <a href={`https://www.google.com/maps/dir/?api=1&destination=${post.lat},${post.lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 12, fontWeight: 600 }}>🗺️ Directions</a>
+              <button onClick={() => saveToMap(post)} style={{ background: savedPinIds.has(post.id) ? "var(--green-dim)" : "rgba(255,255,255,0.04)", border: `1px solid ${savedPinIds.has(post.id) ? "var(--border-accent)" : "var(--border)"}`, color: savedPinIds.has(post.id) ? "var(--green)" : "var(--text2)", padding: "4px 10px", borderRadius: "var(--radius-sm)", fontSize: 12, cursor: savedPinIds.has(post.id) ? "default" : "pointer", fontFamily: "var(--font-body)" }}>
+                {savedPinIds.has(post.id) ? "✓ Saved" : "📍 Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1341,11 +1415,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
         </div>
       )}
       {communityTab === "hotspots" && (
-        <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text3)", fontSize: 14 }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>📍</div>
-          <div style={{ color: "var(--text)", fontWeight: 600, marginBottom: 6 }}>Hotspots</div>
-          Coming soon
-        </div>
+        <HotspotsTab posts={posts} loading={loading} user={user} selectedState={selectedState} savedPinIds={savedPinIds} saveToMap={saveToMap} openSignIn={openSignIn} />
       )}
       {communityTab === "profile" && (
         !user ? (
@@ -1397,22 +1467,14 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
             </div>
           )}
         </div>
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L8 8H4l4 4H5l7 7 7-7h-3l4-4h-4z" /><line x1="12" y1="19" x2="12" y2="22" /></svg>
-            <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, fontFamily: "var(--font-display)" }}>WildAI Community</span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button onClick={() => setStateFilter("all")} style={{ padding: "7px 14px", borderRadius: 20, border: stateFilter === "all" ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: stateFilter === "all" ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: stateFilter === "all" ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: stateFilter === "all" ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>All</button>
+            {selectedState && <button onClick={() => setStateFilter(selectedState)} style={{ padding: "7px 14px", borderRadius: 20, border: stateFilter === selectedState ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: stateFilter === selectedState ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: stateFilter === selectedState ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: stateFilter === selectedState ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>📍 {selectedState}</button>}
           </div>
-          <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 10 }}>{posts.length > 0 ? `${posts.length} post${posts.length !== 1 ? "s" : ""} from hunters & anglers` : "Be the first to post"}</div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => setCommunityTab("profile")} className="btn-ghost" style={{ padding: "7px 14px", fontSize: 13 }}>+ Post</button>
-          </div>
-        </div>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          <button onClick={() => setStateFilter("all")} className={`nav-tab ${stateFilter === "all" ? "active" : "inactive"}`} style={{ padding: "5px 12px", fontSize: 11, flexShrink: 0 }}>All States</button>
-          {selectedState && <button onClick={() => setStateFilter(selectedState)} className={`nav-tab ${stateFilter === selectedState ? "active" : "inactive"}`} style={{ padding: "5px 12px", fontSize: 11, flexShrink: 0 }}>📍 {selectedState}</button>}
-          <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
-            <button onClick={() => setSortBy("newest")} className={`nav-tab ${sortBy === "newest" ? "active" : "inactive"}`} style={{ padding: "5px 12px", fontSize: 11, flexShrink: 0 }}>New</button>
-            <button onClick={() => setSortBy("top")} className={`nav-tab ${sortBy === "top" ? "active" : "inactive"}`} style={{ padding: "5px 12px", fontSize: 11, flexShrink: 0 }}>🔥 Top</button>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button onClick={() => setSortBy("newest")} style={{ padding: "7px 14px", borderRadius: 20, border: sortBy === "newest" ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: sortBy === "newest" ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: sortBy === "newest" ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: sortBy === "newest" ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>New</button>
+            <button onClick={() => setSortBy("top")} style={{ padding: "7px 14px", borderRadius: 20, border: sortBy === "top" ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: sortBy === "top" ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: sortBy === "top" ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: sortBy === "top" ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>🔥 Top</button>
           </div>
         </div>
       </div>}

@@ -161,4 +161,45 @@ app.post("/scrape-regulations", async (req, res) => {
     }
 });
 
+app.post("/messages/send", async (req, res) => {
+    const { sender_id, recipient_id, content, image_url, pin_lat, pin_lng, pin_name } = req.body;
+    if (!sender_id || !recipient_id) return res.status(400).json({ error: "Missing fields" });
+    const { createClient } = require("@supabase/supabase-js");
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+    const { data, error } = await supabase.from("messages").insert([{ sender_id, recipient_id, content, image_url, pin_lat, pin_lng, pin_name }]).select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
+});
+
+app.get("/messages/conversation/:otherId", async (req, res) => {
+    const { userId } = req.query;
+    const { otherId } = req.params;
+    if (!userId) return res.status(400).json({ error: "Missing userId" });
+    const { createClient } = require("@supabase/supabase-js");
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+    const { data, error } = await supabase.from("messages").select("*")
+        .or(`and(sender_id.eq.${userId},recipient_id.eq.${otherId}),and(sender_id.eq.${otherId},recipient_id.eq.${userId})`)
+        .order("created_at", { ascending: true });
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
+});
+
+app.get("/messages/inbox", async (req, res) => {
+    const { userId } = req.query;
+    if (!userId) return res.status(400).json({ error: "Missing userId" });
+    const { createClient } = require("@supabase/supabase-js");
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+    const { data, error } = await supabase.from("messages").select("*")
+        .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
+        .order("created_at", { ascending: false });
+    if (error) return res.status(500).json({ error: error.message });
+    const threads = {};
+    (data || []).forEach(msg => {
+        const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
+        if (!threads[otherId]) threads[otherId] = { otherId, lastMessage: msg, unread: 0 };
+        if (!msg.read && msg.recipient_id === userId) threads[otherId].unread++;
+    });
+    res.json(Object.values(threads));
+});
+
 app.listen(3001, () => console.log("Server running on port 3001"));
