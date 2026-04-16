@@ -1016,7 +1016,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
               <div style={{ width: 88, height: 88, borderRadius: "50%", background: "linear-gradient(135deg, #1e4010, #0f2408)", border: "4px solid rgba(8,15,8,1)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.6), 0 0 0 1px rgba(120,180,80,0.2)" }}>
                 {profile?.avatar_url ? <img src={`${profile.avatar_url}?t=${profile.avatar_updated_at || 0}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 36, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700, lineHeight: 1 }}>{displayName[0]?.toUpperCase()}</span>}
               </div>
-              
+
             </div>
           </div>
 
@@ -1041,7 +1041,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
             </div>
           )}
 
-          
+
 
           <div style={{ display: "flex", gap: 0, borderTop: "1px solid var(--border)", paddingTop: 16 }}>
             {[["Posts", posts.length, null], ["Followers", followerCount, "followers"], ["Following", followingCount, "following"]].map(([label, val, type], i) => (
@@ -2988,6 +2988,84 @@ function RegulationsTab({ selectedState, currentUser }) {
 }
 
 // ─── TERMS PAGE ───────────────────────────────────────────────────────────────
+function AdminTab({ user }) {
+  const [reports, setReports] = useState([]);
+  const [posts, setPosts] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(null);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      const { data: reportData } = await supabase.from("reports").select("*").order("created_at", { ascending: false }).limit(50);
+      if (reportData?.length) {
+        const postIds = [...new Set(reportData.map(r => r.post_id))];
+        const { data: postData } = await supabase.from("posts").select("*").in("id", postIds);
+        const postMap = {};
+        (postData || []).forEach(p => postMap[p.id] = p);
+        setPosts(postMap);
+      }
+      setReports(reportData || []);
+      setLoading(false);
+    };
+    load();
+  }, []);
+
+  const deletePost = async (postId) => {
+    if (!window.confirm("Delete this post and all its reports?")) return;
+    setDeleting(postId);
+    await supabase.from("posts").delete().eq("id", postId);
+    await supabase.from("reports").delete().eq("post_id", postId);
+    setReports(prev => prev.filter(r => r.post_id !== postId));
+    setPosts(prev => { const n = { ...prev }; delete n[postId]; return n; });
+    setDeleting(null);
+  };
+
+  const dismissReport = async (reportId) => {
+    await supabase.from("reports").delete().eq("id", reportId);
+    setReports(prev => prev.filter(r => r.id !== reportId));
+  };
+
+  const uniquePostIds = [...new Set(reports.map(r => r.post_id))];
+
+  return (
+    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, fontFamily: "var(--font-display)" }}>⚙️ Admin — Reported Posts</div>
+      {loading && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)" }} className="pulse">Loading reports...</div>}
+      {!loading && uniquePostIds.length === 0 && (
+        <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>✅</div>
+          No reported posts
+        </div>
+      )}
+      {uniquePostIds.map(postId => {
+        const post = posts[postId];
+        const postReports = reports.filter(r => r.post_id === postId);
+        return (
+          <div key={postId} className="card" style={{ padding: 16, border: "1px solid rgba(255,100,100,0.3)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+              <div>
+                <div style={{ color: "rgba(255,100,100,0.8)", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>🚩 {postReports.length} REPORT{postReports.length > 1 ? "S" : ""}</div>
+                <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{post?.username || "Unknown"} · {post?.state}</div>
+                <div style={{ color: "var(--text3)", fontSize: 11 }}>{post ? new Date(post.created_at).toLocaleDateString() : postId}</div>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={() => dismissReport(postReports[0].id)} className="btn-ghost" style={{ padding: "6px 12px", fontSize: 12 }}>Dismiss</button>
+                <button onClick={() => deletePost(postId)} disabled={deleting === postId} style={{ background: "rgba(255,100,100,0.15)", border: "1px solid rgba(255,100,100,0.4)", color: "rgba(255,100,100,0.9)", padding: "6px 12px", borderRadius: "var(--radius-sm)", fontSize: 12, cursor: "pointer", fontFamily: "var(--font-body)" }}>
+                  {deleting === postId ? "Deleting..." : "Delete Post"}
+                </button>
+              </div>
+            </div>
+            {post?.photo && <img src={post.photo} style={{ width: "100%", maxHeight: 200, objectFit: "cover", borderRadius: "var(--radius-sm)", marginBottom: 8 }} />}
+            {post?.caption && <p style={{ color: "var(--text2)", fontSize: 13, margin: "0 0 8px" }}>{post.caption}</p>}
+            <div style={{ color: "var(--text3)", fontSize: 11 }}>Reason: {postReports.map(r => r.reason).join(", ")}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function TermsPage({ onBack }) {
   const sections = [
     ["1. Acceptance of Terms", "By accessing or using WildAI, you agree to be bound by these Terms and Conditions. WildAI reserves the right to update these terms at any time, and continued use constitutes acceptance of any changes."],
@@ -2996,10 +3074,16 @@ function TermsPage({ onBack }) {
     ["4. Accuracy of Information", "WildAI strives to provide accurate information but may make errors or provide outdated advice. Always apply your own judgment and consult licensed professionals for decisions involving safety or legality."],
     ["5. Safety and Personal Responsibility", "Hunting and fishing involve inherent risks. WildAI accepts no liability for any injury, death, or loss resulting from acting on information provided. Users engage in all outdoor activities at their own risk."],
     ["6. Free Tier and Paid Services", "WildAI offers limited free messages per session. Additional use may require a paid subscription. WildAI reserves the right to modify or discontinue any tier of service with reasonable notice."],
-    ["7. User Conduct", "You agree not to use WildAI to facilitate illegal hunting or fishing, poaching, or violations of wildlife protection laws. WildAI may terminate access for users who violate these terms."],
-    ["8. Intellectual Property", "All content, design, and functionality of WildAI is protected by applicable intellectual property laws. Reproduction without express written permission is prohibited."],
-    ["9. Limitation of Liability", "To the fullest extent permitted by law, WildAI and its affiliates shall not be liable for any direct, indirect, or consequential damages arising from use of the service."],
-    ["10. Contact", "Questions about these Terms may be directed to WildAI through the website. We respond to reasonable inquiries in a timely manner."],
+    ["7. User Conduct", "You agree not to use WildAI to facilitate illegal hunting or fishing, poaching, or violations of wildlife protection laws. You agree not to post content that is illegal, threatening, harassing, defamatory, obscene, or otherwise objectionable. WildAI may remove content and terminate access for users who violate these terms without prior notice."],
+    ["8. User-Generated Content", "WildAI hosts user-generated content including posts, photos, messages, and location pins. WildAI is not responsible for the accuracy, legality, or appropriateness of user-generated content. By posting content, you grant WildAI a non-exclusive license to display and distribute that content within the platform. You represent that you own or have the right to share any content you post. WildAI reserves the right to remove any content at its sole discretion."],
+    ["9. Community Guidelines", "Users must not post content depicting illegal take of wildlife, trespassing on private property, animal cruelty, or any activity that violates federal, state, or local law. Users must not impersonate other individuals or post private information about others without consent. Violation of community guidelines may result in immediate account termination."],
+    ["10. Reporting and Moderation", "WildAI provides a reporting mechanism for users to flag content that violates these terms. WildAI reviews reported content and takes action at its discretion. WildAI is not obligated to monitor all content but will act in good faith upon receiving reports. To report content, use the report button available on each post."],
+    ["11. Private Messaging", "WildAI provides a private messaging feature between users. Messages are stored securely and are not reviewed by WildAI unless reported. Users are solely responsible for the content of their messages. WildAI may access message content if required by law or to investigate reports of abuse."],
+    ["12. Location Data", "WildAI may request access to your device location to provide location-based features. Location data is used solely within the app and is not sold to third parties. Location pins you share publicly are visible to other users."],
+    ["13. Intellectual Property", "All content, design, and functionality of WildAI is protected by applicable intellectual property laws. Reproduction without express written permission is prohibited."],
+    ["14. Limitation of Liability", "To the fullest extent permitted by law, WildAI and its affiliates shall not be liable for any direct, indirect, or consequential damages arising from use of the service, including damages arising from user-generated content posted by third parties."],
+    ["15. Indemnification", "You agree to indemnify and hold harmless WildAI and its affiliates from any claims, damages, or expenses arising from your use of the service, your violation of these terms, or your violation of any third-party rights."],
+    ["16. Contact", "Questions about these Terms or to report content violations may be directed to WildAI through the website. We respond to reasonable inquiries in a timely manner."],
   ];
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", fontFamily: "var(--font-body)" }}>
@@ -3630,6 +3714,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                 { id: "ballistics", icon: "🎯", label: "Ballistics", desc: "Bullet drop calculator" },
                 { id: "weather", icon: "🌤️", label: "Weather", desc: "Live conditions" },
                 { id: "about", icon: "ℹ️", label: "About", desc: "App info & account" },
+                ...(user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a" ? [{ id: "admin", icon: "⚙️", label: "Admin", desc: "Manage reports" }] : []),
               ].map(t => (
                 <button key={t.id} onClick={() => setTab(t.id)} className="card" style={{ padding: "18px 16px", textAlign: "left", cursor: "pointer", border: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 14 }}>
                   <span style={{ fontSize: 28, flexShrink: 0 }}>{t.icon}</span>
@@ -3642,6 +3727,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
             </div>
           </div>
         )}
+        {tab === "admin" && user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a" && <AdminTab user={user} />}
         {tab === "harvest" && <HarvestLogTab user={user} openSignIn={openSignIn} />}
         {tab === "ballistics" && <BallisticsTab />}
         {tab === "trophy" && <TrophyBoardTab user={user} openSignIn={openSignIn} selectedState={selectedState} />}
