@@ -317,6 +317,7 @@ const css = `
   @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
   
   input, textarea, select { font-size: 16px !important; scroll-margin-bottom: 20px; }
+  body.map-fullscreen header, body.map-fullscreen .bottom-nav { display: none !important; }
   @media (max-width: 480px) {
     .card { padding: 10px !important; }
     .btn-primary, .btn-ghost { padding: 7px 12px !important; font-size: 12px !important; }
@@ -529,6 +530,11 @@ function MapTab({ selectedState, user, onSharePin }) {
   const [mapStyle, setMapStyle] = useState("satellite");
 
   const [isFullscreen, setIsFullscreen] = useState(false);
+  useEffect(() => {
+    if (isFullscreen) document.body.classList.add('map-fullscreen');
+    else document.body.classList.remove('map-fullscreen');
+    return () => document.body.classList.remove('map-fullscreen');
+  }, [isFullscreen]);
   const [pins, setPins] = useState([]);
   const [mapReady, setMapReady] = useState(false);
   const [dropForm, setDropForm] = useState(null);
@@ -541,6 +547,8 @@ function MapTab({ selectedState, user, onSharePin }) {
   const [newGroupName, setNewGroupName] = useState("");
   const [showGroupForm, setShowGroupForm] = useState(false);
   const [assigningPin, setAssigningPin] = useState(null);
+  const [viewingPin, setViewingPin] = useState(null);
+  const [showPinsPage, setShowPinsPage] = useState(false);
 
   const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
   const STYLES = {
@@ -634,6 +642,7 @@ function MapTab({ selectedState, user, onSharePin }) {
             e.stopPropagation();
             setSelected(pin);
             setDropForm(null);
+            setViewingPin(pin);
           });
           const marker = new mapboxgl.Marker({ element: el, anchor: "center" }).setLngLat([pin.lng, pin.lat]).addTo(mapInst.current);
           markersRef.current.push(marker);
@@ -703,15 +712,15 @@ function MapTab({ selectedState, user, onSharePin }) {
       </div>
 
       <div style={{ position: "relative", borderRadius: isFullscreen ? 0 : "var(--radius)", overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)", borderTopColor: "rgba(255,255,255,0.14)", boxShadow: isFullscreen ? "none" : "0 8px 40px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07)" }}>
-        <div ref={mapRef} style={{ height: isFullscreen ? "calc(100vh - 160px)" : 500, width: "100%" }} />
-        <button onClick={() => { setIsFullscreen(f => !f); setTimeout(() => mapInst.current?.resize(), 150); }} style={{ position: "absolute", top: 10, left: 10, zIndex: 10, background: "rgba(8,15,8,0.9)", border: "1px solid var(--border)", color: "var(--text2)", borderRadius: "var(--radius-sm)", padding: "6px 12px", fontSize: 11, cursor: "pointer", backdropFilter: "blur(8px)", fontFamily: "var(--font-body)" }}>
-          {isFullscreen ? "⊡ Compact" : "⊞ Expand"}
+        <div ref={mapRef} style={{ height: isFullscreen ? "100dvh" : 380, width: "100%", position: isFullscreen ? "fixed" : "relative", top: isFullscreen ? 0 : "auto", left: isFullscreen ? 0 : "auto", right: isFullscreen ? 0 : "auto", bottom: isFullscreen ? 0 : "auto", zIndex: isFullscreen ? 998 : "auto" }} />
+        <button onClick={() => { setIsFullscreen(f => !f); setTimeout(() => mapInst.current?.resize(), 150); }} style={{ position: isFullscreen ? "fixed" : "absolute", top: isFullscreen ? 16 : 10, left: isFullscreen ? 16 : 10, zIndex: 1001, background: "rgba(8,15,8,0.95)", border: "1px solid var(--border-accent)", color: "var(--green)", borderRadius: "var(--radius-sm)", padding: "8px 14px", fontSize: 12, cursor: "pointer", backdropFilter: "blur(8px)", fontFamily: "var(--font-body)", fontWeight: 600 }}>
+          {isFullscreen ? "✕ Exit" : "⊞ Expand"}
         </button>
         {user && <div style={{ position: "absolute", bottom: 10, left: 10, zIndex: 10, background: "rgba(8,15,8,0.9)", border: "1px solid var(--border)", color: "var(--text3)", borderRadius: "var(--radius-sm)", padding: "5px 10px", fontSize: 10, backdropFilter: "blur(8px)" }}>Tap map to drop a pin</div>}
       </div>
 
       {dropForm && user && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "flex-end" }} onClick={() => setDropForm(null)}>
+        <div style={{ position: "fixed", inset: 0, zIndex: 1002, display: "flex", alignItems: "flex-end" }} onClick={() => setDropForm(null)}>
           <div onClick={e => e.stopPropagation()} className="fade-in" style={{ width: "100%", background: "#0d1a0d", borderRadius: "20px 20px 0 0", padding: "20px 20px 36px", border: "1px solid var(--border)", borderBottom: "none", boxShadow: "0 -8px 40px rgba(0,0,0,0.6)" }}>
             <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.15)", margin: "0 auto 18px" }} />
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
@@ -719,16 +728,17 @@ function MapTab({ selectedState, user, onSharePin }) {
               <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>Drop a Pin</div>
               <div style={{ color: "var(--text3)", fontSize: 11, marginLeft: 4 }}>{dropForm.lat.toFixed(4)}, {dropForm.lng.toFixed(4)}</div>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <input placeholder="Name this spot *" value={dropName} onChange={e => setDropName(e.target.value)} autoFocus style={{ width: "100%", padding: "12px 14px", borderRadius: "var(--radius-sm)", fontSize: 14 }} />
-              <input placeholder="Species (optional)" value={dropSpecies} onChange={e => setDropSpecies(e.target.value)} style={{ width: "100%", padding: "12px 14px", borderRadius: "var(--radius-sm)", fontSize: 14 }} />
-              <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
-                <button onClick={saveDropPin} disabled={!dropName.trim() || saving} className="btn-primary" style={{ flex: 1, padding: "12px", fontSize: 14, opacity: !dropName.trim() ? 0.5 : 1 }}>{saving ? "Saving..." : "Save Pin"}</button>
-                <button onClick={() => setDropForm(null)} className="btn-ghost" style={{ padding: "12px 18px", fontSize: 14 }}>Cancel</button>
-              </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input placeholder="Name this spot *" value={dropName} onChange={e => setDropName(e.target.value)} autoFocus style={{ flex: 1, padding: "12px 14px", borderRadius: "var(--radius-sm)", fontSize: 14 }} />
+              <button onClick={saveDropPin} disabled={!dropName.trim() || saving} className="btn-primary" style={{ padding: "12px 18px", fontSize: 14, opacity: !dropName.trim() ? 0.5 : 1 }}>{saving ? "..." : "Save"}</button>
+              <button onClick={() => setDropForm(null)} className="btn-ghost" style={{ padding: "12px 14px", fontSize: 14 }}>✕</button>
             </div>
           </div>
         </div>
+      )}
+
+      {user && (
+        <button onClick={() => setShowPinsPage(true)} className="btn-ghost" style={{ width: "100%", padding: "12px", fontSize: 14, marginTop: 8 }}>📍 My Pins ({pins.length})</button>
       )}
 
       {selected && (
@@ -761,90 +771,6 @@ function MapTab({ selectedState, user, onSharePin }) {
         </div>
       )}
 
-      {user && pins.length > 0 && (
-        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-          <button onClick={() => setShowPinList(s => !s)} style={{ width: "100%", padding: "14px 18px", background: "none", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: "var(--font-body)" }}>
-            <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>📍 My Pins ({pins.length})</span>
-            <span style={{ color: "var(--text3)", fontSize: 12 }}>{showPinList ? "▲ Hide" : "▼ Show list"}</span>
-          </button>
-          {showPinList && (
-            <div style={{ borderTop: "1px solid var(--border)" }}>
-              <div style={{ padding: "10px 18px", borderBottom: "1px solid var(--border)", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-                <button onClick={() => setPinFilter("all")} className={`nav-tab ${pinFilter === "all" ? "active" : "inactive"}`} style={{ padding: "4px 12px", fontSize: 11 }}>All</button>
-                <button onClick={() => setPinFilter("public")} className={`nav-tab ${pinFilter === "public" ? "active" : "inactive"}`} style={{ padding: "4px 12px", fontSize: 11 }}>🌐 Public</button>
-                <button onClick={() => setPinFilter("private")} className={`nav-tab ${pinFilter === "private" ? "active" : "inactive"}`} style={{ padding: "4px 12px", fontSize: 11 }}>🔒 Private</button>
-                {groups.map(g => (
-                  <button key={g.id} onClick={() => setPinFilter(g.id)} className={`nav-tab ${pinFilter === g.id ? "active" : "inactive"}`} style={{ padding: "4px 12px", fontSize: 11 }}>📁 {g.name}</button>
-                ))}
-                <button onClick={() => setShowGroupForm(s => !s)} style={{ background: "none", border: "1px dashed var(--border)", borderRadius: "var(--radius-sm)", padding: "4px 12px", fontSize: 11, color: "var(--text3)", cursor: "pointer", fontFamily: "var(--font-body)" }}>+ Group</button>
-              </div>
-              {showGroupForm && (
-                <div style={{ padding: "10px 18px", borderBottom: "1px solid var(--border)", display: "flex", gap: 8 }}>
-                  <input placeholder="Group name..." value={newGroupName} onChange={e => setNewGroupName(e.target.value)} style={{ flex: 1, padding: "6px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
-                  <button onClick={createGroup} disabled={!newGroupName.trim()} className="btn-primary" style={{ padding: "6px 14px", fontSize: 12 }}>Create</button>
-                  <button onClick={() => setShowGroupForm(false)} className="btn-ghost" style={{ padding: "6px 10px", fontSize: 12 }}>✕</button>
-                </div>
-              )}
-              {groups.length > 0 && (
-                <div style={{ padding: "8px 18px", borderBottom: "1px solid var(--border)", display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  {groups.map(g => (
-                    <span key={g.id} style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", borderRadius: 20, padding: "2px 10px", fontSize: 11, color: "var(--text2)" }}>
-                      📁 {g.name}
-                      <button onClick={() => deleteGroup(g.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.5)", fontSize: 10, padding: 0, marginLeft: 2, fontFamily: "var(--font-body)" }}>✕</button>
-                    </span>
-                  ))}
-                </div>
-              )}
-              {pins.filter(pin => {
-                if (pinFilter === "all") return true;
-                if (pinFilter === "public") return !!pin.post_id;
-                if (pinFilter === "private") return !pin.post_id;
-                return pin.group_id === pinFilter;
-              }).map(pin => {
-                const isPublic = !!pin.post_id;
-                const group = groups.find(g => g.id === pin.group_id);
-                return (
-                  <div key={pin.id} style={{ padding: "12px 18px", borderBottom: "1px solid var(--border)" }}>
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                      {pin.photo && <img src={pin.photo} style={{ width: 48, height: 48, objectFit: "cover", borderRadius: "var(--radius-sm)", flexShrink: 0 }} />}
-                      <div style={{ flex: 1, cursor: "pointer" }} onClick={() => {
-                        if (pin.lat && pin.lng && mapInst.current) {
-                          mapInst.current.flyTo({ center: [pin.lng, pin.lat], zoom: 13, duration: 1000 });
-                          setSelected(pin);
-                          setShowPinList(false);
-                        }
-                      }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2, flexWrap: "wrap" }}>
-                          <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 13 }}>{pin.name || "Saved Spot"}</span>
-                          <span style={{ fontSize: 10, padding: "1px 7px", borderRadius: 10, fontWeight: 600, background: isPublic ? "var(--green-dim)" : "rgba(255,255,255,0.06)", color: isPublic ? "var(--green)" : "var(--text3)", border: `1px solid ${isPublic ? "var(--border-accent)" : "var(--border)"}` }}>
-                            {isPublic ? "🌐 Public" : "🔒 Private"}
-                          </span>
-                          {group && <span style={{ fontSize: 10, padding: "1px 7px", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text3)" }}>📁 {group.name}</span>}
-                        </div>
-                        {pin.species && <div style={{ color: "var(--green)", fontSize: 11 }}>{pin.species}</div>}
-                        {pin.location && <div style={{ color: "var(--text3)", fontSize: 11 }}>📍 {pin.location}</div>}
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0, alignItems: "flex-end" }}>
-                        <button onClick={() => setAssigningPin(assigningPin === pin.id ? null : pin.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text3)", fontSize: 11, padding: 0, fontFamily: "var(--font-body)" }}>📁</button>
-                        <a href={`https://www.google.com/maps/dir/?api=1&destination=${pin.lat},${pin.lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 11, fontWeight: 600 }}>↗</a>
-                        <button onClick={() => removePin(pin.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.6)", fontSize: 11, padding: 0, fontFamily: "var(--font-body)" }}>🗑️</button>
-                      </div>
-                    </div>
-                    {assigningPin === pin.id && (
-                      <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
-                        <button onClick={() => assignGroup(pin.id, null)} className={`nav-tab ${!pin.group_id ? "active" : "inactive"}`} style={{ padding: "3px 10px", fontSize: 11 }}>None</button>
-                        {groups.map(g => (
-                          <button key={g.id} onClick={() => assignGroup(pin.id, g.id)} className={`nav-tab ${pin.group_id === g.id ? "active" : "inactive"}`} style={{ padding: "3px 10px", fontSize: 11 }}>📁 {g.name}</button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
@@ -3514,7 +3440,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
       </header>
 
       {/* BOTTOM NAV */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, background: "rgba(5,10,5,0.92)", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "stretch", height: 64, backdropFilter: "blur(24px)", boxShadow: "0 -4px 24px rgba(0,0,0,0.4), 0 -1px 0 rgba(120,180,80,0.08)" }}>
+      <div className="bottom-nav" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, background: "rgba(5,10,5,0.92)", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "stretch", height: 64, backdropFilter: "blur(24px)", boxShadow: "0 -4px 24px rgba(0,0,0,0.4), 0 -1px 0 rgba(120,180,80,0.08)" }}>
         {[
           { id: "chat", icon: "💬", label: "Chat" },
           { id: "map", icon: "🗺️", label: "Map" },
