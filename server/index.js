@@ -202,4 +202,24 @@ app.get("/messages/inbox", async (req, res) => {
     res.json(Object.values(threads));
 });
 
+app.post("/clerk-webhook", express.raw({ type: "application/json" }), async (req, res) => {
+  const { Webhook } = require("svix");
+  const secret = process.env.CLERK_WEBHOOK_SECRET;
+  const headers = { "svix-id": req.headers["svix-id"], "svix-timestamp": req.headers["svix-timestamp"], "svix-signature": req.headers["svix-signature"] };
+  try {
+    const wh = new Webhook(secret);
+    const evt = wh.verify(req.body, headers);
+    if (evt.type === "user.updated" || evt.type === "user.created") {
+      const { createClient } = require("@supabase/supabase-js");
+      const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+      const { id, username, first_name, image_url } = evt.data;
+      const finalUsername = username || first_name || "Hunter";
+      await supabase.from("profiles").upsert({ user_id: id, username: finalUsername, avatar_url: image_url }, { onConflict: "user_id" });
+    }
+    res.json({ received: true });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 app.listen(3001, () => console.log("Server running on port 3001"));
