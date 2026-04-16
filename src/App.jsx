@@ -1468,7 +1468,7 @@ function PinPicker({ user, onSelect }) {
     supabase.from("saved_pins").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).then(({ data }) => setPins(data || []));
   }, [user]);
 
-  if (!pins.length) return null;
+  if (!user) return null;
 
   return (
     <div style={{ position: "relative", marginTop: 4 }}>
@@ -1477,6 +1477,7 @@ function PinPicker({ user, onSelect }) {
       </button>
       {open && (
         <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", zIndex: 100, maxHeight: 180, overflowY: "auto", marginTop: 4 }}>
+          {pins.length === 0 && <div style={{ padding: "10px 12px", fontSize: 12, color: "var(--text3)" }}>No saved pins yet — drop a pin on the Map tab first</div>}
           {pins.map(pin => (
             <div key={pin.id} onClick={() => { onSelect(pin); setOpen(false); }} style={{ padding: "8px 12px", cursor: "pointer", borderBottom: "1px solid var(--border)", fontSize: 13, color: "var(--text)" }}
               onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.08)"}
