@@ -1460,6 +1460,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   const [commentCounts, setCommentCounts] = useState({});
   const [expandedComments, setExpandedComments] = useState(new Set());
   const [communityTab, setCommunityTab] = useState("feed");
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(() => !localStorage.getItem("wildai_community_welcomed"));
   const [viewingProfile, setViewingProfile] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -1633,6 +1634,16 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
           onViewUser={(id) => setViewingProfile(id)}
           onMessage={(id) => { setViewingProfile(null); setCommunityTab("messages"); setTimeout(() => { window._openMessageThread = id; }, 100); }}
         />
+      )}
+      {communityTab === "feed" && showWelcomeBanner && !viewingProfile && (
+        <div className="fade-in" style={{ background: "linear-gradient(135deg, rgba(35,70,15,0.6), rgba(15,35,8,0.8))", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)", padding: "16px 18px", display: "flex", alignItems: "flex-start", gap: 12 }}>
+          <span style={{ fontSize: 24, flexShrink: 0 }}>🌲</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Welcome to WildAI Community</div>
+            <div style={{ color: "var(--text2)", fontSize: 12, lineHeight: 1.6 }}>Share spots, follow other hunters & anglers, and message privately. Your pins stay private unless you choose to post them.</div>
+          </div>
+          <button onClick={() => { setShowWelcomeBanner(false); localStorage.setItem("wildai_community_welcomed", "1"); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 18, cursor: "pointer", padding: 0, flexShrink: 0, lineHeight: 1 }}>✕</button>
+        </div>
       )}
       {communityTab === "feed" && !viewingProfile && <div style={{ background: "#0a150a", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "18px 20px", marginBottom: 2 }}>
         <div style={{ marginBottom: 14 }}>
