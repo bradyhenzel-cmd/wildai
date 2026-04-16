@@ -1459,6 +1459,37 @@ function HotspotsTab({ posts, loading, user, selectedState, savedPinIds, saveToM
   );
 }
 
+function PinPicker({ user, onSelect }) {
+  const [pins, setPins] = useState([]);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("saved_pins").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).then(({ data }) => setPins(data || []));
+  }, [user]);
+
+  if (!pins.length) return null;
+
+  return (
+    <div style={{ position: "relative", marginTop: 4 }}>
+      <button onClick={() => setOpen(o => !o)} style={{ background: "none", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", color: "var(--text3)", fontSize: 11, padding: "4px 10px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+        📍 Attach a pin
+      </button>
+      {open && (
+        <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", zIndex: 100, maxHeight: 180, overflowY: "auto", marginTop: 4 }}>
+          {pins.map(pin => (
+            <div key={pin.id} onClick={() => { onSelect(pin); setOpen(false); }} style={{ padding: "8px 12px", cursor: "pointer", borderBottom: "1px solid var(--border)", fontSize: 13, color: "var(--text)" }}
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.08)"}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+              📍 {pin.name || pin.location || "Unnamed pin"}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1555,12 +1586,6 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
     let lat = null, lng = null;
     if (form.pinLat && form.pinLng) {
       lat = form.pinLat; lng = form.pinLng;
-    } else if (form.location) {
-      try {
-        const geo = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(form.location)}.json?access_token=${import.meta.env.VITE_MAPBOX_TOKEN}&country=us&limit=1`);
-        const gd = await geo.json();
-        if (gd.features?.[0]) { lng = gd.features[0].center[0]; lat = gd.features[0].center[1]; }
-      } catch { }
     }
     const { error } = await supabase.from("posts").insert({
       user_id: user.id,
@@ -1636,7 +1661,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
             onBack={null}
             openSignIn={openSignIn}
             onViewUser={(id) => { setViewingProfile(id); setCommunityTab("feed"); }}
-            onPost={() => { setShowForm(true); }}
+            onPost={() => { setShowForm(true); setCommunityTab("feed"); }}
           />
         )
       )}
@@ -1723,7 +1748,14 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
               </div>
               <div>
                 <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>LOCATION</div>
-                <input placeholder="e.g. Flathead NF, Montana" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+                <input placeholder="e.g. Flathead NF, Montana" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value, pinLat: null, pinLng: null }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+                {form.pinLat && form.pinLng && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4, padding: "4px 8px", background: "var(--green-dim)", border: "1px solid var(--border-accent)", borderRadius: "var(--radius-sm)" }}>
+                    <span style={{ color: "var(--green)", fontSize: 11 }}>📍 Pin attached</span>
+                    <button onClick={() => setForm(f => ({ ...f, pinLat: null, pinLng: null }))} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 11, cursor: "pointer", marginLeft: "auto" }}>✕</button>
+                  </div>
+                )}
+                <PinPicker user={user} onSelect={(pin) => setForm(f => ({ ...f, location: pin.name || pin.location || f.location, pinLat: pin.lat, pinLng: pin.lng }))} />
               </div>
             </div>
             <div>
