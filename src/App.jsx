@@ -315,10 +315,10 @@ const css = `
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
   .float { animation:float 5s ease-in-out infinite; }
   @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-  html, body, #root { height: 100%; overflow: hidden; }
+  
   input, textarea, select { font-size: 16px !important; scroll-margin-bottom: 20px; }
-  .app-shell { height: 100dvh; display: flex; flex-direction: column; }
-  .app-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+  
+  
   .btn-primary { background:linear-gradient(135deg, #8acc5a 0%, var(--green) 40%, var(--green2) 100%); color:white; border:none;
     border-radius:var(--radius-sm); font-family:var(--font-body); font-weight:600; cursor:pointer;
     transition:all 0.2s; box-shadow:0 4px 20px rgba(120,180,80,0.35), 0 1px 0 rgba(255,255,255,0.15), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -2px 0 rgba(0,0,0,0.15); }
@@ -3414,7 +3414,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
   const filteredSpecies = speciesFilter === "all" ? SPECIES : SPECIES.filter(s => s.type === speciesFilter);
 
   return (
-    <div className="app-shell" style={{ background: "var(--bg)", fontFamily: "var(--font-body)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column", fontFamily: "var(--font-body)" }}>
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0 }}>
       </div>
 
@@ -3479,7 +3479,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 
 
 
-      <div className="app-content" style={{ padding: 20, paddingBottom: 80, maxWidth: 760, width: "100%", margin: "0 auto", display: "flex", flexDirection: "column", gap: 16, position: "relative", zIndex: 1, boxSizing: "border-box" }}>
+      <div style={{ flex: 1, padding: 20, paddingBottom: 80, maxWidth: 760, width: "100%", margin: "0 auto", display: "flex", flexDirection: "column", gap: 16, position: "relative", zIndex: 1 }}>
 
         {showInstallBanner && !window.navigator.standalone && (
           <div style={{ background: "linear-gradient(135deg, rgba(120,180,80,0.12), rgba(80,140,50,0.08))", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
