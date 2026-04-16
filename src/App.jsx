@@ -850,7 +850,7 @@ function MapTab({ selectedState, user, onSharePin }) {
 }
 
 // ─── USER PROFILE ─────────────────────────────────────────────────────────────
-function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, onMessage }) {
+function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, onMessage, onPost }) {
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [followerCount, setFollowerCount] = useState(0);
@@ -1098,6 +1098,9 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
           </button>
           <button onClick={() => onMessage(userId)} className="btn-ghost" style={{ flex: 1, padding: "8px 0", fontSize: 13 }}>💬 Message</button>
         </div>
+      )}
+      {isOwnProfile && (
+        <button onClick={() => onPost?.()} className="btn-primary" style={{ width: "100%", padding: "10px", fontSize: 14, marginBottom: 12 }}>+ New Post</button>
       )}
       <div style={{ display: "flex", gap: 8, marginBottom: 4, alignItems: "center" }}>
         <button onClick={() => setProfileTab("posts")} className={`nav-tab ${profileTab === "posts" ? "active" : "inactive"}`} style={{ padding: "7px 18px", fontSize: 13 }}>Posts</button>
@@ -1633,6 +1636,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
             onBack={null}
             openSignIn={openSignIn}
             onViewUser={(id) => { setViewingProfile(id); setCommunityTab("feed"); }}
+            onPost={() => { setShowForm(true); }}
           />
         )
       )}
@@ -1680,6 +1684,9 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
             </div>
           )}
         </div>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+          {user && <button onClick={() => { if (!user) { openSignIn(); return; } setShowForm(s => !s); }} className="btn-primary" style={{ padding: "7px 16px", fontSize: 13 }}>{showForm ? "Cancel" : "+ Post"}</button>}
+        </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <div style={{ display: "flex", gap: 6 }}>
             <button onClick={() => setStateFilter("all")} style={{ padding: "7px 14px", borderRadius: 20, border: stateFilter === "all" ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: stateFilter === "all" ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: stateFilter === "all" ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: stateFilter === "all" ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>All</button>
@@ -1692,7 +1699,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
         </div>
       </div>}
 
-      {false && !viewingProfile && showForm && (
+      {(communityTab === "feed" || communityTab === "profile") && !viewingProfile && showForm && (
         <div className="card fade-in" style={{ padding: 20 }}>
           <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 14 }}>NEW POST</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
