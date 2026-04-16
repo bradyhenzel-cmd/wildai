@@ -874,7 +874,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
       setPosts(postData || []);
       setFollowerCount(followers?.length || 0);
       setFollowingCount(following?.length || 0);
-      if (currentUser) {
+      if (currentUser && currentUser.id !== userId) {
         const { data: followCheck } = await supabase.from("follows").select("id").eq("follower_id", currentUser.id).eq("following_id", userId).single();
         setIsFollowing(!!followCheck);
       }
