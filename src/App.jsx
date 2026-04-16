@@ -316,6 +316,7 @@ const css = `
   .float { animation:float 5s ease-in-out infinite; }
   @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
   html, body, #root { height: 100%; overflow: hidden; }
+  input, textarea, select { font-size: 16px !important; }
   .app-shell { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
   .app-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: env(safe-area-inset-bottom); }
   .btn-primary { background:linear-gradient(135deg, #8acc5a 0%, var(--green) 40%, var(--green2) 100%); color:white; border:none;
@@ -3461,7 +3462,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
       </header>
 
       {/* BOTTOM NAV */}
-      <div style={{ position: "sticky", bottom: 0, zIndex: 100, background: "rgba(5,10,5,0.92)", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "stretch", height: 64, backdropFilter: "blur(24px)", boxShadow: "0 -4px 24px rgba(0,0,0,0.4), 0 -1px 0 rgba(120,180,80,0.08)", flexShrink: 0 }}>
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, background: "rgba(5,10,5,0.92)", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "stretch", height: 64, backdropFilter: "blur(24px)", boxShadow: "0 -4px 24px rgba(0,0,0,0.4), 0 -1px 0 rgba(120,180,80,0.08)" }}>
         {[
           { id: "chat", icon: "💬", label: "Chat" },
           { id: "map", icon: "🗺️", label: "Map" },
