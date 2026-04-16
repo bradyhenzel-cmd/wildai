@@ -1177,6 +1177,181 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser }
 }
 
 // ─── COMMUNITY TAB ────────────────────────────────────────────────────────────
+function MessagesTab({ user, openSignIn, supabase }) {
+  const [view, setView] = useState("inbox");
+  const [inbox, setInbox] = useState([]);
+  const [loadingInbox, setLoadingInbox] = useState(true);
+  const [activeThread, setActiveThread] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const bottomRef = useRef(null);
+
+  const loadInbox = async () => {
+    if (!user) return;
+    setLoadingInbox(true);
+    const res = await fetch(`https://wildai-server.onrender.com/messages/inbox?userId=${user.id}`);
+    const data = await res.json();
+    if (Array.isArray(data)) {
+      const enriched = await Promise.all(data.map(async t => {
+        const { data: profile } = await supabase.from("profiles").select("username, avatar_url").eq("user_id", t.otherId).single();
+        return { ...t, username: profile?.username || "Hunter", avatar: profile?.avatar_url };
+      }));
+      setInbox(enriched);
+    }
+    setLoadingInbox(false);
+  };
+
+  const loadConversation = async (otherId) => {
+    if (!user) return;
+    const res = await fetch(`https://wildai-server.onrender.com/messages/conversation/${otherId}?userId=${user.id}`);
+    const data = await res.json();
+    setMessages(Array.isArray(data) ? data : []);
+  };
+
+  const searchUsers = async (q) => {
+    if (!q.trim()) { setSearchResults([]); return; }
+    const { data } = await supabase.from("profiles").select("user_id, username, avatar_url").ilike("username", `%${q}%`).limit(10);
+    setSearchResults((data || []).filter(u => u.username && u.user_id !== user?.id));
+  };
+
+  const openThread = async (otherId, username, avatar) => {
+    setActiveThread({ otherId, username, avatar });
+    setView("thread");
+    await loadConversation(otherId);
+  };
+
+  const send = async () => {
+    if (!input.trim() || !user || !activeThread) return;
+    setSending(true);
+    const res = await fetch("https://wildai-server.onrender.com/messages/send", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sender_id: user.id, recipient_id: activeThread.otherId, content: input.trim() })
+    });
+    const msg = await res.json();
+    setMessages(prev => [...prev, msg]);
+    setInput("");
+    setSending(false);
+  };
+
+  const sendImage = async (file) => {
+    if (!file || !user || !activeThread) return;
+    const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
+    const { error } = await supabase.storage.from("post-photos").upload(fileName, file, { contentType: file.type });
+    if (error) { alert("Image upload failed."); return; }
+    const { data: urlData } = supabase.storage.from("post-photos").getPublicUrl(fileName);
+    await fetch("https://wildai-server.onrender.com/messages/send", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sender_id: user.id, recipient_id: activeThread.otherId, image_url: urlData.publicUrl })
+    });
+    await loadConversation(activeThread.otherId);
+  };
+
+  useEffect(() => { if (user) loadInbox(); }, [user]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  useEffect(() => {
+    if (!user || !activeThread) return;
+    const channel = supabase.channel("messages-" + activeThread.otherId)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `recipient_id=eq.${user.id}` }, payload => {
+        if (payload.new.sender_id === activeThread.otherId) {
+          setMessages(prev => [...prev, payload.new]);
+        }
+      }).subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [user, activeThread]);
+
+  if (!user) return (
+    <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text3)", fontSize: 14 }}>
+      <div style={{ fontSize: 40, marginBottom: 12 }}>💬</div>
+      <div style={{ color: "var(--text)", fontWeight: 600, marginBottom: 6 }}>Sign in to message</div>
+      <button onClick={openSignIn} className="btn-primary" style={{ padding: "8px 20px", fontSize: 13 }}>Sign In</button>
+    </div>
+  );
+
+  if (view === "thread" && activeThread) return (
+    <div className="fade-in" style={{ display: "flex", flexDirection: "column", height: "70vh" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: "1px solid var(--border)", marginBottom: 8 }}>
+        <button onClick={() => { setView("inbox"); loadInbox(); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text2)", fontSize: 14, padding: 0 }}>← Back</button>
+        <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "var(--green)", flexShrink: 0 }}>
+          {activeThread.username?.[0]?.toUpperCase()}
+        </div>
+        <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{activeThread.username}</span>
+      </div>
+      <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8, paddingBottom: 8 }}>
+        {messages.map(m => (
+          <div key={m.id} style={{ display: "flex", justifyContent: m.sender_id === user.id ? "flex-end" : "flex-start" }}>
+            {m.image_url ? (
+              <img src={m.image_url} style={{ maxWidth: "70%", borderRadius: 12, maxHeight: 200, objectFit: "cover" }} />
+            ) : m.pin_lat ? (
+              <div style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", borderRadius: 12, padding: "8px 12px", maxWidth: "70%" }}>
+                <div style={{ color: "var(--green)", fontSize: 12, fontWeight: 600 }}>📍 {m.pin_name || "Shared Pin"}</div>
+                <a href={`https://www.google.com/maps/dir/?api=1&destination=${m.pin_lat},${m.pin_lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 11 }}>View on map →</a>
+              </div>
+            ) : (
+              <div style={{ background: m.sender_id === user.id ? "var(--green)" : "rgba(255,255,255,0.07)", borderRadius: m.sender_id === user.id ? "18px 18px 4px 18px" : "18px 18px 18px 4px", padding: "9px 13px", maxWidth: "70%", fontSize: 13, color: m.sender_id === user.id ? "#fff" : "var(--text)", lineHeight: 1.45 }}>
+                {m.content}
+              </div>
+            )}
+          </div>
+        ))}
+        <div ref={bottomRef} />
+      </div>
+      <div style={{ display: "flex", gap: 8, alignItems: "center", borderTop: "1px solid var(--border)", paddingTop: 10 }}>
+        <label style={{ cursor: "pointer", color: "var(--text3)", fontSize: 20, lineHeight: 1 }}>
+          📎<input type="file" accept="image/*" style={{ display: "none" }} onChange={e => sendImage(e.target.files[0])} />
+        </label>
+        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Message..." style={{ flex: 1, padding: "9px 14px", borderRadius: 20, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)" }} />
+        <button onClick={send} disabled={!input.trim() || sending} className="btn-primary" style={{ padding: "9px 16px", fontSize: 13, borderRadius: 20, opacity: !input.trim() ? 0.5 : 1 }}>Send</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <input placeholder="🔍 Find a user to message..." value={searchQuery} onChange={e => { setSearchQuery(e.target.value); searchUsers(e.target.value); }} style={{ width: "100%", padding: "9px 14px", borderRadius: "var(--radius-sm)", fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
+      {searchResults.length > 0 && (
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", overflow: "hidden" }}>
+          {searchResults.map(u => (
+            <div key={u.user_id} onClick={() => { setSearchQuery(""); setSearchResults([]); openThread(u.user_id, u.username, u.avatar_url); }} style={{ padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 10 }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.08)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "var(--green)" }}>{u.username?.[0]?.toUpperCase()}</div>
+              <span style={{ color: "var(--text)", fontSize: 14, fontWeight: 600 }}>{u.username}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {loadingInbox && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)" }} className="pulse">Loading messages...</div>}
+      {!loadingInbox && inbox.length === 0 && (
+        <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>💬</div>
+          <div style={{ color: "var(--text)", fontWeight: 600, marginBottom: 6 }}>No messages yet</div>
+          Search for a user above to start a conversation
+        </div>
+      )}
+      {inbox.map(t => (
+        <div key={t.otherId} onClick={() => openThread(t.otherId, t.username, t.avatar)} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "12px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "var(--card)"}>
+          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "var(--green)", flexShrink: 0 }}>{t.username?.[0]?.toUpperCase()}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{t.username}</span>
+              <span style={{ color: "var(--text3)", fontSize: 11 }}>{new Date(t.lastMessage.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+            </div>
+            <div style={{ color: "var(--text3)", fontSize: 12, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {t.lastMessage.image_url ? "📷 Image" : t.lastMessage.pin_lat ? "📍 Pin" : t.lastMessage.content}
+            </div>
+          </div>
+          {t.unread > 0 && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--green)", flexShrink: 0 }} />}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function HotspotsTab({ posts, loading, user, selectedState, savedPinIds, saveToMap, openSignIn }) {
   const [filter, setFilter] = useState("all");
   const [userCoords, setUserCoords] = useState(null);
@@ -1408,11 +1583,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
         ))}
       </div>
       {communityTab === "messages" && (
-        <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text3)", fontSize: 14 }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>💬</div>
-          <div style={{ color: "var(--text)", fontWeight: 600, marginBottom: 6 }}>Private Messages</div>
-          Coming soon
-        </div>
+        <MessagesTab user={user} openSignIn={openSignIn} supabase={supabase} />
       )}
       {communityTab === "hotspots" && (
         <HotspotsTab posts={posts} loading={loading} user={user} selectedState={selectedState} savedPinIds={savedPinIds} saveToMap={saveToMap} openSignIn={openSignIn} />
