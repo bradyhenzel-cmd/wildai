@@ -516,8 +516,7 @@ function MapTab({ selectedState, user, onSharePin }) {
   const dropMarkerRef = useRef(null);
   const [selected, setSelected] = useState(null);
   const [mapStyle, setMapStyle] = useState("satellite");
-  const [showUSFS, setShowUSFS] = useState(true);
-  const [showBLM, setShowBLM] = useState(true);
+
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [pins, setPins] = useState([]);
   const [mapReady, setMapReady] = useState(false);
@@ -556,16 +555,7 @@ function MapTab({ selectedState, user, onSharePin }) {
 
   useEffect(() => { loadPins(); loadGroups(); }, [user]);
 
-  const addLayers = (map, usfs, blm) => {
-    if (!map.getSource("usfs")) {
-      map.addSource("usfs", { type: "raster", tiles: ["https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_ForestSystemBoundaries_01/MapServer/tile/{z}/{x}/{y}"], tileSize: 256 });
-      map.addLayer({ id: "usfs-layer", type: "raster", source: "usfs", paint: { "raster-opacity": 0.55 }, layout: { visibility: usfs ? "visible" : "none" } });
-    }
-    if (!map.getSource("blm")) {
-      map.addSource("blm", { type: "raster", tiles: ["https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_Cached_BLM_Only/MapServer/tile/{z}/{x}/{y}"], tileSize: 256 });
-      map.addLayer({ id: "blm-layer", type: "raster", source: "blm", paint: { "raster-opacity": 0.55 }, layout: { visibility: blm ? "visible" : "none" } });
-    }
-  };
+
 
   // Init map
   useEffect(() => {
@@ -583,7 +573,7 @@ function MapTab({ selectedState, user, onSharePin }) {
       map.addControl(new mapboxgl.NavigationControl(), "top-right");
       const geolocate = new mapboxgl.GeolocateControl({ positionOptions: { enableHighAccuracy: true }, trackUserLocation: false });
       map.addControl(geolocate, "top-right");
-      map.on("load", () => { addLayers(map, true, true); setMapReady(true); setTimeout(() => geolocate.trigger(), 500); });
+      map.on("load", () => { setMapReady(true); setTimeout(() => geolocate.trigger(), 500); });
       map.on("click", e => {
         if (e.originalEvent.target.classList.contains("wildai-pin")) return;
         setDropForm({ lng: e.lngLat.lng, lat: e.lngLat.lat });
@@ -605,16 +595,7 @@ function MapTab({ selectedState, user, onSharePin }) {
     });
   }, [dropForm]);
 
-  // USFS/BLM toggles
-  useEffect(() => {
-    if (!mapReady || !mapInst.current) return;
-    try { mapInst.current.setLayoutProperty("usfs-layer", "visibility", showUSFS ? "visible" : "none"); } catch { }
-  }, [showUSFS, mapReady]);
 
-  useEffect(() => {
-    if (!mapReady || !mapInst.current) return;
-    try { mapInst.current.setLayoutProperty("blm-layer", "visibility", showBLM ? "visible" : "none"); } catch { }
-  }, [showBLM, mapReady]);
 
   // Style change
   const changeStyle = (style) => {
@@ -622,7 +603,7 @@ function MapTab({ selectedState, user, onSharePin }) {
     setMapStyle(style);
     setMapReady(false);
     mapInst.current.setStyle(STYLES[style]);
-    mapInst.current.once("style.load", () => { addLayers(mapInst.current, showUSFS, showBLM); setMapReady(true); });
+    mapInst.current.once("style.load", () => { setMapReady(true); });
   };
 
   // Draw pins — use requestAnimationFrame to avoid lag
@@ -705,16 +686,7 @@ function MapTab({ selectedState, user, onSharePin }) {
           </div>
         </div>
         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-          <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 12, color: "var(--text2)" }}>
-            <input type="checkbox" checked={showUSFS} onChange={e => setShowUSFS(e.target.checked)} />
-            <span style={{ width: 10, height: 10, background: "rgba(0,140,0,0.8)", borderRadius: 2, display: "inline-block" }} />
-            National Forest
-          </label>
-          <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 12, color: "var(--text2)" }}>
-            <input type="checkbox" checked={showBLM} onChange={e => setShowBLM(e.target.checked)} />
-            <span style={{ width: 10, height: 10, background: "rgba(200,120,0,0.8)", borderRadius: 2, display: "inline-block" }} />
-            BLM Land
-          </label>
+
           <span style={{ color: "var(--text3)", fontSize: 11, marginLeft: "auto" }}>{pins.filter(p => p.lat && p.lng).length} pins</span>
         </div>
       </div>
@@ -1029,7 +1001,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser }
             <polygon points="0,100 60,40 120,65 180,20 240,55 300,30 360,50 400,35 400,100" fill="rgba(120,180,80,0.6)" />
             <polygon points="0,100 40,60 90,75 150,45 210,70 270,50 330,65 400,45 400,100" fill="rgba(80,140,50,0.4)" />
           </svg>
-          <button onClick={onBack} className="btn-ghost" style={{ position: "absolute", top: 12, left: 12, padding: "5px 12px", fontSize: 12 }}>← Back</button>
+          {onBack && <button onClick={onBack} className="btn-ghost" style={{ position: "absolute", top: 12, left: 12, padding: "5px 12px", fontSize: 12 }}>← Back</button>}
           {!isOwnProfile && (
             <button onClick={toggleFollow} className={isFollowing ? "btn-ghost" : "btn-primary"} style={{ position: "absolute", top: 12, right: 12, padding: "6px 18px", fontSize: 13 }}>
               {isFollowing ? "Following" : "Follow"}
@@ -1219,6 +1191,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   const [likeCounts, setLikeCounts] = useState({});
   const [commentCounts, setCommentCounts] = useState({});
   const [expandedComments, setExpandedComments] = useState(new Set());
+  const [communityTab, setCommunityTab] = useState("feed");
   const [viewingProfile, setViewingProfile] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -1353,7 +1326,45 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
 
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      {viewingProfile && (
+      <div style={{ display: "flex", gap: 6, padding: "2px 0" }}>
+        {["feed", "hotspots", "messages", "profile"].map(t => (
+          <button key={t} onClick={() => { setCommunityTab(t); setViewingProfile(null); }} style={{ flex: 1, padding: "8px 0", borderRadius: 20, border: communityTab === t ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: communityTab === t ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: communityTab === t ? "var(--green)" : "var(--text3)", fontSize: 12, fontWeight: communityTab === t ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)", textTransform: "capitalize" }}>
+            {t === "feed" ? "Feed" : t === "hotspots" ? "Hotspots" : t === "messages" ? "Messages" : "Profile"}
+          </button>
+        ))}
+      </div>
+      {communityTab === "messages" && (
+        <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text3)", fontSize: 14 }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>💬</div>
+          <div style={{ color: "var(--text)", fontWeight: 600, marginBottom: 6 }}>Private Messages</div>
+          Coming soon
+        </div>
+      )}
+      {communityTab === "hotspots" && (
+        <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text3)", fontSize: 14 }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>📍</div>
+          <div style={{ color: "var(--text)", fontWeight: 600, marginBottom: 6 }}>Hotspots</div>
+          Coming soon
+        </div>
+      )}
+      {communityTab === "profile" && (
+        !user ? (
+          <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text3)", fontSize: 14 }}>
+            <div style={{ fontSize: 36, marginBottom: 10 }}>🦌</div>
+            <div style={{ color: "var(--text)", fontWeight: 600, marginBottom: 6 }}>Sign in to view your profile</div>
+            <button onClick={openSignIn} className="btn-primary" style={{ padding: "8px 20px", fontSize: 13 }}>Sign In</button>
+          </div>
+        ) : (
+          <UserProfilePage
+            userId={user.id}
+            currentUser={user}
+            onBack={null}
+            openSignIn={openSignIn}
+            onViewUser={(id) => { setViewingProfile(id); setCommunityTab("feed"); }}
+          />
+        )
+      )}
+      {(communityTab === "feed" || communityTab === "profile") && viewingProfile && (
         <UserProfilePage
           userId={viewingProfile}
           currentUser={user}
@@ -1362,7 +1373,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
           onViewUser={(id) => setViewingProfile(id)}
         />
       )}
-      {!viewingProfile && <div style={{ background: "#0a150a", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "18px 20px", marginBottom: 2 }}>
+      {communityTab === "feed" && !viewingProfile && <div style={{ background: "#0a150a", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "18px 20px", marginBottom: 2 }}>
         <div style={{ marginBottom: 14 }}>
           <input
             placeholder="🔍 Search users..."
@@ -1393,10 +1404,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
           </div>
           <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 10 }}>{posts.length > 0 ? `${posts.length} post${posts.length !== 1 ? "s" : ""} from hunters & anglers` : "Be the first to post"}</div>
           <div style={{ display: "flex", gap: 8 }}>
-            {user && <button onClick={() => setViewingProfile(user.id)} className="btn-ghost" style={{ padding: "7px 14px", fontSize: 13 }}>My Profile</button>}
-            <button onClick={() => { if (!user) { openSignIn(); return; } setShowForm(s => !s); }} className="btn-primary" style={{ padding: "7px 14px", fontSize: 13 }}>
-              {showForm ? "Cancel" : "+ Post"}
-            </button>
+            <button onClick={() => setCommunityTab("profile")} className="btn-ghost" style={{ padding: "7px 14px", fontSize: 13 }}>+ Post</button>
           </div>
         </div>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -1409,7 +1417,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
         </div>
       </div>}
 
-      {!viewingProfile && showForm && (
+      {false && !viewingProfile && showForm && (
         <div className="card fade-in" style={{ padding: 20 }}>
           <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 14 }}>NEW POST</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -1448,9 +1456,9 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
         </div>
       )}
 
-      {!viewingProfile && loading && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14 }} className="pulse">Loading posts...</div>}
+      {communityTab === "feed" && !viewingProfile && loading && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14 }} className="pulse">Loading posts...</div>}
 
-      {!viewingProfile && !loading && posts.length === 0 && (
+      {communityTab === "feed" && !viewingProfile && !loading && posts.length === 0 && (
         <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🌲</div>
           <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>No posts yet</div>
@@ -1458,7 +1466,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
         </div>
       )}
 
-      {!viewingProfile && sortedPosts.map(post => {
+      {communityTab === "feed" && !viewingProfile && sortedPosts.map(post => {
         const likeCount = likeCounts[post.id] || 0;
         const isLiked = likedPostIds.has(post.id);
         const isHot = likeCount >= 5;
