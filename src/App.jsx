@@ -3827,6 +3827,19 @@ export default function App() {
   }, []);
 
   const goTo = (p) => { setPrevPage(page); setPage(p); };
+
+  const [showSplash, setShowSplash] = useState(true);
+  useEffect(() => { setTimeout(() => setShowSplash(false), 1500); }, []);
+
+  if (!isLoaded || showSplash) return (
+    <div style={{ minHeight: "100vh", background: "#070e07", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-body)" }}>
+      <style>{css}</style>
+      <img src="/logo.png" style={{ width: 180, height: 180, objectFit: "contain", animation: "pulse 1.5s ease-in-out infinite", marginBottom: 32 }} />
+      <div style={{ fontFamily: "var(--font-display)", fontSize: 56, color: "#f4f4f0", letterSpacing: "0.02em" }}>WildAI</div>
+      <div style={{ color: "rgba(120,180,80,0.6)", fontSize: 15, marginTop: 12, letterSpacing: "0.12em", fontFamily: "var(--font-display)", fontWeight: 400 }}>YOUR GUIDE FOR EVERY SEASON</div>
+    </div>
+  );
+
   return (
     <>
       <style>{css}</style>
