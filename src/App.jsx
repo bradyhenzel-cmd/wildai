@@ -2630,6 +2630,24 @@ function TermsPage({ onBack }) {
 // ─── LANDING PAGE ─────────────────────────────────────────────────────────────
 function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
   const tip = DAILY_TIPS[new Date().getDay() % DAILY_TIPS.length];
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isIOS] = useState(() => /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone);
+  const [isInstalled] = useState(() => window.navigator.standalone === true);
+
+  useEffect(() => {
+    const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      setDeferredPrompt(null);
+    }
+  };
+
   const features = [
     { icon: "🎯", title: "Hunting Tactics", desc: "Species-specific strategies, scouting tips, rut timing" },
     { icon: "🎣", title: "Fishing Intel", desc: "Seasonal patterns, lure selection, hotspot guidance" },
@@ -2653,7 +2671,15 @@ function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <button onClick={onTerms} className="btn-ghost mobile-home-btn" style={{ padding: "8px 16px", fontSize: 13 }}>Terms</button>
-          <button onClick={onStart} className="btn-primary mobile-home-btn" style={{ padding: "9px 22px", fontSize: 14 }}>Launch App →</button>
+          {!isInstalled && isIOS && (
+            <button onClick={() => alert('Tap the Share button ⬆ then "Add to Home Screen"')} className="btn-primary mobile-home-btn" style={{ padding: "9px 22px", fontSize: 14 }}>+ Add App</button>
+          )}
+          {!isInstalled && !isIOS && deferredPrompt && (
+            <button onClick={handleInstall} className="btn-primary mobile-home-btn" style={{ padding: "9px 22px", fontSize: 14 }}>+ Add App</button>
+          )}
+          {(isInstalled || (!isIOS && !deferredPrompt)) && (
+            <button onClick={onStart} className="btn-primary mobile-home-btn" style={{ padding: "9px 22px", fontSize: 14 }}>Launch App →</button>
+          )}
         </div>
       </nav>
 
