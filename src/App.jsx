@@ -3772,10 +3772,21 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 
 // ─── ROOT ─────────────────────────────────────────────────────────────────────
 export default function App() {
+  const { user, isLoaded } = useUser();
   const [page, setPage] = useState(() => {
     const savedState = localStorage.getItem("wildai_selected_state");
     return savedState ? "chat" : "landing";
   });
+
+  useEffect(() => {
+    if (!isLoaded || !user) return;
+    if (page === "landing") setPage("chat");
+    supabase.from("profiles").select("selected_state").eq("user_id", user.id).single().then(({ data }) => {
+      if (data?.selected_state && !localStorage.getItem("wildai_selected_state")) {
+        handleSetSelectedState(data.selected_state);
+      }
+    });
+  }, [isLoaded, user?.id]);
   const [prevPage, setPrevPage] = useState("landing");
   const [messageCount, setMessageCount] = useState(() => {
     const saved = localStorage.getItem("wildai_message_count");
@@ -3787,8 +3798,12 @@ export default function App() {
 
   const handleSetSelectedState = (state) => {
     setSelectedState(state);
-    if (state) localStorage.setItem("wildai_selected_state", state);
-    else localStorage.removeItem("wildai_selected_state");
+    if (state) {
+      localStorage.setItem("wildai_selected_state", state);
+      if (user) supabase.from("profiles").update({ selected_state: state }).eq("user_id", user.id);
+    } else {
+      localStorage.removeItem("wildai_selected_state");
+    }
   };
 
   useEffect(() => {
