@@ -839,7 +839,7 @@ function MapTab({ selectedState, user, onSharePin }) {
 }
 
 // ─── USER PROFILE ─────────────────────────────────────────────────────────────
-function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser }) {
+function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, onMessage }) {
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [followerCount, setFollowerCount] = useState(0);
@@ -1016,16 +1016,12 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser }
               <div style={{ width: 88, height: 88, borderRadius: "50%", background: "linear-gradient(135deg, #1e4010, #0f2408)", border: "4px solid rgba(8,15,8,1)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.6), 0 0 0 1px rgba(120,180,80,0.2)" }}>
                 {profile?.avatar_url ? <img src={profile.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 36, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700, lineHeight: 1 }}>{displayName[0]?.toUpperCase()}</span>}
               </div>
-              {isOwnProfile && (
-                <label style={{ position: "absolute", bottom: 4, right: 4, width: 24, height: 24, borderRadius: "50%", background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.5)", border: "2px solid rgba(8,15,8,1)" }}>
-                  {uploadingAvatar ? "·" : "📷"}
-                  <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => uploadAvatar(e.target.files[0])} />
-                </label>
-              )}
+              
             </div>
           </div>
 
           <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 24, fontFamily: "var(--font-display)", marginBottom: 6 }}>{displayName}</div>
+          {isOwnProfile && <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 6 }}>Change name & photo in account settings →</div>}
 
           {!editingBio && (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 16 }}>
@@ -1045,11 +1041,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser }
             </div>
           )}
 
-          {!isOwnProfile && (
-            <button onClick={toggleFollow} className={isFollowing ? "btn-ghost" : "btn-primary"} style={{ padding: "8px 28px", fontSize: 13, marginBottom: 16 }}>
-              {isFollowing ? "Following" : "Follow"}
-            </button>
-          )}
+          
 
           <div style={{ display: "flex", gap: 0, borderTop: "1px solid var(--border)", paddingTop: 16 }}>
             {[["Posts", posts.length, null], ["Followers", followerCount, "followers"], ["Following", followingCount, "following"]].map(([label, val, type], i) => (
@@ -1088,7 +1080,15 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser }
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 8 }}>
+      {!isOwnProfile && onMessage && (
+        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+          <button onClick={toggleFollow} className={isFollowing ? "btn-ghost" : "btn-primary"} style={{ flex: 1, padding: "8px 0", fontSize: 13 }}>
+            {isFollowing ? "Following" : "Follow"}
+          </button>
+          <button onClick={() => onMessage(userId)} className="btn-ghost" style={{ flex: 1, padding: "8px 0", fontSize: 13 }}>💬 Message</button>
+        </div>
+      )}
+      <div style={{ display: "flex", gap: 8, marginBottom: 4, alignItems: "center" }}>
         <button onClick={() => setProfileTab("posts")} className={`nav-tab ${profileTab === "posts" ? "active" : "inactive"}`} style={{ padding: "7px 18px", fontSize: 13 }}>Posts</button>
         <button onClick={() => setProfileTab("spots")} className={`nav-tab ${profileTab === "spots" ? "active" : "inactive"}`} style={{ padding: "7px 18px", fontSize: 13 }}>📍 Spots</button>
       </div>
@@ -1252,8 +1252,27 @@ function MessagesTab({ user, openSignIn, supabase }) {
   useEffect(() => { if (user) loadInbox(); }, [user]);
 
   useEffect(() => {
+    if (window._openMessageThread && user) {
+      const id = window._openMessageThread;
+      window._openMessageThread = null;
+      supabase.from("profiles").select("username, avatar_url").eq("user_id", id).single().then(({ data }) => {
+        openThread(id, data?.username || "Hunter", data?.avatar_url);
+      });
+    }
+  }, [user]);
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase.channel("inbox-realtime")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `recipient_id=eq.${user.id}` }, () => {
+        loadInbox();
+      }).subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [user]);
 
   useEffect(() => {
     if (!user || !activeThread) return;
@@ -1612,6 +1631,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
           onBack={() => setViewingProfile(null)}
           openSignIn={openSignIn}
           onViewUser={(id) => setViewingProfile(id)}
+          onMessage={(id) => { setViewingProfile(null); setCommunityTab("messages"); setTimeout(() => { window._openMessageThread = id; }, 100); }}
         />
       )}
       {communityTab === "feed" && !viewingProfile && <div style={{ background: "#0a150a", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "18px 20px", marginBottom: 2 }}>
