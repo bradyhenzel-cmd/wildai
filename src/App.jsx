@@ -320,9 +320,8 @@ const css = `
   @media (max-width: 480px) {
     .card { padding: 10px !important; }
     .btn-primary, .btn-ghost { padding: 7px 12px !important; font-size: 12px !important; }
-    h1, h2 { font-size: 85% !important; }
+    h2 { font-size: 85% !important; }
     .fade-in { gap: 10px !important; }
-    * { font-size: 10px; }
     input, textarea, select { font-size: 16px !important; }
   }
   
