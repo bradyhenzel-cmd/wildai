@@ -3086,7 +3086,7 @@ function AdminTab({ user }) {
 
 function TermsPage({ onBack }) {
   const sections = [
-    ["1. Acceptance of Terms", "By accessing or using WildAI, you agree to be bound by these Terms and Conditions. WildAI reserves the right to update these terms at any time, and continued use constitutes acceptance of any changes."],
+    ["1. Acceptance of Terms", "By accessing or using WildAI, you agree to be bound by these Terms and Conditions. WildAI reserves the right to update these terms at any time, and continued use constitutes acceptance of any changes. You must be at least 13 years of age to use WildAI. By using this service you represent that you are 13 years of age or older."],
     ["2. Nature of Service", "WildAI is an AI-powered informational assistant for hunters and anglers. It is not a licensed guide, outfitter, or wildlife agency. All information is for general educational purposes only."],
     ["3. Regulatory Disclaimer", "Hunting and fishing regulations change frequently. WildAI makes no guarantee that information on seasons, bag limits, or license requirements is current. You are solely responsible for verifying regulations with your state wildlife agency."],
     ["4. Accuracy of Information", "WildAI strives to provide accurate information but may make errors or provide outdated advice. Always apply your own judgment and consult licensed professionals for decisions involving safety or legality."],
