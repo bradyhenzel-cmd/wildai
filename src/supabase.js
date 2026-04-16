@@ -11,5 +11,10 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
             if (clerkToken) headers.set('Authorization', `Bearer ${clerkToken}`)
             return fetch(url, { ...options, headers })
         }
+    },
+    realtime: {
+        params: {
+            apikey: supabaseKey
+        }
     }
 })

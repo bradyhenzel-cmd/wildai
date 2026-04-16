@@ -1290,6 +1290,11 @@ function MessagesTab({ user, openSignIn, supabase }) {
 
   useEffect(() => {
     if (!user || !activeThread) return;
+    const setupChannel = async () => {
+      const token = await window.Clerk?.session?.getToken({ template: 'supabase' });
+      await supabase.realtime.setAuth(token);
+    };
+    setupChannel();
     const channel = supabase.channel("messages-" + activeThread.otherId)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `recipient_id=eq.${user.id}` }, payload => {
         if (payload.new.sender_id === activeThread.otherId) {
