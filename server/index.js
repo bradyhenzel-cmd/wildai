@@ -11,8 +11,9 @@ const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
 app.use(cors());
 
-// Raw body needed for Stripe webhooks
+// Raw body needed for Stripe and Clerk webhooks
 app.use("/webhook", express.raw({ type: "application/json" }));
+app.use("/clerk-webhook", express.raw({ type: "application/json" }));
 app.use(express.json());
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -202,7 +203,7 @@ app.get("/messages/inbox", async (req, res) => {
     res.json(Object.values(threads));
 });
 
-app.post("/clerk-webhook", express.raw({ type: "application/json" }), async (req, res) => {
+app.post("/clerk-webhook", async (req, res) => {
   const { Webhook } = require("svix");
   const secret = process.env.CLERK_WEBHOOK_SECRET;
   const headers = { "svix-id": req.headers["svix-id"], "svix-timestamp": req.headers["svix-timestamp"], "svix-signature": req.headers["svix-signature"] };
