@@ -215,7 +215,7 @@ app.post("/clerk-webhook", async (req, res) => {
       const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
       const { id, username, first_name, image_url } = evt.data;
       const finalUsername = username || first_name || "Hunter";
-      await supabase.from("profiles").upsert({ user_id: id, username: finalUsername, avatar_url: image_url }, { onConflict: "user_id" });
+      await supabase.from("profiles").upsert({ user_id: id, username: finalUsername, avatar_url: image_url, avatar_updated_at: new Date().toISOString() }, { onConflict: "user_id" });
     }
     res.json({ received: true });
   } catch (err) {

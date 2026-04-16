@@ -1014,7 +1014,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
             <div style={{ position: "relative", marginTop: -44 }}>
               <div style={{ width: 88, height: 88, borderRadius: "50%", background: "linear-gradient(135deg, #1e4010, #0f2408)", border: "4px solid rgba(8,15,8,1)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.6), 0 0 0 1px rgba(120,180,80,0.2)" }}>
-                {profile?.avatar_url ? <img src={profile.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 36, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700, lineHeight: 1 }}>{displayName[0]?.toUpperCase()}</span>}
+                {profile?.avatar_url ? <img src={`${profile.avatar_url}?t=${profile.avatar_updated_at || 0}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 36, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700, lineHeight: 1 }}>{displayName[0]?.toUpperCase()}</span>}
               </div>
               
             </div>
