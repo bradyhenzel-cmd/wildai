@@ -1667,7 +1667,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
       lat, lng,
     });
     if (error) { setError("Failed to post. Try again."); }
-    else { setForm({ species: "", location: "", caption: "", photo: "", pinLat: null, pinLng: null }); setShowForm(false); loadPosts(); }
+    else { setForm({ species: "", location: "", caption: "", photo: "", pinLat: null, pinLng: null }); setShowForm(false); }
     setSubmitting(false);
   };
 
@@ -1692,8 +1692,8 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
 
   const deletePost = async (postId) => {
     if (!window.confirm("Delete this post?")) return;
+    setPosts(prev => prev.filter(p => p.id !== postId));
     await supabase.from("posts").delete().eq("id", postId);
-    loadPosts();
   };
 
   const sortedPosts = [...posts].sort((a, b) => {
