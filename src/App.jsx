@@ -1689,7 +1689,10 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   };
 
   const reportPost = async (postId) => {
-    await supabase.from("reports").insert({ post_id: postId, reason: "User reported" });
+    if (!user) { openSignIn(); return; }
+    const { data: existing } = await supabase.from("reports").select("id").eq("post_id", postId).eq("user_id", user.id).single();
+    if (existing) { alert("You've already reported this post."); return; }
+    await supabase.from("reports").insert({ post_id: postId, reason: "User reported", user_id: user.id });
     alert("Post reported. Thank you.");
   };
 
@@ -1701,7 +1704,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
 
   const sortedPosts = [...posts].sort((a, b) => {
     if (sortBy === "top") return (likeCounts[b.id] || 0) - (likeCounts[a.id] || 0);
-    return new Date(b.created_at) - new Date(a.created_at);
+    return new Date(a.created_at) - new Date(b.created_at);
   });
 
   return (
@@ -1868,7 +1871,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
                   <span style={{ color: "var(--text3)", fontSize: 11, marginLeft: 8 }}>{new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
                 </div>
                 <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                  {user?.id === post.user_id && <button onClick={() => deletePost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.6)", fontSize: 12, padding: "2px 6px" }}>✕</button>}
+                  {(user?.id === post.user_id || user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a") && <button onClick={() => deletePost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.6)", fontSize: 12, padding: "2px 6px" }}>✕</button>}
                   <button onClick={() => reportPost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text3)", fontSize: 11, padding: "2px 6px" }}>⚑</button>
                 </div>
               </div>
