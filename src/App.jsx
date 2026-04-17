@@ -1579,6 +1579,8 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   const [commentCounts, setCommentCounts] = useState({});
   const [expandedComments, setExpandedComments] = useState(new Set());
   const [communityTab, setCommunityTab] = useState("feed");
+  const [feedFilter, setFeedFilter] = useState("all");
+  const [followingIds, setFollowingIds] = useState(new Set());
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(() => !localStorage.getItem("wildai_community_welcomed"));
   const [viewingProfile, setViewingProfile] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -1652,6 +1654,12 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
     }
   }, []);
   useEffect(() => { loadSavedPins(); }, [user]);
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("follows").select("following_id").eq("follower_id", user.id).then(({ data }) => {
+      if (data) setFollowingIds(new Set(data.map(f => f.following_id)));
+    });
+  }, [user]);
 
   const toggleLike = async (post) => {
     if (!user) { openSignIn(); return; }
@@ -1723,9 +1731,12 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
     await supabase.from("posts").delete().eq("id", postId);
   };
 
-  const sortedPosts = [...posts].sort((a, b) => {
+  const filteredByFollow = feedFilter === "following"
+    ? posts.filter(p => followingIds.has(p.user_id))
+    : posts;
+  const sortedPosts = [...filteredByFollow].sort((a, b) => {
     if (sortBy === "top") return (likeCounts[b.id] || 0) - (likeCounts[a.id] || 0);
-    return new Date(a.created_at) - new Date(b.created_at);
+    return new Date(b.created_at) - new Date(a.created_at);
   });
 
   return (
@@ -1810,7 +1821,9 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <div style={{ display: "flex", gap: 6 }}>
-            <button onClick={() => setStateFilter("all")} style={{ padding: "7px 14px", borderRadius: 20, border: stateFilter === "all" ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: stateFilter === "all" ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: stateFilter === "all" ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: stateFilter === "all" ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>All</button>
+            <button onClick={() => setFeedFilter("all")} style={{ padding: "7px 14px", borderRadius: 20, border: feedFilter === "all" ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: feedFilter === "all" ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: feedFilter === "all" ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: feedFilter === "all" ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>All</button>
+            {user && <button onClick={() => setFeedFilter("following")} style={{ padding: "7px 14px", borderRadius: 20, border: feedFilter === "following" ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: feedFilter === "following" ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: feedFilter === "following" ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: feedFilter === "following" ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>Following</button>}
+            <button onClick={() => setStateFilter("all")} style={{ padding: "7px 14px", borderRadius: 20, border: stateFilter === "all" ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: stateFilter === "all" ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: stateFilter === "all" ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: stateFilter === "all" ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>All States</button>
             {selectedState && <button onClick={() => setStateFilter(selectedState)} style={{ padding: "7px 14px", borderRadius: 20, border: stateFilter === selectedState ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: stateFilter === selectedState ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: stateFilter === selectedState ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: stateFilter === selectedState ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>📍 {selectedState}</button>}
           </div>
           <div style={{ display: "flex", gap: 6 }}>
@@ -1876,7 +1889,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
         </div>
       )}
 
-      {communityTab === "feed" && !viewingProfile && sortedPosts.map(post => {
+      {communityTab === "feed" && !viewingProfile && <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>{sortedPosts.map(post => {
         const likeCount = likeCounts[post.id] || 0;
         const isLiked = likedPostIds.has(post.id);
         const isHot = likeCount >= 5;
@@ -1927,7 +1940,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
             </div>
           </div>
         );
-      })}
+      })}</div>}
     </div>
   );
 }
