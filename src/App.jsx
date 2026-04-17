@@ -3602,7 +3602,7 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
       return "New Moon 🌑";
     };
     const timeOfDay = now.getHours() < 12 ? "morning" : now.getHours() < 17 ? "afternoon" : "evening";
-    const system = `You are WildAI, an expert hunting and fishing assistant${selectedState ? ` specializing in ${selectedState}` : ""}. Deep knowledge of hunting tactics, fishing techniques, gear, wildlife behavior, seasons, regulations${selectedState ? ` specific to ${selectedState}` : " across US states"}, trip planning, and public land navigation. Give practical, specific, confident advice like a seasoned outdoorsman. Use **bold** for key terms. Keep responses concise and useful. Remind users to verify regulations with their state agency when relevant.If a user asks about canceling their subscription or managing billing, tell them to click their profile avatar in the top right corner of the app and select "Manage Subscription".
+    const system = `You are WildAI, an expert hunting and fishing assistant${selectedState ? ` specializing in ${selectedState}` : ""}. Deep knowledge of hunting tactics, fishing techniques, gear, wildlife behavior, seasons, regulations${selectedState ? ` specific to ${selectedState}` : " across US states"}, trip planning, and public land navigation. Give practical, specific, confident advice like a seasoned outdoorsman. Use **bold** for key terms. Keep responses concise and useful. Never use hashtags or markdown headers (# symbols). Never use bullet point symbols like • or -. Remind users to verify regulations with their state agency when relevant.If a user asks about canceling their subscription or managing billing, tell them to click their profile avatar in the top right corner of the app and select "Manage Subscription".
 
 CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 - Today's date: ${now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
@@ -3804,7 +3804,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
               </div>
               {messages.length <= 2 && !hitLimit && (
                 <div style={{ padding: "0 20px 16px", display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {[`Best ${selectedState || "local"} elk setup?`, "What's biting right now?", "Plan me a 3-day hunt", "Deer scouting tips"].map((s, i) => (
+                  {["Best fishing spots near me right now", "What should I be hunting this week?", "How's the weather for hunting today?", `What license do I need in ${selectedState || "my state"}?`].map((s, i) => (
                     <button key={i} onClick={() => sendMessage(s)} className="btn-ghost" style={{ padding: "7px 14px", fontSize: 12, borderRadius: 20 }}>{s}</button>
                   ))}
                 </div>
