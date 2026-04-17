@@ -3509,6 +3509,10 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
           const geoData = await geo.json();
           const name = geoData.address?.city || geoData.address?.town || geoData.address?.village || "Your Location";
           setLocationName(name);
+          const detectedState = geoData.address?.state;
+          if (detectedState && STATES.includes(detectedState) && !selectedState) {
+            setSelectedState(detectedState);
+          }
           await fetchWeather();
         } catch { }
       });
@@ -3959,6 +3963,13 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         )}
         {tab === "more" && (
           <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ padding: "14px 16px", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ color: "var(--text2)", fontSize: 13, fontWeight: 600, flexShrink: 0 }}>Your State</div>
+              <select value={selectedState} onChange={e => setSelectedState(e.target.value)} style={{ flex: 1, padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 14 }}>
+                <option value="">Select state...</option>
+                {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
             <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 4 }}>TOOLS & FEATURES</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               {[
