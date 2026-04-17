@@ -370,9 +370,11 @@ const css = `
   .weather-stat { display:flex; flex-direction:column; align-items:center; gap:4px; padding:16px; flex:1;
     background:linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.1) 100%);
     border-radius:var(--radius-sm); border:1px solid var(--border); border-top-color:rgba(255,255,255,0.1); }
-  .pill { background:linear-gradient(160deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.15) 100%); border:1px solid var(--border); border-top-color:rgba(255,255,255,0.12); color:var(--text3); border-radius:20px; font-family:var(--font-body); cursor:pointer; transition:all 0.2s; box-shadow:0 2px 6px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.07), inset 0 -1px 0 rgba(0,0,0,0.12); }
-  .pill:hover { background:rgba(255,255,255,0.08); border-color:var(--border-accent); color:var(--text2); }
-  .pill-active { background:linear-gradient(160deg, rgba(120,180,80,0.18) 0%, rgba(80,140,50,0.08) 100%); border:1px solid var(--border-accent); border-top-color:rgba(120,180,80,0.3); color:var(--green); font-weight:600; box-shadow:0 2px 8px rgba(120,180,80,0.15), inset 0 1px 0 rgba(120,180,80,0.15), inset 0 -1px 0 rgba(0,0,0,0.1); }
+  .pill { background:linear-gradient(160deg, rgba(80,95,110,0.35) 0%, rgba(45,58,70,0.28) 100%); border:1px solid rgba(100,125,150,0.4); border-top-color:rgba(160,185,210,0.3); color:rgba(170,190,210,0.85); border-radius:20px; font-family:var(--font-body); cursor:pointer; transition:all 0.2s; box-shadow:0 4px 12px rgba(0,0,0,0.35), inset 0 1px 0 rgba(160,185,210,0.2), inset 0 -2px 0 rgba(0,0,0,0.2); }
+  .pill:hover { background:rgba(90,110,130,0.5); border-color:rgba(140,170,200,0.55); color:rgba(200,220,240,0.95); transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,0.4), inset 0 1px 0 rgba(160,185,210,0.2); }
+  .pill:active { transform:translateY(0px); box-shadow:0 2px 6px rgba(0,0,0,0.3), inset 0 2px 4px rgba(0,0,0,0.2); }
+  .pill-active { background:linear-gradient(160deg, rgba(60,120,190,0.6) 0%, rgba(35,85,150,0.5) 100%); border:1px solid rgba(90,160,240,0.7); border-top-color:rgba(140,200,255,0.6); color:#a8d8ff; font-weight:700; box-shadow:0 4px 16px rgba(60,130,220,0.4), inset 0 1px 0 rgba(160,210,255,0.3), inset 0 -2px 0 rgba(0,0,0,0.2); }
+  .pill-active:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(60,130,220,0.5), inset 0 1px 0 rgba(160,210,255,0.3); }
   .btn-gold { background:linear-gradient(135deg, #f0c030 0%, #e8b020 40%, #c49010 100%); border:none; color:#0a1200; font-family:var(--font-body); font-weight:600; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 16px rgba(232,176,32,0.45), inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -2px 0 rgba(0,0,0,0.15); }
   .btn-gold:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(232,176,32,0.6), inset 0 1px 0 rgba(255,255,255,0.3); }
   .btn-gold:active { transform:translateY(0px); box-shadow:0 2px 8px rgba(232,176,32,0.3), inset 0 2px 4px rgba(0,0,0,0.2); }
