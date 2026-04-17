@@ -1614,6 +1614,17 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   useEffect(() => { loadPosts(); }, [stateFilter]);
   useEffect(() => { if (posts.length) loadLikes(posts); }, [posts, user]);
   useEffect(() => {
+    const channel = supabase
+      .channel("posts-realtime")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "posts" }, (payload) => {
+        const newPost = payload.new;
+        if (stateFilter !== "all" && newPost.state !== stateFilter) return;
+        setPosts(prev => [newPost, ...prev]);
+      })
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [stateFilter]);
+  useEffect(() => {
     if (window._sharePinToComm) {
       const pin = window._sharePinToComm;
       setForm(f => ({ ...f, location: pin.name || pin.location || "", species: pin.species || "", pinLat: pin.lat, pinLng: pin.lng }));
