@@ -369,6 +369,9 @@ const css = `
   .weather-stat { display:flex; flex-direction:column; align-items:center; gap:4px; padding:16px; flex:1;
     background:linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.1) 100%);
     border-radius:var(--radius-sm); border:1px solid var(--border); border-top-color:rgba(255,255,255,0.1); }
+  .btn-gold { background:linear-gradient(135deg, #f0c030 0%, #e8b020 40%, #c49010 100%); border:none; color:#0a1200; font-family:var(--font-body); font-weight:600; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 16px rgba(232,176,32,0.45), inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -2px 0 rgba(0,0,0,0.15); }
+  .btn-gold:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(232,176,32,0.6), inset 0 1px 0 rgba(255,255,255,0.3); }
+  .btn-gold:active { transform:translateY(0px); box-shadow:0 2px 8px rgba(232,176,32,0.3), inset 0 2px 4px rgba(0,0,0,0.2); }
   .mapboxgl-map { height:100%; width:100%; }
   .leaflet-container { background:#0d1a0d !important; }
   .leaflet-tile { filter:brightness(0.55) saturate(0.45) hue-rotate(55deg) !important; }
@@ -3298,7 +3301,7 @@ function TermsPage({ onBack }) {
 }
 
 // ─── HEATMAP LANDING ──────────────────────────────────────────────────────────
-function HeatmapLanding() {
+function HeatmapLanding({ onReady }) {
   const mapRef = useRef(null);
   const mapInst = useRef(null);
   const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -3316,8 +3319,8 @@ function HeatmapLanding() {
       const map = new mapboxgl.Map({
         container: mapRef.current,
         style: "mapbox://styles/mapbox/satellite-streets-v12",
-        center: [-98, 37],
-        zoom: window.innerWidth < 640 ? 2.4 : 3.2,
+        center: [-98, 30],
+        zoom: window.innerWidth < 640 ? 2.2 : 3.3,
         interactive: false,
         attributionControl: true,
       });
@@ -3328,7 +3331,7 @@ function HeatmapLanding() {
           supabase.from("seed_hotspots").select("lat, lng"),
         ]);
         const combined = [...(postData || []), ...(seedData || [])];
-        if (!combined.length) return;
+        if (!combined.length) { onReady?.(); return; }
         map.addSource("hotspots", {
           type: "geojson",
           data: {
@@ -3362,6 +3365,7 @@ function HeatmapLanding() {
             "circle-stroke-opacity": 1,
           }
         });
+        onReady?.();
       });
     });
     return () => { if (mapInst.current) { mapInst.current.remove(); mapInst.current = null; } };
@@ -3371,7 +3375,9 @@ function HeatmapLanding() {
 }
 
 // ─── LANDING PAGE ─────────────────────────────────────────────────────────────
-function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
+function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTerms }) {
+  const { openSignIn } = useClerk();
+  const [mapReady, setMapReady] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isIOS] = useState(() => /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone);
   const [isInstalled] = useState(() => window.navigator.standalone === true);
@@ -3392,6 +3398,13 @@ function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column", fontFamily: "var(--font-body)", position: "relative", overflow: "hidden" }}>
+      {!mapReady && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "#070e07", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-body)" }}>
+          <img src="/logo.png" style={{ width: 180, height: 180, objectFit: "contain", animation: "pulse 1.5s ease-in-out infinite", marginBottom: 32 }} />
+          <div style={{ fontFamily: "var(--font-display)", fontSize: 56, color: "#f4f4f0", letterSpacing: "0.02em" }}>WildAI</div>
+          <div style={{ color: "rgba(120,180,80,0.6)", fontSize: 15, marginTop: 12, letterSpacing: "0.12em", fontFamily: "var(--font-display)", fontWeight: 400 }}>YOUR GUIDE FOR EVERY SEASON</div>
+        </div>
+      )}
       {/* Nav */}
       <nav style={{ padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "absolute", top: 0, left: 0, right: 0, zIndex: 50, background: "linear-gradient(to bottom, rgba(7,14,7,0.7) 0%, transparent 100%)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -3399,29 +3412,29 @@ function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
           <span className="mobile-header-logo" style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.5px" }}>WildAI</span>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+
           
-          <button onClick={onStart} className="btn-primary mobile-home-btn" style={{ padding: "9px 22px", fontSize: 14 }}>Sign In</button>
         </div>
       </nav>
 
       {/* Heatmap Hero */}
       <div style={{ position: "relative", height: "100dvh" }}>
-        <HeatmapLanding />
+        <HeatmapLanding onReady={() => setMapReady(true)} />
         {/* Overlay */}
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(7,14,7,0.4) 0%, rgba(7,14,7,0.65) 45%, rgba(7,14,7,0.92) 100%)", zIndex: 2, pointerEvents: "none" }} />
         {/* Content */}
         <div style={{ position: "absolute", inset: 0, zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", padding: "0 24px 80px", textAlign: "center" }}>
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "65%", background: "linear-gradient(to bottom, transparent, rgba(7,14,7,0.96) 50%)", pointerEvents: "none", zIndex: -1 }} />
-        <style>{`.mapboxgl-ctrl-bottom-left { z-index: 10 !important; }`}</style>
-          
-          
+          <style>{`.mapboxgl-ctrl-bottom-left { z-index: 10 !important; }`}</style>
+
+
           <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(52px,10vw,96px)", fontWeight: 900, lineHeight: 1.0, color: "var(--text)", letterSpacing: "-3px", marginBottom: 16, maxWidth: 700, textShadow: "0 2px 20px rgba(0,0,0,0.6)" }}>
             Wild<span style={{ color: "var(--green)" }}>AI</span>
           </h1>
           <p style={{ color: "rgba(238,245,232,0.6)", fontSize: 13, maxWidth: 440, lineHeight: 1.65, marginBottom: 32, textShadow: "0 1px 8px rgba(0,0,0,0.4)" }}>Sign up free to add your spots and see exactly where hunters are finding success.</p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
-            <button onClick={onStart} className="btn-primary" style={{ padding: "14px 32px", fontSize: 16, borderRadius: "var(--radius)" }}>Get Started Free</button>
-            <button onClick={onStart} className="btn-primary" style={{ padding: "14px 24px", fontSize: 15 }}>Sign In</button>
+            <button onClick={() => openSignIn()} className="btn-primary" style={{ padding: "14px 32px", fontSize: 16, borderRadius: "var(--radius)" }}>Sign In / Sign Up</button>
+            <button onClick={onStart} className="btn-primary" style={{ padding: "14px 24px", fontSize: 15 }}>Continue as Guest</button>
           </div>
           <p style={{ color: "rgba(238,245,232,0.35)", fontSize: 11, marginTop: 14 }}>Free to join · No purchase required</p>
         </div>
@@ -3492,6 +3505,8 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const { openSignIn } = useClerk();
+  useEffect(() => { window._triggerSignIn = openSignIn; return () => { window._triggerSignIn = null; }; }, [openSignIn]);
+
   const isPro = user?.publicMetadata?.isPro === true;
   const hitLimit = !isPro && messageCount >= FREE_LIMIT;
 
@@ -3628,7 +3643,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 
       <header style={{ borderBottom: "1px solid rgba(120,180,80,0.1)", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", backdropFilter: "blur(24px)", background: "rgba(5,10,5,0.88)", position: "sticky", top: 0, zIndex: 50, boxShadow: "0 4px 24px rgba(0,0,0,0.3), 0 1px 0 rgba(120,180,80,0.08)", overflow: "visible" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <button onClick={onBack} className="btn-ghost mobile-home-btn" style={{ padding: "7px 14px", fontSize: 13 }}>← Home</button>
+
           <div className="mobile-header-center" style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <img src="/logo.png" className="mobile-header-logo-img" style={{ width: 28, height: 28, objectFit: "contain", mixBlendMode: "screen" }} />
             <span className="mobile-header-logo" style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, color: "var(--text)" }}>WildAI</span>
@@ -3640,7 +3655,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {hitLimit ? (
-            <button onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }} className="mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: "linear-gradient(135deg,#e8b020,#c49010)", border: "none", color: "#0a1200", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+            <button onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }} className="btn-gold mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12 }}>
               {checkoutLoading ? "..." : "Go Pro →"}
             </button>
           ) : (
@@ -3649,7 +3664,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
             </div>
           )}
           {!user ? (
-            <button onClick={() => openSignIn()} className="btn-ghost" style={{ padding: "7px 14px", fontSize: 13 }}>Sign In</button>
+            <button onClick={() => openSignIn()} className="btn-primary" style={{ padding: "7px 14px", fontSize: 13 }}>Sign In</button>
           ) : (
             <UserButton afterSignOutUrl="https://wildai.netlify.app">
               <UserButton.MenuItems>
@@ -3770,7 +3785,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                     <div style={{ fontFamily: "var(--font-display)", fontSize: 21, color: "#f4f4f0", marginBottom: 6, lineHeight: 1.2 }}>Every season. Every state.<br /><span style={{ color: "#e8b020" }}>Every question.</span></div>
                     <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>You've hit your free limit — unlock everything</div>
                   </div>
-                  <div style={{ margin: "16px 20px", background: "rgba(120,180,80,0.06)", border: "1px solid rgba(232,176,32,0.3)", borderRadius: 12, padding: 16 }}>
+                  <div style={{ margin: "16px 20px", background: "linear-gradient(135deg, rgba(120,180,80,0.12), rgba(80,140,50,0.06))", border: "1px solid rgba(120,180,80,0.3)", borderRadius: 12, padding: 16 }}>
                     <div style={{ color: "#78b450", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 8 }}>★ COMMUNITY — OUR BIGGEST FEATURE</div>
                     <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, lineHeight: 1.6, marginBottom: 10 }}>Post harvest photos, drop public hotspot pins, and see what hunters and anglers near you are tagging. A real community built for the field.</div>
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -3790,11 +3805,12 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                     ))}
                   </div>
                   <div style={{ padding: "20px 20px 24px", textAlign: "center" }}>
-                    <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 4, marginBottom: 14 }}>
-                      <span style={{ color: "#f4f4f0", fontSize: 28, fontWeight: 700 }}>$4.99</span>
-                      <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>/ month</span>
+                    <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 6, marginBottom: 6 }}>
+                      <span style={{ color: "#f4f4f0", fontSize: 42, fontWeight: 900, fontFamily: "var(--font-display)", letterSpacing: "-1px" }}>$4.99</span>
+                      <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 14 }}>/ month</span>
                     </div>
-                    <button style={{ width: "100%", padding: "15px", background: "#e8b020", border: "none", borderRadius: 12, color: "#0a1200", fontSize: 15, fontWeight: 700, cursor: "pointer", opacity: checkoutLoading ? 0.6 : 1 }} disabled={checkoutLoading} onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }}>
+                    <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 11, marginBottom: 14 }}>Less than a cup of coffee</div>
+                    <button className="btn-gold" style={{ width: "100%", padding: "15px", borderRadius: 12, fontSize: 15, opacity: checkoutLoading ? 0.6 : 1 }} disabled={checkoutLoading} onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }}>
                       {checkoutLoading ? "Loading..." : "Upgrade to Pro →"}
                     </button>
                     <div style={{ marginTop: 10, fontSize: 11, color: "rgba(255,255,255,0.2)" }}>Cancel anytime · Secure payment via Stripe</div>
@@ -3993,7 +4009,8 @@ export default function App() {
   });
 
   useEffect(() => {
-    if (!isLoaded || !user) return;
+    if (!isLoaded) return;
+    if (!user) { setPage("landing"); return; }
     if (page === "landing") setPage("chat");
     supabase.from("profiles").select("selected_state").eq("user_id", user.id).single().then(({ data }) => {
       if (data?.selected_state && !localStorage.getItem("wildai_selected_state")) {
@@ -4033,7 +4050,7 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   useEffect(() => { setTimeout(() => setShowSplash(false), 1500); }, []);
 
-  if (!isLoaded || showSplash) return (
+  if (!isLoaded || (showSplash && page !== "chat")) return (
     <div style={{ minHeight: "100vh", background: "#070e07", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-body)" }}>
       <style>{css}</style>
       <img src="/logo.png" style={{ width: 180, height: 180, objectFit: "contain", animation: "pulse 1.5s ease-in-out infinite", marginBottom: 32 }} />
@@ -4047,7 +4064,7 @@ export default function App() {
       <style>{css}</style>
       <div className="grain" />
       {page === "terms" && <TermsPage onBack={() => setPage(prevPage === "chat" ? "chat" : "landing")} />}
-      {page === "landing" && <LandingPage onStart={() => goTo("chat")} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} />}
+      {page === "landing" && <LandingPage onStart={() => goTo("chat")} onSignIn={() => { window._triggerSignIn?.(); }} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} />}
       {page === "chat" && <ChatPage onBack={() => { localStorage.removeItem("wildai_selected_state"); setSelectedState(""); goTo("landing"); }} messageCount={messageCount} setMessageCount={setMessageCount} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} />}
     </>
   );
