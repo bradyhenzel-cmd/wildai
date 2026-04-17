@@ -3297,9 +3297,81 @@ function TermsPage({ onBack }) {
   );
 }
 
+// ─── HEATMAP LANDING ──────────────────────────────────────────────────────────
+function HeatmapLanding() {
+  const mapRef = useRef(null);
+  const mapInst = useRef(null);
+  const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+
+  useEffect(() => {
+    if (!mapRef.current || mapInst.current) return;
+    if (!document.querySelector('link[href*="mapbox-gl"]')) {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css";
+      document.head.appendChild(link);
+    }
+    import("mapbox-gl").then(async ({ default: mapboxgl }) => {
+      mapboxgl.accessToken = MAPBOX_TOKEN;
+      const map = new mapboxgl.Map({
+        container: mapRef.current,
+        style: "mapbox://styles/mapbox/satellite-streets-v12",
+        center: [-98, 37],
+        zoom: window.innerWidth < 640 ? 2.4 : 3.2,
+        interactive: false,
+        attributionControl: true,
+      });
+      map.on("load", async () => {
+        mapInst.current = map;
+        const [{ data: postData }, { data: seedData }] = await Promise.all([
+          supabase.from("posts").select("lat, lng").not("lat", "is", null).not("lng", "is", null),
+          supabase.from("seed_hotspots").select("lat, lng"),
+        ]);
+        const combined = [...(postData || []), ...(seedData || [])];
+        if (!combined.length) return;
+        map.addSource("hotspots", {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: combined.map(p => ({ type: "Feature", geometry: { type: "Point", coordinates: [p.lng, p.lat] } }))
+          }
+        });
+        map.addLayer({
+          id: "hotspots-glow-outer",
+          type: "circle",
+          source: "hotspots",
+          paint: {
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 2, 10, 6, 20],
+            "circle-color": "#ff4422",
+            "circle-opacity": 0.18,
+            "circle-blur": 0.6,
+            "circle-stroke-width": 0,
+          }
+        });
+        map.addLayer({
+          id: "hotspots-glow",
+          type: "circle",
+          source: "hotspots",
+          paint: {
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 2, 4, 6, 10],
+            "circle-color": "#ff2200",
+            "circle-opacity": 1,
+            "circle-blur": 0,
+            "circle-stroke-width": 1.5,
+            "circle-stroke-color": "#ff6644",
+            "circle-stroke-opacity": 1,
+          }
+        });
+      });
+    });
+    return () => { if (mapInst.current) { mapInst.current.remove(); mapInst.current = null; } };
+  }, []);
+
+  return <div ref={mapRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />;
+}
+
 // ─── LANDING PAGE ─────────────────────────────────────────────────────────────
 function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
-  const tip = DAILY_TIPS[new Date().getDay() % DAILY_TIPS.length];
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isIOS] = useState(() => /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone);
   const [isInstalled] = useState(() => window.navigator.standalone === true);
@@ -3318,23 +3390,10 @@ function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
     }
   };
 
-  const features = [
-    { icon: "🎯", title: "Hunting Tactics", desc: "Species-specific strategies, scouting tips, rut timing" },
-    { icon: "🎣", title: "Fishing Intel", desc: "Seasonal patterns, lure selection, hotspot guidance" },
-    { icon: "🗺️", title: "Interactive Map", desc: "Real public land & fishing access map with pins" },
-    { icon: "📋", title: "Live Regulations", desc: "AI-generated state-specific rules & season dates" },
-    { icon: "🌤️", title: "Live Weather", desc: "Real conditions with hunting/fishing impact ratings" },
-    { icon: "🎒", title: "Gear Checklists", desc: "Interactive pack lists — tap to check items off" },
-  ];
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column", fontFamily: "var(--font-body)", position: "relative", overflow: "hidden" }}>
-      {/* Decorative background */}
-      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0 }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "url('/bg.jpg')", backgroundSize: "cover", backgroundPosition: "center", opacity: 0.35, zIndex: 1 }} />
-      </div>
-
       {/* Nav */}
-      <nav style={{ padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--border)", backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 50, background: "rgba(8,15,8,0.45)" }}>
+      <nav style={{ padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "absolute", top: 0, left: 0, right: 0, zIndex: 50, background: "linear-gradient(to bottom, rgba(7,14,7,0.7) 0%, transparent 100%)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <img src="/logo.png" className="mobile-header-logo-img" style={{ width: 32, height: 32, objectFit: "contain", mixBlendMode: "screen" }} />
           <span className="mobile-header-logo" style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.5px" }}>WildAI</span>
@@ -3353,53 +3412,28 @@ function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
         </div>
       </nav>
 
-      {/* Hero */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: "80px 24px 110px", textAlign: "center", position: "relative", zIndex: 1 }}>
-        <div className="slide-up" style={{ animationDelay: "0.05s" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "var(--green-dim)", border: "1px solid var(--border-accent)", borderRadius: 30, padding: "6px 16px", marginBottom: 28 }}>
+      {/* Heatmap Hero */}
+      <div style={{ position: "relative", height: "100dvh" }}>
+        <HeatmapLanding />
+        {/* Overlay */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(7,14,7,0.4) 0%, rgba(7,14,7,0.65) 45%, rgba(7,14,7,0.92) 100%)", zIndex: 2, pointerEvents: "none" }} />
+        {/* Content */}
+        <div style={{ position: "absolute", inset: 0, zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", padding: "0 24px 60px", textAlign: "center" }}>
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "65%", background: "linear-gradient(to bottom, transparent, rgba(7,14,7,0.96) 50%)", pointerEvents: "none", zIndex: -1 }} />
+        <style>{`.mapboxgl-ctrl-bottom-left { z-index: 10 !important; }`}</style>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(120,180,80,0.15)", border: "1px solid var(--border-accent)", borderRadius: 30, padding: "6px 16px", marginBottom: 20, backdropFilter: "blur(8px)", width: "fit-content", margin: "0 auto 20px" }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--green)", display: "inline-block" }} className="pulse" />
-            <span style={{ color: "var(--green)", fontSize: 12, fontWeight: 600, letterSpacing: "0.06em" }}>POWERED BY AI · FREE TO TRY</span>
+            <span style={{ color: "var(--green)", fontSize: 12, fontWeight: 600, letterSpacing: "0.06em" }}>LIVE COMMUNITY HOTSPOTS</span>
           </div>
-        </div>
-        <div className="slide-up" style={{ animationDelay: "0.1s" }}>
-          <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(44px,8vw,86px)", fontWeight: 900, lineHeight: 1.0, color: "var(--text)", letterSpacing: "-3px", marginBottom: 24, maxWidth: 820 }}>
-            Your Expert<br />
-            <span style={{ color: "var(--green)" }}>Hunting & Fishing</span><br />
-            Assistant
+          <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(36px,7vw,72px)", fontWeight: 900, lineHeight: 1.05, color: "var(--text)", letterSpacing: "-2px", marginBottom: 16, maxWidth: 700, textShadow: "0 2px 20px rgba(0,0,0,0.5)" }}>
+            Hunt Smarter.<br /><span style={{ color: "var(--green)" }}>Find More.</span>
           </h1>
-        </div>
-        <div className="slide-up" style={{ animationDelay: "0.15s" }}>
-          <p style={{ color: "var(--text2)", fontSize: 18, maxWidth: 500, lineHeight: 1.7, marginBottom: 40 }}>Instant answers on gear, tactics, regulations, and trip planning — like having a seasoned guide in your pocket.</p>
-        </div>
-        <div className="slide-up card" style={{ animationDelay: "0.2s", maxWidth: 540, width: "100%", padding: "18px 24px", marginBottom: 36, textAlign: "left", borderColor: "var(--border-accent)" }}>
-          <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-            <span style={{ fontSize: 18 }}>💡</span>
-            <div>
-              <div style={{ color: "var(--green)", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 6 }}>TIP OF THE DAY</div>
-              <div style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.65 }}>{tip}</div>
-            </div>
+          <p style={{ color: "rgba(238,245,232,0.6)", fontSize: 13, maxWidth: 440, lineHeight: 1.65, marginBottom: 32, textShadow: "0 1px 8px rgba(0,0,0,0.4)" }}>Sign up free to add your spots and see exactly where hunters are finding success.</p>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
+            <button onClick={onStart} className="btn-primary" style={{ padding: "14px 32px", fontSize: 16, borderRadius: "var(--radius)" }}>Get Started Free →</button>
+            <button onClick={onStart} className="btn-ghost" style={{ padding: "14px 24px", fontSize: 15, backdropFilter: "blur(8px)" }}>Sign In</button>
           </div>
-        </div>
-        <div className="slide-up" style={{ animationDelay: "0.25s", width: "100%", maxWidth: 420, marginBottom: 20 }}>
-          <label style={{ color: "var(--text3)", fontSize: 12, fontWeight: 500, letterSpacing: "0.06em", display: "block", marginBottom: 8, textAlign: "left" }}>YOUR STATE (for accurate regulations)</label>
-          <select value={selectedState} onChange={e => setSelectedState(e.target.value)} style={{ width: "100%", padding: "14px 18px", borderRadius: "var(--radius-sm)", fontSize: 15, marginBottom: 14 }}>
-            <option value="">Select your state...</option>
-            {STATES.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <button onClick={onStart} className="btn-primary" style={{ width: "100%", padding: 16, fontSize: 16, borderRadius: "var(--radius)" }}>Start Asking WildAI →</button>
-          <p style={{ color: "var(--text3)", fontSize: 12, marginTop: 10, textAlign: "center" }}>No account needed · {FREE_LIMIT} free messages</p>
-        </div>
-        <div className="slide-up" style={{ animationDelay: "0.3s", width: "100%", maxWidth: 760, marginTop: 60 }}>
-          <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 20 }}>EVERYTHING YOU NEED IN THE FIELD</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 12 }}>
-            {features.map((f, i) => (
-              <div key={i} className="card" style={{ padding: 20, textAlign: "left" }}>
-                <div style={{ fontSize: 26, marginBottom: 10 }}>{f.icon}</div>
-                <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 14, marginBottom: 4 }}>{f.title}</div>
-                <div style={{ color: "var(--text3)", fontSize: 12, lineHeight: 1.5 }}>{f.desc}</div>
-              </div>
-            ))}
-          </div>
+          <p style={{ color: "rgba(238,245,232,0.35)", fontSize: 11, marginTop: 14 }}>Free to join · No purchase required</p>
         </div>
       </div>
 
