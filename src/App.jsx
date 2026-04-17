@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from './supabase';
 import { useUser, SignIn, SignUp, UserButton, useClerk } from '@clerk/react';
-import "mapbox-gl/dist/mapbox-gl.css";
+// mapbox css loaded dynamically in MapTab
 
 
 const STATES = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
@@ -671,6 +671,12 @@ function MapTab({ selectedState, user, onSharePin }) {
   // Init map
   useEffect(() => {
     if (!mapRef.current || mapInst.current) return;
+    if (!document.querySelector('link[href*="mapbox-gl"]')) {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css";
+      document.head.appendChild(link);
+    }
     import("mapbox-gl").then(({ default: mapboxgl }) => {
       mapboxgl.accessToken = MAPBOX_TOKEN;
       const coords = selectedState && STATE_COORDS[selectedState];
@@ -832,7 +838,7 @@ function MapTab({ selectedState, user, onSharePin }) {
       </div>
 
       <div style={{ position: "relative", borderRadius: isFullscreen ? 0 : "var(--radius)", overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)", borderTopColor: "rgba(255,255,255,0.14)", boxShadow: isFullscreen ? "none" : "0 8px 40px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07)" }}>
-        <div ref={mapRef} style={{ height: isFullscreen ? "100dvh" : 380, width: "100%", position: isFullscreen ? "fixed" : "relative", top: isFullscreen ? 0 : "auto", left: isFullscreen ? 0 : "auto", right: isFullscreen ? 0 : "auto", bottom: isFullscreen ? 0 : "auto", zIndex: isFullscreen ? 998 : "auto" }} />
+        <div ref={mapRef} style={{ height: isFullscreen ? "100svh" : 380, width: "100%", position: isFullscreen ? "fixed" : "relative", top: isFullscreen ? 0 : "auto", left: isFullscreen ? 0 : "auto", right: isFullscreen ? 0 : "auto", bottom: isFullscreen ? 0 : "auto", zIndex: isFullscreen ? 998 : "auto" }} />
         <button onClick={() => { setIsFullscreen(f => !f); setTimeout(() => mapInst.current?.resize(), 150); }} style={{ position: isFullscreen ? "fixed" : "absolute", top: isFullscreen ? 16 : 10, left: isFullscreen ? 16 : 10, zIndex: 1001, background: "rgba(8,15,8,0.95)", border: "1px solid var(--border-accent)", color: "var(--green)", borderRadius: "var(--radius-sm)", padding: "8px 14px", fontSize: 12, cursor: "pointer", backdropFilter: "blur(8px)", fontFamily: "var(--font-body)", fontWeight: 600 }}>
           {isFullscreen ? "✕ Exit" : "⊞ Expand"}
         </button>
@@ -3562,14 +3568,14 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
       {/* BOTTOM NAV */}
       <div className="bottom-nav" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, background: "rgba(5,10,5,0.92)", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "stretch", height: 64, backdropFilter: "blur(24px)", boxShadow: "0 -4px 24px rgba(0,0,0,0.4), 0 -1px 0 rgba(120,180,80,0.08)" }}>
         {[
-          { id: "chat", icon: "💬", label: "Chat" },
-          { id: "map", icon: "🗺️", label: "Map" },
-          { id: "community", icon: "🌲", label: "Community" },
-          { id: "more", icon: "☰", label: "More" },
+          { id: "chat", label: "Chat", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> },
+          { id: "map", label: "Map", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" /><line x1="9" y1="3" x2="9" y2="18" /><line x1="15" y1="6" x2="15" y2="21" /></svg> },
+          { id: "community", label: "Community", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg> },
+          { id: "more", label: "More", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg> },
         ].map(t => (
-          <button key={t.id} onClick={() => { setTab(t.id); setShowMore(false); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, background: "none", border: "none", cursor: "pointer", color: tab === t.id ? "var(--green)" : "var(--text3)", transition: "color 0.2s", position: "relative" }}>
-            {tab === t.id && <div style={{ position: "absolute", top: 6, width: 4, height: 4, borderRadius: "50%", background: "var(--green)", boxShadow: "0 0 8px rgba(120,180,80,0.9)" }} />}
-            <span style={{ fontSize: 20 }}>{t.icon}</span>
+          <button key={t.id} onClick={() => { setTab(t.id); setShowMore(false); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, background: "none", border: "none", cursor: "pointer", color: tab === t.id ? "var(--green)" : "var(--text3)", transition: "color 0.2s", position: "relative" }}>
+            {tab === t.id && <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 28, height: 2, borderRadius: "0 0 2px 2px", background: "var(--green)", boxShadow: "0 0 8px rgba(120,180,80,0.9)" }} />}
+            {t.svg}
             <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.04em" }}>{t.label}</span>
           </button>
         ))}
@@ -3806,20 +3812,22 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
             <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 4 }}>TOOLS & FEATURES</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               {[
-                { id: "species", icon: "🎯", label: "Species", desc: "Hunting & fishing guides" },
-                { id: "regs", icon: "📋", label: "Regulations", desc: "State-specific rules" },
-                { id: "trip", icon: "🧭", label: "Trip Planner", desc: "AI-generated plans" },
-                { id: "gear", icon: "🎒", label: "Gear", desc: "Pack checklists" },
-                { id: "licenses", icon: "🪪", label: "Licenses", desc: "Buy state licenses" },
-                { id: "harvest", icon: "📓", label: "Harvest Log", desc: "Track your catches" },
-                { id: "trophy", icon: "🏆", label: "Trophy Board", desc: "Community verified harvests" },
-                { id: "ballistics", icon: "🎯", label: "Ballistics", desc: "Bullet drop calculator" },
-                { id: "weather", icon: "🌤️", label: "Weather", desc: "Live conditions" },
-                { id: "about", icon: "ℹ️", label: "About", desc: "App info & account" },
-                ...(user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a" ? [{ id: "admin", icon: "⚙️", label: "Admin", desc: "Manage reports" }] : []),
+                { id: "species", label: "Species", desc: "Hunting & fishing guides", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /><line x1="12" y1="2" x2="12" y2="5" /><line x1="12" y1="19" x2="12" y2="22" /><line x1="2" y1="12" x2="5" y2="12" /><line x1="19" y1="12" x2="22" y2="12" /></svg> },
+                { id: "regs", label: "Regulations", desc: "State-specific rules", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg> },
+                { id: "trip", label: "Trip Planner", desc: "AI-generated plans", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg> },
+                { id: "gear", label: "Gear", desc: "Pack checklists", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" /></svg> },
+                { id: "licenses", label: "Licenses", desc: "Buy state licenses", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></svg> },
+                { id: "harvest", label: "Harvest Log", desc: "Track your catches", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg> },
+                { id: "trophy", label: "Trophy Board", desc: "Community verified harvests", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><polyline points="14.5 17 12 22 9.5 17" /><path d="M8 6H4a1 1 0 0 0-1 1v3a5 5 0 0 0 5 5 5 5 0 0 0 5-5V7a1 1 0 0 0-1-1h-4z" /><path d="M16 6h4a1 1 0 0 1 1 1v3a5 5 0 0 1-5 5v0" /><line x1="12" y1="17" x2="12" y2="22" /><line x1="8" y1="22" x2="16" y2="22" /></svg> },
+                { id: "ballistics", label: "Ballistics", desc: "Bullet drop calculator", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2c-2 0-4 1.5-4 4v8h8V6c0-2.5-2-4-4-4z"/><rect x="8" y="14" width="8" height="4" rx="1"/><line x1="10" y1="18" x2="10" y2="21"/><line x1="14" y1="18" x2="14" y2="21"/></svg> },
+                { id: "weather", label: "Weather", desc: "Live conditions", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" /></svg> },
+                { id: "about", label: "About", desc: "App info & account", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg> },
+                ...(user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a" ? [{ id: "admin", label: "Admin", desc: "Manage reports", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg> }] : []),
               ].map(t => (
-                <button key={t.id} onClick={() => setTab(t.id)} className="card" style={{ padding: "18px 16px", textAlign: "left", cursor: "pointer", border: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 14 }}>
-                  <span style={{ fontSize: 28, flexShrink: 0 }}>{t.icon}</span>
+                <button key={t.id} onClick={() => setTab(t.id)} className="card" style={{ padding: "18px 16px", textAlign: "left", cursor: "pointer", border: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 14, minHeight: 80 }}>
+                  <div style={{ width: 42, height: 42, borderRadius: 12, background: "var(--green-dim)", border: "1px solid var(--border-accent)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", flexShrink: 0 }}>
+                    {t.svg}
+                  </div>
                   <div>
                     <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{t.label}</div>
                     <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>{t.desc}</div>
