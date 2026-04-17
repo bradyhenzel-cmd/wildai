@@ -1621,6 +1621,9 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
         if (stateFilter !== "all" && newPost.state !== stateFilter) return;
         setPosts(prev => [newPost, ...prev]);
       })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "posts" }, (payload) => {
+        setPosts(prev => prev.filter(p => p.id !== payload.old.id));
+      })
       .subscribe();
     return () => supabase.removeChannel(channel);
   }, [stateFilter]);
