@@ -1693,6 +1693,10 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
     const { data: existing } = await supabase.from("reports").select("id").eq("post_id", postId).eq("user_id", user.id).single();
     if (existing) { alert("You've already reported this post."); return; }
     await supabase.from("reports").insert({ post_id: postId, reason: "User reported", user_id: user.id });
+    const { data: allReports } = await supabase.from("reports").select("id").eq("post_id", postId);
+    if (allReports?.length >= 3) {
+      await supabase.from("reports").update({ reason: "🚨 AUTO-FLAGGED: 3+ reports" }).eq("post_id", postId);
+    }
     alert("Post reported. Thank you.");
   };
 
@@ -3118,6 +3122,7 @@ function AdminTab({ user }) {
   const [posts, setPosts] = useState({});
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(null);
+  const [banning, setBanning] = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -3178,6 +3183,20 @@ function AdminTab({ user }) {
                 <button onClick={() => dismissReport(postId)} className="btn-ghost" style={{ padding: "6px 12px", fontSize: 12 }}>Dismiss</button>
                 <button onClick={() => deletePost(postId)} disabled={deleting === postId} style={{ background: "rgba(255,100,100,0.15)", border: "1px solid rgba(255,100,100,0.4)", color: "rgba(255,100,100,0.9)", padding: "6px 12px", borderRadius: "var(--radius-sm)", fontSize: 12, cursor: "pointer", fontFamily: "var(--font-body)" }}>
                   {deleting === postId ? "Deleting..." : "Delete Post"}
+                </button>
+                <button onClick={async () => {
+                  const post = posts[postId];
+                  if (!post?.user_id) return;
+                  if (!window.confirm(`Ban ${post.username}? This will delete all their posts and reports.`)) return;
+                  setBanning(postId);
+                  await supabase.from("banned_users").upsert({ user_id: post.user_id, username: post.username, reason: "Admin ban" });
+                  await supabase.from("posts").delete().eq("user_id", post.user_id);
+                  await supabase.from("reports").delete().eq("post_id", postId);
+                  setReports(prev => prev.filter(r => r.post_id !== postId));
+                  setPosts(prev => { const n = { ...prev }; delete n[postId]; return n; });
+                  setBanning(null);
+                }} disabled={banning === postId} style={{ background: "rgba(255,50,50,0.2)", border: "1px solid rgba(255,50,50,0.5)", color: "rgba(255,80,80,1)", padding: "6px 12px", borderRadius: "var(--radius-sm)", fontSize: 12, cursor: "pointer", fontFamily: "var(--font-body)", fontWeight: 700 }}>
+                  {banning === postId ? "Banning..." : "Ban User"}
                 </button>
               </div>
             </div>
