@@ -3146,9 +3146,9 @@ function AdminTab({ user }) {
     setDeleting(null);
   };
 
-  const dismissReport = async (reportId) => {
-    await supabase.from("reports").delete().eq("id", reportId);
-    setReports(prev => prev.filter(r => r.id !== reportId));
+  const dismissReport = async (postId) => {
+    await supabase.from("reports").delete().eq("post_id", postId);
+    setReports(prev => prev.filter(r => r.post_id !== postId));
   };
 
   const uniquePostIds = [...new Set(reports.map(r => r.post_id))];
@@ -3175,7 +3175,7 @@ function AdminTab({ user }) {
                 <div style={{ color: "var(--text3)", fontSize: 11 }}>{post ? new Date(post.created_at).toLocaleDateString() : postId}</div>
               </div>
               <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={() => dismissReport(postReports[0].id)} className="btn-ghost" style={{ padding: "6px 12px", fontSize: 12 }}>Dismiss</button>
+                <button onClick={() => dismissReport(postId)} className="btn-ghost" style={{ padding: "6px 12px", fontSize: 12 }}>Dismiss</button>
                 <button onClick={() => deletePost(postId)} disabled={deleting === postId} style={{ background: "rgba(255,100,100,0.15)", border: "1px solid rgba(255,100,100,0.4)", color: "rgba(255,100,100,0.9)", padding: "6px 12px", borderRadius: "var(--radius-sm)", fontSize: 12, cursor: "pointer", fontFamily: "var(--font-body)" }}>
                   {deleting === postId ? "Deleting..." : "Delete Post"}
                 </button>
