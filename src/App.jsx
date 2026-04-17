@@ -1149,6 +1149,13 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
             {isFollowing ? "Following" : "Follow"}
           </button>
           <button onClick={() => onMessage(userId)} className="btn-ghost" style={{ flex: 1, padding: "8px 0", fontSize: 13 }}>💬 Message</button>
+          <button onClick={async () => {
+            if (!currentUser) { openSignIn(); return; }
+            const { data: existing } = await supabase.from("reports").select("id").eq("user_id", userId).eq("reported_by", currentUser.id).single();
+            if (existing) { alert("You've already reported this user."); return; }
+            await supabase.from("reports").insert({ user_id: userId, reported_by: currentUser.id, reason: "User reported", type: "user" });
+            alert("User reported. Thank you.");
+          }} className="btn-ghost" style={{ padding: "8px 14px", fontSize: 13 }}>Report</button>
         </div>
       )}
       {isOwnProfile && (
@@ -1655,6 +1662,11 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
     if (!form.caption && !form.photo) return;
     if (!user) { openSignIn(); return; }
     setSubmitting(true); setError(null);
+    const { data: banned } = await supabase.from("banned_users").select("id").eq("user_id", user.id).single();
+    if (banned) { setError("Your account has been suspended."); setSubmitting(false); return; }
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const { data: recentPost } = await supabase.from("posts").select("id").eq("user_id", user.id).gte("created_at", fiveMinutesAgo).single();
+    if (recentPost) { setError("Please wait 5 minutes between posts."); setSubmitting(false); return; }
     let lat = null, lng = null;
     if (form.pinLat && form.pinLng) {
       lat = form.pinLat; lng = form.pinLng;
@@ -1693,10 +1705,6 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
     const { data: existing } = await supabase.from("reports").select("id").eq("post_id", postId).eq("user_id", user.id).single();
     if (existing) { alert("You've already reported this post."); return; }
     await supabase.from("reports").insert({ post_id: postId, reason: "User reported", user_id: user.id });
-    const { data: allReports } = await supabase.from("reports").select("id").eq("post_id", postId);
-    if (allReports?.length >= 3) {
-      await supabase.from("reports").update({ reason: "🚨 AUTO-FLAGGED: 3+ reports" }).eq("post_id", postId);
-    }
     alert("Post reported. Thank you.");
   };
 
@@ -3855,7 +3863,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                 { id: "licenses", label: "Licenses", desc: "Buy state licenses", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></svg> },
                 { id: "harvest", label: "Harvest Log", desc: "Track your catches", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg> },
                 { id: "trophy", label: "Trophy Board", desc: "Community verified harvests", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><polyline points="14.5 17 12 22 9.5 17" /><path d="M8 6H4a1 1 0 0 0-1 1v3a5 5 0 0 0 5 5 5 5 0 0 0 5-5V7a1 1 0 0 0-1-1h-4z" /><path d="M16 6h4a1 1 0 0 1 1 1v3a5 5 0 0 1-5 5v0" /><line x1="12" y1="17" x2="12" y2="22" /><line x1="8" y1="22" x2="16" y2="22" /></svg> },
-                { id: "ballistics", label: "Ballistics", desc: "Bullet drop calculator", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2c-2 0-4 1.5-4 4v8h8V6c0-2.5-2-4-4-4z"/><rect x="8" y="14" width="8" height="4" rx="1"/><line x1="10" y1="18" x2="10" y2="21"/><line x1="14" y1="18" x2="14" y2="21"/></svg> },
+                { id: "ballistics", label: "Ballistics", desc: "Bullet drop calculator", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2c-2 0-4 1.5-4 4v8h8V6c0-2.5-2-4-4-4z" /><rect x="8" y="14" width="8" height="4" rx="1" /><line x1="10" y1="18" x2="10" y2="21" /><line x1="14" y1="18" x2="14" y2="21" /></svg> },
                 { id: "weather", label: "Weather", desc: "Live conditions", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" /></svg> },
                 { id: "about", label: "About", desc: "App info & account", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg> },
                 ...(user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a" ? [{ id: "admin", label: "Admin", desc: "Manage reports", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg> }] : []),
