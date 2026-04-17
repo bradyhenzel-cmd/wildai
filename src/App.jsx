@@ -389,6 +389,8 @@ const css = `
 `;
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
+function capName(str) { if (!str) return "Hunter"; return str.charAt(0).toUpperCase() + str.slice(1); }
+
 function TypewriterText({ text, onDone }) {
   const [displayed, setDisplayed] = useState("");
   useEffect(() => {
@@ -1592,7 +1594,15 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
     let query = supabase.from("posts").select("*").order("created_at", { ascending: false });
     if (stateFilter !== "all") query = query.eq("state", stateFilter);
     const { data } = await query.limit(50);
-    setPosts(data || []);
+    if (data?.length) {
+      const userIds = [...new Set(data.map(p => p.user_id))];
+      const { data: profiles } = await supabase.from("profiles").select("user_id, avatar_url").in("user_id", userIds);
+      const avatarMap = {};
+      (profiles || []).forEach(p => { avatarMap[p.user_id] = p.avatar_url; });
+      setPosts(data.map(p => ({ ...p, avatar_url: avatarMap[p.user_id] || null })));
+    } else {
+      setPosts([]);
+    }
     setLoading(false);
   };
 
@@ -1894,28 +1904,30 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
         const isLiked = likedPostIds.has(post.id);
         const isHot = likeCount >= 5;
         return (
-          <div key={post.id} className="card fade-in" style={{ padding: 0, overflow: "hidden", border: isHot ? "1px solid rgba(255,150,0,0.3)" : "1px solid var(--border)" }}>
+          <div key={post.id} className="fade-in" style={{ overflow: "hidden", borderRadius: "var(--radius)", border: isHot ? "1px solid rgba(255,150,0,0.3)" : "1px solid var(--border)", background: "var(--bg2)" }}>
             {isHot && <div style={{ background: "rgba(255,120,0,0.12)", padding: "5px 14px", fontSize: 11, color: "#ff9500", fontWeight: 700, letterSpacing: "0.05em" }}>🔥 HOT SPOT · {likeCount} likes</div>}
-            {post.photo && <img src={post.photo} style={{ width: "100%", maxHeight: 420, objectFit: "cover" }} />}
-            <div style={{ padding: "14px 16px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-                <div>
-                  <span onClick={() => setViewingProfile(post.user_id)} style={{ color: "var(--text)", fontWeight: 600, fontSize: 14, cursor: "pointer", textDecoration: "underline", textDecorationColor: "rgba(120,180,80,0.4)" }}>{post.username || "Hunter"}</span>
-                  <span style={{ color: "var(--text3)", fontSize: 12, marginLeft: 8 }}>{post.state}</span>
-                  <span style={{ color: "var(--text3)", fontSize: 11, marginLeft: 8 }}>{new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+            <div style={{ padding: "12px 14px 0" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div onClick={() => setViewingProfile(post.user_id)} style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg, #1e4010, #0f2408)", border: "1px solid var(--border-accent)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, overflow: "hidden" }}>
+                    {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "var(--green)", fontWeight: 700, fontSize: 14, fontFamily: "var(--font-display)" }}>{(post.username || "H")[0].toUpperCase()}</span>}
+                  </div>
+                  <div>
+                    <span onClick={() => setViewingProfile(post.user_id)} style={{ color: "#ffffff", fontWeight: 700, fontSize: 15, cursor: "pointer", display: "block", letterSpacing: "-0.2px" }}>{capName(post.username)}</span>
+                    {post.location && <span style={{ color: "var(--text3)", fontSize: 11 }}>{post.location}</span>}
+                    {!post.location && <span style={{ color: "var(--text3)", fontSize: 11 }}>{post.state} · {new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>}
+                  </div>
                 </div>
                 <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                   {(user?.id === post.user_id || user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a") && <button onClick={() => deletePost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.6)", fontSize: 12, padding: "2px 6px" }}>✕</button>}
                   <button onClick={() => reportPost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text3)", fontSize: 11, padding: "2px 6px" }}>⚑</button>
                 </div>
               </div>
-              {(post.species || post.location) && (
-                <div style={{ display: "flex", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
-                  {post.species && <span style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)", padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600 }}>{post.species}</span>}
-                  {post.location && <span style={{ color: "var(--text2)", fontSize: 12 }}>📍 {post.location}</span>}
-                </div>
-              )}
-              {post.caption && <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.6, margin: 0, marginBottom: 10 }}>{post.caption}</p>}
+            </div>
+            {post.photo && <img src={post.photo} style={{ width: "100%", maxHeight: 500, objectFit: "cover", display: "block" }} />}
+            <div style={{ padding: "10px 14px 12px" }}>
+              {post.caption && <p style={{ color: "rgba(238,245,232,0.7)", fontSize: 14, lineHeight: 1.6, margin: "0 0 8px" }}><span style={{ fontWeight: 800, color: "#ffffff", fontSize: 14 }}>{capName(post.username)}</span> {post.caption}</p>}
+              {post.species && <span style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)", padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600, display: "inline-block", marginBottom: 8 }}>{post.species}</span>}
               <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                 <button onClick={() => toggleLike(post)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: isLiked ? "#e8b020" : "var(--text3)", padding: 0, fontFamily: "var(--font-body)", transition: "color 0.15s" }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill={isLiked ? "#e8b020" : "none"} stroke={isLiked ? "#e8b020" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
