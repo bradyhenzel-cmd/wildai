@@ -370,6 +370,9 @@ const css = `
   .weather-stat { display:flex; flex-direction:column; align-items:center; gap:4px; padding:16px; flex:1;
     background:linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.1) 100%);
     border-radius:var(--radius-sm); border:1px solid var(--border); border-top-color:rgba(255,255,255,0.1); }
+  .pill { background:linear-gradient(160deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.15) 100%); border:1px solid var(--border); border-top-color:rgba(255,255,255,0.12); color:var(--text3); border-radius:20px; font-family:var(--font-body); cursor:pointer; transition:all 0.2s; box-shadow:0 2px 6px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.07), inset 0 -1px 0 rgba(0,0,0,0.12); }
+  .pill:hover { background:rgba(255,255,255,0.08); border-color:var(--border-accent); color:var(--text2); }
+  .pill-active { background:linear-gradient(160deg, rgba(120,180,80,0.18) 0%, rgba(80,140,50,0.08) 100%); border:1px solid var(--border-accent); border-top-color:rgba(120,180,80,0.3); color:var(--green); font-weight:600; box-shadow:0 2px 8px rgba(120,180,80,0.15), inset 0 1px 0 rgba(120,180,80,0.15), inset 0 -1px 0 rgba(0,0,0,0.1); }
   .btn-gold { background:linear-gradient(135deg, #f0c030 0%, #e8b020 40%, #c49010 100%); border:none; color:#0a1200; font-family:var(--font-body); font-weight:600; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 16px rgba(232,176,32,0.45), inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -2px 0 rgba(0,0,0,0.15); }
   .btn-gold:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(232,176,32,0.6), inset 0 1px 0 rgba(255,255,255,0.3); }
   .btn-gold:active { transform:translateY(0px); box-shadow:0 2px 8px rgba(232,176,32,0.3), inset 0 2px 4px rgba(0,0,0,0.2); }
@@ -1753,7 +1756,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <div style={{ display: "flex", gap: 6, padding: "2px 0" }}>
         {["feed", "hotspots", "messages", "profile"].map(t => (
-          <button key={t} onClick={() => { setCommunityTab(t); setViewingProfile(null); }} style={{ flex: 1, padding: "8px 0", borderRadius: 20, border: communityTab === t ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: communityTab === t ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: communityTab === t ? "var(--green)" : "var(--text3)", fontSize: 12, fontWeight: communityTab === t ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)", textTransform: "capitalize" }}>
+          <button key={t} onClick={() => { setCommunityTab(t); setViewingProfile(null); }} className={communityTab === t ? "pill pill-active" : "pill"} style={{ flex: 1, padding: "8px 0", fontSize: 12, textTransform: "capitalize" }}>
             {t === "feed" ? "Feed" : t === "hotspots" ? "Hotspots" : t === "messages" ? "Messages" : "Profile"}
           </button>
         ))}
@@ -1804,12 +1807,15 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
       )}
       {communityTab === "feed" && !viewingProfile && <div style={{ background: "#0a150a", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "18px 20px", marginBottom: 2 }}>
         <div style={{ marginBottom: 14 }}>
-          <input
-            placeholder="🔍 Search users..."
-            value={searchQuery}
-            onChange={e => { setSearchQuery(e.target.value); searchUsers(e.target.value); }}
-            style={{ width: "100%", padding: "9px 14px", borderRadius: "var(--radius-sm)", fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }}
-          />
+          <div style={{ position: "relative" }}>
+            <svg style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--text3)", pointerEvents: "none" }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input
+              placeholder="Search users..."
+              value={searchQuery}
+              onChange={e => { setSearchQuery(e.target.value); searchUsers(e.target.value); }}
+              style={{ width: "100%", padding: "9px 14px 9px 34px", borderRadius: "var(--radius-sm)", fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }}
+            />
+          </div>
           {searchResults.length > 0 && (
             <div style={{ marginTop: 8, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", overflow: "hidden" }}>
               {searchResults.map(u => (
@@ -1831,14 +1837,14 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <div style={{ display: "flex", gap: 6 }}>
-            <button onClick={() => setFeedFilter("all")} style={{ padding: "7px 14px", borderRadius: 20, border: feedFilter === "all" ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: feedFilter === "all" ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: feedFilter === "all" ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: feedFilter === "all" ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>All</button>
-            {user && <button onClick={() => setFeedFilter("following")} style={{ padding: "7px 14px", borderRadius: 20, border: feedFilter === "following" ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: feedFilter === "following" ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: feedFilter === "following" ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: feedFilter === "following" ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>Following</button>}
-            <button onClick={() => setStateFilter("all")} style={{ padding: "7px 14px", borderRadius: 20, border: stateFilter === "all" ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: stateFilter === "all" ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: stateFilter === "all" ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: stateFilter === "all" ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>All States</button>
-            {selectedState && <button onClick={() => setStateFilter(selectedState)} style={{ padding: "7px 14px", borderRadius: 20, border: stateFilter === selectedState ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: stateFilter === selectedState ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: stateFilter === selectedState ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: stateFilter === selectedState ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>📍 {selectedState}</button>}
+            <button onClick={() => setFeedFilter("all")} className={feedFilter === "all" ? "pill pill-active" : "pill"} style={{ padding: "7px 14px", fontSize: 13 }}>All</button>
+            {user && <button onClick={() => setFeedFilter("following")} className={feedFilter === "following" ? "pill pill-active" : "pill"} style={{ padding: "7px 14px", fontSize: 13 }}>Following</button>}
+            <button onClick={() => setStateFilter("all")} className={stateFilter === "all" ? "pill pill-active" : "pill"} style={{ padding: "7px 14px", fontSize: 13 }}>All States</button>
+            {selectedState && <button onClick={() => setStateFilter(selectedState)} className={stateFilter === selectedState ? "pill pill-active" : "pill"} style={{ padding: "7px 14px", fontSize: 13 }}>📍 {selectedState}</button>}
           </div>
           <div style={{ display: "flex", gap: 6 }}>
-            <button onClick={() => setSortBy("newest")} style={{ padding: "7px 14px", borderRadius: 20, border: sortBy === "newest" ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: sortBy === "newest" ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: sortBy === "newest" ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: sortBy === "newest" ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>New</button>
-            <button onClick={() => setSortBy("top")} style={{ padding: "7px 14px", borderRadius: 20, border: sortBy === "top" ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: sortBy === "top" ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: sortBy === "top" ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: sortBy === "top" ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>🔥 Top</button>
+            <button onClick={() => setSortBy("newest")} className={sortBy === "newest" ? "pill pill-active" : "pill"} style={{ padding: "7px 14px", fontSize: 13 }}>New</button>
+            <button onClick={() => setSortBy("top")} className={sortBy === "top" ? "pill pill-active" : "pill"} style={{ padding: "7px 14px", fontSize: 13 }}>🔥 Top</button>
           </div>
         </div>
       </div>}
