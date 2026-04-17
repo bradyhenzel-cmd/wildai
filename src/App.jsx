@@ -3463,7 +3463,7 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
           <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(52px,10vw,96px)", fontWeight: 900, lineHeight: 1.0, color: "var(--text)", letterSpacing: "-3px", marginBottom: 16, maxWidth: 700, textShadow: "0 2px 20px rgba(0,0,0,0.6)" }}>
             Wild<span style={{ color: "var(--green)" }}>AI</span>
           </h1>
-          <p style={{ color: "rgba(238,245,232,0.6)", fontSize: 13, maxWidth: 440, lineHeight: 1.65, marginBottom: 32, textShadow: "0 1px 8px rgba(0,0,0,0.4)" }}>Sign up free to add your spots and see exactly where hunters are finding success.</p>
+          <p style={{ color: "rgba(238,245,232,0.6)", fontSize: 13, maxWidth: 440, lineHeight: 1.65, marginBottom: 32, textShadow: "0 1px 8px rgba(0,0,0,0.4)" }}>Your local hunting and fishing community.</p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
             <button onClick={() => openSignIn()} className="btn-primary" style={{ padding: "14px 32px", fontSize: 16, borderRadius: "var(--radius)" }}>Sign In / Sign Up</button>
             <button onClick={onStart} className="btn-primary" style={{ padding: "14px 24px", fontSize: 15 }}>Continue as Guest</button>
