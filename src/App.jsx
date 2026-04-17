@@ -3399,16 +3399,8 @@ function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
           <span className="mobile-header-logo" style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.5px" }}>WildAI</span>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <button onClick={onTerms} className="btn-ghost mobile-home-btn" style={{ padding: "8px 16px", fontSize: 13 }}>Terms</button>
-          {!isInstalled && isIOS && (
-            <button onClick={() => alert('Tap the Share button ⬆ then "Add to Home Screen"')} className="btn-primary mobile-home-btn" style={{ padding: "9px 22px", fontSize: 14 }}>+ Add App</button>
-          )}
-          {!isInstalled && !isIOS && deferredPrompt && (
-            <button onClick={handleInstall} className="btn-primary mobile-home-btn" style={{ padding: "9px 22px", fontSize: 14 }}>+ Add App</button>
-          )}
-          {(isInstalled || (!isIOS && !deferredPrompt)) && (
-            <button onClick={onStart} className="btn-primary mobile-home-btn" style={{ padding: "9px 22px", fontSize: 14 }}>Launch App →</button>
-          )}
+          
+          <button onClick={onStart} className="btn-primary mobile-home-btn" style={{ padding: "9px 22px", fontSize: 14 }}>Sign In</button>
         </div>
       </nav>
 
@@ -3418,20 +3410,18 @@ function LandingPage({ onStart, selectedState, setSelectedState, onTerms }) {
         {/* Overlay */}
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(7,14,7,0.4) 0%, rgba(7,14,7,0.65) 45%, rgba(7,14,7,0.92) 100%)", zIndex: 2, pointerEvents: "none" }} />
         {/* Content */}
-        <div style={{ position: "absolute", inset: 0, zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", padding: "0 24px 60px", textAlign: "center" }}>
+        <div style={{ position: "absolute", inset: 0, zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", padding: "0 24px 80px", textAlign: "center" }}>
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "65%", background: "linear-gradient(to bottom, transparent, rgba(7,14,7,0.96) 50%)", pointerEvents: "none", zIndex: -1 }} />
         <style>{`.mapboxgl-ctrl-bottom-left { z-index: 10 !important; }`}</style>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(120,180,80,0.15)", border: "1px solid var(--border-accent)", borderRadius: 30, padding: "6px 16px", marginBottom: 20, backdropFilter: "blur(8px)", width: "fit-content", margin: "0 auto 20px" }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--green)", display: "inline-block" }} className="pulse" />
-            <span style={{ color: "var(--green)", fontSize: 12, fontWeight: 600, letterSpacing: "0.06em" }}>LIVE COMMUNITY HOTSPOTS</span>
-          </div>
-          <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(36px,7vw,72px)", fontWeight: 900, lineHeight: 1.05, color: "var(--text)", letterSpacing: "-2px", marginBottom: 16, maxWidth: 700, textShadow: "0 2px 20px rgba(0,0,0,0.5)" }}>
-            Hunt Smarter.<br /><span style={{ color: "var(--green)" }}>Find More.</span>
+          
+          
+          <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(52px,10vw,96px)", fontWeight: 900, lineHeight: 1.0, color: "var(--text)", letterSpacing: "-3px", marginBottom: 16, maxWidth: 700, textShadow: "0 2px 20px rgba(0,0,0,0.6)" }}>
+            Wild<span style={{ color: "var(--green)" }}>AI</span>
           </h1>
           <p style={{ color: "rgba(238,245,232,0.6)", fontSize: 13, maxWidth: 440, lineHeight: 1.65, marginBottom: 32, textShadow: "0 1px 8px rgba(0,0,0,0.4)" }}>Sign up free to add your spots and see exactly where hunters are finding success.</p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
-            <button onClick={onStart} className="btn-primary" style={{ padding: "14px 32px", fontSize: 16, borderRadius: "var(--radius)" }}>Get Started Free →</button>
-            <button onClick={onStart} className="btn-ghost" style={{ padding: "14px 24px", fontSize: 15, backdropFilter: "blur(8px)" }}>Sign In</button>
+            <button onClick={onStart} className="btn-primary" style={{ padding: "14px 32px", fontSize: 16, borderRadius: "var(--radius)" }}>Get Started Free</button>
+            <button onClick={onStart} className="btn-primary" style={{ padding: "14px 24px", fontSize: 15 }}>Sign In</button>
           </div>
           <p style={{ color: "rgba(238,245,232,0.35)", fontSize: 11, marginTop: 14 }}>Free to join · No purchase required</p>
         </div>
