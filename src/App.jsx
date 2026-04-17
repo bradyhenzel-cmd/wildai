@@ -3430,13 +3430,11 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column", fontFamily: "var(--font-body)", position: "relative", overflow: "hidden" }}>
-      {!mapReady && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "#070e07", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-body)" }}>
+      <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "#070e07", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-body)", transition: "opacity 0.6s ease", opacity: mapReady ? 0 : 1, pointerEvents: mapReady ? "none" : "all" }}>
           <img src="/logo.png" style={{ width: 180, height: 180, objectFit: "contain", animation: "pulse 1.5s ease-in-out infinite", marginBottom: 32 }} />
           <div style={{ fontFamily: "var(--font-display)", fontSize: 56, color: "#f4f4f0", letterSpacing: "0.02em" }}>WildAI</div>
           <div style={{ color: "rgba(120,180,80,0.6)", fontSize: 15, marginTop: 12, letterSpacing: "0.12em", fontFamily: "var(--font-display)", fontWeight: 400 }}>YOUR GUIDE FOR EVERY SEASON</div>
         </div>
-      )}
       {/* Nav */}
       <nav style={{ padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "absolute", top: 0, left: 0, right: 0, zIndex: 50, background: "linear-gradient(to bottom, rgba(7,14,7,0.7) 0%, transparent 100%)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -3463,7 +3461,7 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
           <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(52px,10vw,96px)", fontWeight: 900, lineHeight: 1.0, color: "var(--text)", letterSpacing: "-3px", marginBottom: 16, maxWidth: 700, textShadow: "0 2px 20px rgba(0,0,0,0.6)" }}>
             Wild<span style={{ color: "var(--green)" }}>AI</span>
           </h1>
-          <p style={{ color: "rgba(238,245,232,0.6)", fontSize: 13, maxWidth: 440, lineHeight: 1.65, marginBottom: 32, textShadow: "0 1px 8px rgba(0,0,0,0.4)" }}>Your local hunting and fishing community.</p>
+          <p style={{ color: "rgba(238,245,232,0.82)", fontSize: 18, maxWidth: 440, lineHeight: 1.6, marginBottom: 32, textShadow: "0 2px 12px rgba(0,0,0,0.6)", fontFamily: "var(--font-display)", fontWeight: 400, letterSpacing: "-0.3px" }}>Ask anything. Connect with hunters and anglers near you.</p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
             <button onClick={() => openSignIn()} className="btn-primary" style={{ padding: "14px 32px", fontSize: 16, borderRadius: "var(--radius)" }}>Sign In / Sign Up</button>
             <button onClick={onStart} className="btn-primary" style={{ padding: "14px 24px", fontSize: 15 }}>Continue as Guest</button>
