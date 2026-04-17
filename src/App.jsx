@@ -384,7 +384,7 @@ const css = `
     .mobile-header-logo { font-size:15px !important; }
     .mobile-header-logo-img { width:22px !important; height:22px !important; }
     .mobile-state-select { display:none !important; }
-    .mobile-header-center { position:absolute !important; left:50% !important; transform:translateX(-50%) !important; }
+    .mobile-header-center { position:relative !important; left:auto !important; transform:none !important; }
   }
 `;
 
