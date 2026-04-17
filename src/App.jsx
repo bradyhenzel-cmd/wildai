@@ -1151,9 +1151,9 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
           <button onClick={() => onMessage(userId)} className="btn-ghost" style={{ flex: 1, padding: "8px 0", fontSize: 13 }}>💬 Message</button>
           <button onClick={async () => {
             if (!currentUser) { openSignIn(); return; }
-            const { data: existing } = await supabase.from("reports").select("id").eq("user_id", userId).eq("reported_by", currentUser.id).single();
+            const { data: existing } = await supabase.from("reported_users").select("id").eq("user_id", userId).eq("reported_by", currentUser.id).single();
             if (existing) { alert("You've already reported this user."); return; }
-            await supabase.from("reports").insert({ user_id: userId, reported_by: currentUser.id, reason: "User reported", type: "user" });
+            await supabase.from("reported_users").insert({ user_id: userId, reported_by: currentUser.id });
             alert("User reported. Thank you.");
           }} className="btn-ghost" style={{ padding: "8px 14px", fontSize: 13 }}>Report</button>
         </div>
@@ -3131,6 +3131,8 @@ function AdminTab({ user }) {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(null);
   const [banning, setBanning] = useState(null);
+  const [reportedUsers, setReportedUsers] = useState([]);
+  const [adminTab, setAdminTab] = useState("posts");
 
   useEffect(() => {
     const load = async () => {
@@ -3144,6 +3146,13 @@ function AdminTab({ user }) {
         setPosts(postMap);
       }
       setReports(reportData || []);
+      const { data: userReports } = await supabase.from("reported_users").select("*").order("created_at", { ascending: false });
+      const grouped = {};
+      (userReports || []).forEach(r => {
+        if (!grouped[r.user_id]) grouped[r.user_id] = { user_id: r.user_id, count: 0, latest: r.created_at };
+        grouped[r.user_id].count += 1;
+      });
+      setReportedUsers(Object.values(grouped).sort((a, b) => b.count - a.count));
       setLoading(false);
     };
     load();
@@ -3168,15 +3177,42 @@ function AdminTab({ user }) {
 
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, fontFamily: "var(--font-display)" }}>⚙️ Admin — Reported Posts</div>
-      {loading && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)" }} className="pulse">Loading reports...</div>}
-      {!loading && uniquePostIds.length === 0 && (
-        <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>✅</div>
-          No reported posts
-        </div>
+      <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, fontFamily: "var(--font-display)" }}>⚙️ Admin</div>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button onClick={() => setAdminTab("posts")} className={`nav-tab ${adminTab === "posts" ? "active" : "inactive"}`} style={{ padding: "7px 18px", fontSize: 13 }}>Reported Posts ({uniquePostIds.length})</button>
+        <button onClick={() => setAdminTab("users")} className={`nav-tab ${adminTab === "users" ? "active" : "inactive"}`} style={{ padding: "7px 18px", fontSize: 13 }}>Reported Users ({reportedUsers.length})</button>
+      </div>
+      {loading && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)" }} className="pulse">Loading...</div>}
+      {!loading && adminTab === "users" && reportedUsers.length === 0 && (
+        <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>No reported users</div>
       )}
-      {uniquePostIds.map(postId => {
+      {!loading && adminTab === "users" && reportedUsers.map(ru => (
+        <div key={ru.user_id} className="card" style={{ padding: 16, border: "1px solid rgba(255,100,100,0.3)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ color: "rgba(255,100,100,0.8)", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>🚩 {ru.count} REPORT{ru.count > 1 ? "S" : ""}</div>
+              <div style={{ color: "var(--text2)", fontSize: 12, fontFamily: "monospace" }}>{ru.user_id}</div>
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={async () => {
+                await supabase.from("reported_users").delete().eq("user_id", ru.user_id);
+                setReportedUsers(prev => prev.filter(u => u.user_id !== ru.user_id));
+              }} className="btn-ghost" style={{ padding: "6px 12px", fontSize: 12 }}>Dismiss</button>
+              <button onClick={async () => {
+                if (!window.confirm(`Ban this user? This will delete all their posts.`)) return;
+                await supabase.from("banned_users").upsert({ user_id: ru.user_id, reason: "Admin ban" });
+                await supabase.from("posts").delete().eq("user_id", ru.user_id);
+                await supabase.from("reported_users").delete().eq("user_id", ru.user_id);
+                setReportedUsers(prev => prev.filter(u => u.user_id !== ru.user_id));
+              }} style={{ background: "rgba(255,50,50,0.2)", border: "1px solid rgba(255,50,50,0.5)", color: "rgba(255,80,80,1)", padding: "6px 12px", borderRadius: "var(--radius-sm)", fontSize: 12, cursor: "pointer", fontFamily: "var(--font-body)", fontWeight: 700 }}>Ban User</button>
+            </div>
+          </div>
+        </div>
+      ))}
+      {!loading && adminTab === "posts" && uniquePostIds.length === 0 && (
+        <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>No reported posts</div>
+      )}
+      {adminTab === "posts" && uniquePostIds.map(postId => {
         const post = posts[postId];
         const postReports = reports.filter(r => r.post_id === postId);
         return (
