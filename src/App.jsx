@@ -218,6 +218,7 @@ const PUBLIC_LANDS = [
 ];
 
 const FREE_LIMIT = 5;
+const FREE_PIN_LIMIT = 10;
 
 // ─── SVG NATURE DECORATIONS ───────────────────────────────────────────────────
 const DeerSVG = ({ style: s = {} }) => (
@@ -615,7 +616,7 @@ function PinDetailPage({ pin, onBack, onDelete, onSharePin, onSave }) {
   );
 }
 
-function MapTab({ selectedState, user, onSharePin }) {
+function MapTab({ selectedState, user, onSharePin, isPro }) {
   const mapRef = useRef(null);
   const mapInst = useRef(null);
   const markersRef = useRef([]);
@@ -756,6 +757,11 @@ function MapTab({ selectedState, user, onSharePin }) {
 
   const saveDropPin = async () => {
     if (!dropName.trim() || !user) return;
+    if (!isPro && pins.length >= FREE_PIN_LIMIT) {
+      alert(`Free accounts can save up to ${FREE_PIN_LIMIT} pins. Upgrade to Pro for unlimited pins.`);
+      setDropForm(null);
+      return;
+    }
     setSaving(true);
     if (dropMarkerRef.current) { dropMarkerRef.current.remove(); dropMarkerRef.current = null; }
     await supabase.from("saved_pins").insert({
@@ -1995,7 +2001,7 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded })
 }
 
 // ─── HARVEST LOG TAB ──────────────────────────────────────────────────────────
-function HarvestLogTab({ user, openSignIn }) {
+function HarvestLogTab({ user, openSignIn, isPro }) {
   const [entries, setEntries] = useState([]);
   const [loadingEntries, setLoadingEntries] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -2075,9 +2081,15 @@ function HarvestLogTab({ user, openSignIn }) {
     loadSubmitted();
   }, [user]);
 
+  if (!isPro) return (
+    <div className="card" style={{ padding: 40, textAlign: "center" }}>
+      <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Harvest Log is Pro</div>
+      <div style={{ color: "var(--text2)", fontSize: 14, marginBottom: 20 }}>Track every harvest and catch. Upgrade to Pro to unlock.</div>
+      <button onClick={openSignIn} className="btn-gold" style={{ padding: "12px 28px", fontSize: 14, borderRadius: "var(--radius-sm)" }}>Upgrade to Pro →</button>
+    </div>
+  );
   if (!user) return (
     <div className="card" style={{ padding: 40, textAlign: "center" }}>
-      <div style={{ fontSize: 48, marginBottom: 16 }}>📓</div>
       <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Sign In to Use Harvest Log</div>
       <div style={{ color: "var(--text2)", fontSize: 14, marginBottom: 20 }}>Your entries sync across all your devices.</div>
       <button onClick={openSignIn} className="btn-primary" style={{ padding: "12px 28px", fontSize: 14 }}>Sign In →</button>
@@ -2548,6 +2560,13 @@ Use **bold** for key terms. Be specific and practical.`;
     a.click(); URL.revokeObjectURL(url);
   };
 
+  if (!isPro) return (
+    <div className="card" style={{ padding: 40, textAlign: "center" }}>
+      <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Trip Planner is Pro</div>
+      <div style={{ color: "var(--text2)", fontSize: 14, marginBottom: 20 }}>Generate AI-powered personalized trip plans. Upgrade to Pro to unlock.</div>
+      <button onClick={onUpgrade} className="btn-gold" style={{ padding: "12px 28px", fontSize: 14, borderRadius: "var(--radius-sm)" }}>Upgrade to Pro →</button>
+    </div>
+  );
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <div className="card" style={{ padding: "20px 24px" }}>
@@ -3795,7 +3814,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                     </div>
                   </div>
                   <div style={{ padding: "0 20px 4px" }}>
-                    {["Unlimited AI chat — no message limits", "State regulations & official season dates", "Public land maps with saved pins", "AI trip planner & harvest log", "Live weather with real conditions", "And more added regularly"].map((f, i) => (
+                    {["Unlimited AI chat — no message limits", "Unlimited saved map pins", "AI trip planner", "Harvest log & season tracking", "State regulations & official season dates", "Live weather with real conditions"].map((f, i) => (
                       <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
                         <div style={{ width: 16, height: 16, borderRadius: "50%", background: "rgba(120,180,80,0.12)", border: "1px solid rgba(120,180,80,0.35)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           <span style={{ color: "#78b450", fontSize: 9, fontWeight: 700 }}>✓</span>
@@ -3839,7 +3858,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         )}
 
         <div style={{ display: tab === "map" ? "block" : "none" }} ref={el => { if (el && tab === "map") setTimeout(() => window.dispatchEvent(new Event('resize')), 100); }}>
-          <MapTab selectedState={selectedState} user={user} onSharePin={(pin) => { window._sharePinToComm = pin; setTab("community"); }} />
+          <MapTab selectedState={selectedState} user={user} isPro={isPro} onSharePin={(pin) => { window._sharePinToComm = pin; setTab("community"); }} />
         </div>
 
         {tab === "regs" && <RegulationsTab selectedState={selectedState} currentUser={user} />}
@@ -3958,7 +3977,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           </div>
         )}
         {tab === "admin" && user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a" && <AdminTab user={user} />}
-        {tab === "harvest" && <HarvestLogTab user={user} openSignIn={openSignIn} />}
+        {tab === "harvest" && <HarvestLogTab user={user} openSignIn={openSignIn} isPro={isPro} />}
         {tab === "ballistics" && <BallisticsTab />}
         {tab === "trophy" && <TrophyBoardTab user={user} openSignIn={openSignIn} selectedState={selectedState} />}
         {tab === "community" && <CommunityTab selectedState={selectedState} user={user} openSignIn={openSignIn} />}
