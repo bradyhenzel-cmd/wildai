@@ -1427,17 +1427,7 @@ function MessagesTab({ user, openSignIn, supabase }) {
 
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <input placeholder="🔍 Find a user to message..." value={searchQuery} onChange={e => { setSearchQuery(e.target.value); searchUsers(e.target.value); }} style={{ width: "100%", padding: "9px 14px", borderRadius: "var(--radius-sm)", fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
-      {searchResults.length > 0 && (
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", overflow: "hidden" }}>
-          {searchResults.map(u => (
-            <div key={u.user_id} onClick={() => { setSearchQuery(""); setSearchResults([]); openThread(u.user_id, u.username, u.avatar_url); }} style={{ padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 10 }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.08)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "var(--green)" }}>{u.username?.[0]?.toUpperCase()}</div>
-              <span style={{ color: "var(--text)", fontSize: 14, fontWeight: 600 }}>{u.username}</span>
-            </div>
-          ))}
-        </div>
-      )}
+
       {loadingInbox && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)" }} className="pulse">Loading messages...</div>}
       {!loadingInbox && inbox.length === 0 && (
         <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>
@@ -1496,13 +1486,20 @@ function HotspotsTab({ posts, loading, user, selectedState, savedPinIds, saveToM
 
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", gap: 6 }}>
-          <button onClick={() => setFilter("all")} style={{ padding: "7px 14px", borderRadius: 20, border: filter === "all" ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: filter === "all" ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: filter === "all" ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: filter === "all" ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>All</button>
-          {selectedState && <button onClick={() => setFilter("state")} style={{ padding: "7px 14px", borderRadius: 20, border: filter === "state" ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: filter === "state" ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: filter === "state" ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: filter === "state" ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>📍 {selectedState}</button>}
-        </div>
-        <button onClick={handleNearMe} style={{ padding: "7px 14px", borderRadius: 20, border: filter === "nearme" ? "1px solid var(--border-accent)" : "1px solid var(--border)", background: filter === "nearme" ? "var(--green-dim)" : "rgba(255,255,255,0.03)", color: filter === "nearme" ? "var(--green)" : "var(--text3)", fontSize: 13, fontWeight: filter === "nearme" ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-body)" }}>
-          {locating ? "Locating..." : "📡 Near Me"}
+      <div style={{ display: "flex", gap: 8 }}>
+        <button onClick={() => {
+          if (filter === "all" && selectedState) { setFilter("state"); }
+          else if (filter === "state" || (filter === "all" && !selectedState)) { handleNearMe(); }
+          else { setFilter("all"); }
+        }}
+          style={{
+            padding: "8px 18px", borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: "pointer", border: "1px solid", transition: "all 0.2s",
+            background: filter !== "all" ? "linear-gradient(135deg, #2d5a1b, #1e4010)" : "#0e160e",
+            borderColor: filter !== "all" ? "#3d7a25" : "#1c2a1c",
+            color: filter !== "all" ? "white" : "#4a6a4a",
+            boxShadow: filter !== "all" ? "0 4px 16px rgba(45,90,27,0.35)" : "none"
+          }}>
+          {filter === "all" ? "All" : filter === "state" ? `📍 ${selectedState}` : locating ? "Locating..." : "📡 Near Me"}
         </button>
       </div>
       {loading && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14 }} className="pulse">Loading hotspots...</div>}
@@ -1556,7 +1553,7 @@ function PinPicker({ user, onSelect }) {
         📍 Attach a pin
       </button>
       {open && (
-        <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", zIndex: 100, maxHeight: 180, overflowY: "auto", marginTop: 4 }}>
+        <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#0d140d", border: "1px solid #2a3a2a", borderRadius: "var(--radius-sm)", zIndex: 100, maxHeight: 180, overflowY: "auto", marginTop: 4 }}>
           {pins.length === 0 && <div style={{ padding: "10px 12px", fontSize: 12, color: "var(--text3)" }}>No saved pins yet — drop a pin on the Map tab first</div>}
           {pins.map(pin => (
             <div key={pin.id} onClick={() => { onSelect(pin); setOpen(false); }} style={{ padding: "8px 12px", cursor: "pointer", borderBottom: "1px solid var(--border)", fontSize: 13, color: "var(--text)" }}
@@ -1601,10 +1598,10 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
     const { data } = await query.limit(50);
     if (data?.length) {
       const userIds = [...new Set(data.map(p => p.user_id))];
-      const { data: profiles } = await supabase.from("profiles").select("user_id, avatar_url").in("user_id", userIds);
-      const avatarMap = {};
-      (profiles || []).forEach(p => { avatarMap[p.user_id] = p.avatar_url; });
-      setPosts(data.map(p => ({ ...p, avatar_url: avatarMap[p.user_id] || null })));
+      const { data: profiles } = await supabase.from("profiles").select("user_id, avatar_url, last_seen").in("user_id", userIds);
+      const profileMap = {};
+      (profiles || []).forEach(p => { profileMap[p.user_id] = { avatar_url: p.avatar_url, last_seen: p.last_seen }; });
+      setPosts(data.map(p => ({ ...p, avatar_url: profileMap[p.user_id]?.avatar_url || null, last_seen: profileMap[p.user_id]?.last_seen || null })));
     } else {
       setPosts([]);
     }
@@ -1633,7 +1630,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   const searchUsers = async (query) => {
     if (!query.trim()) { setSearchResults([]); return; }
     setSearching(true);
-    const { data } = await supabase.from("profiles").select("user_id, username, avatar_url").ilike("username", `%${query}%`).limit(20);
+    const { data } = await supabase.from("profiles").select("user_id, username, avatar_url").ilike("username", `%${query}%`).limit(5);
     if (data) setSearchResults(data.filter(u => u.username));
     setSearching(false);
   };
@@ -1755,21 +1752,63 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   });
 
   return (
-    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div style={{ display: "flex", gap: 6, padding: "2px 0" }}>
+    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14, overflow: "visible" }}>
+
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", color: "var(--green)", textTransform: "uppercase", marginBottom: 2 }}>Community</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.3px" }}>Wild Feed</div>
+        </div>
+        {user && <button onClick={() => { setCommunityTab("feed"); setShowForm(s => !s); }} style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, #2d5a1b, #1e4010)", border: "none", color: "white", fontSize: 22, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 20px rgba(45,90,27,0.4)", flexShrink: 0 }}>{showForm ? "✕" : "+"}</button>}
+      </div>
+
+      {/* Search */}
+      <div style={{ position: "relative" }}>
+        <svg style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#4a6a4a", pointerEvents: "none" }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+        <input
+          placeholder="Search users..."
+          value={searchQuery}
+          onChange={e => { setSearchQuery(e.target.value); searchUsers(e.target.value); }}
+          style={{ width: "100%", padding: "12px 14px 12px 38px", borderRadius: 16, fontSize: 13, background: "#111a11", border: "1px solid #1c2a1c", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }}
+        />
+        {searchResults.length > 0 && (
+          <div style={{ position: "absolute", top: "100%", left: 0, right: 0, marginTop: 4, background: "#0d140d", border: "1px solid #2a3a2a", borderRadius: 12, overflow: "hidden", zIndex: 50 }}>
+            {searchResults.map(u => (
+              <div key={u.user_id} onClick={() => { setViewingProfile(u.user_id); setSearchQuery(""); setSearchResults([]); }} style={{ padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid var(--border)", color: "var(--text)", fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 10 }}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.08)"}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+              >
+                <div style={{ width: 32, height: 32, borderRadius: "50%", overflow: "hidden", background: "linear-gradient(135deg, #1e4010, #0f2408)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "1px solid var(--border-accent)" }}>
+                  {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 14, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700 }}>{u.username?.[0]?.toUpperCase()}</span>}
+                </div>
+                {u.username}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Tab Nav */}
+      <div style={{ display: "flex", borderRadius: 16, padding: 4, gap: 2, background: "#0e160e", border: "1px solid #192019" }}>
         {["feed", "hotspots", "messages", "profile"].map(t => (
-          <button key={t} onClick={() => { setCommunityTab(t); setViewingProfile(null); }} className={communityTab === t ? "pill pill-active" : "pill"} style={{ flex: 1, padding: "8px 0", fontSize: 12, textTransform: "capitalize" }}>
+          <button key={t} onClick={() => { setCommunityTab(t); setViewingProfile(null); }} style={{
+            flex: 1, padding: "9px 0", fontSize: 12, fontWeight: 700, borderRadius: 12, border: "none", cursor: "pointer", transition: "all 0.2s", textTransform: "capitalize",
+            background: communityTab === t ? "linear-gradient(135deg, #2d5a1b, #1e4010)" : "transparent",
+            color: communityTab === t ? "white" : "#4a6a4a",
+            boxShadow: communityTab === t ? "0 4px 16px rgba(45,90,27,0.4)" : "none"
+          }}>
             {t === "feed" ? "Feed" : t === "hotspots" ? "Hotspots" : t === "messages" ? "Messages" : "Profile"}
           </button>
         ))}
       </div>
-      {communityTab === "messages" && (
+      {communityTab === "messages" && !viewingProfile && (
         <MessagesTab user={user} openSignIn={openSignIn} supabase={supabase} />
       )}
-      {communityTab === "hotspots" && (
+      {communityTab === "hotspots" && !viewingProfile && (
         <HotspotsTab posts={posts} loading={loading} user={user} selectedState={selectedState} savedPinIds={savedPinIds} saveToMap={saveToMap} openSignIn={openSignIn} />
       )}
-      {communityTab === "profile" && (
+      {communityTab === "profile" && !viewingProfile && (
         !user ? (
           <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text3)", fontSize: 14 }}>
             <div style={{ fontSize: 36, marginBottom: 10 }}>🦌</div>
@@ -1787,7 +1826,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
           />
         )
       )}
-      {(communityTab === "feed" || communityTab === "profile") && viewingProfile && (
+      {viewingProfile && (
         <UserProfilePage
           userId={viewingProfile}
           currentUser={user}
@@ -1797,59 +1836,41 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
           onMessage={(id) => { setViewingProfile(null); setCommunityTab("messages"); setTimeout(() => { window._openMessageThread = id; }, 100); }}
         />
       )}
-      {communityTab === "feed" && showWelcomeBanner && !viewingProfile && (
-        <div className="fade-in" style={{ background: "linear-gradient(135deg, rgba(35,70,15,0.6), rgba(15,35,8,0.8))", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)", padding: "16px 18px", display: "flex", alignItems: "flex-start", gap: 12 }}>
-          <span style={{ fontSize: 24, flexShrink: 0 }}>🌲</span>
-          <div style={{ flex: 1 }}>
-            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Welcome to WildAI Community</div>
-            <div style={{ color: "var(--text2)", fontSize: 12, lineHeight: 1.6 }}>Share spots, follow other hunters & anglers, and message privately. Your pins stay private unless you choose to post them.</div>
-          </div>
-          <button onClick={() => { setShowWelcomeBanner(false); localStorage.setItem("wildai_community_welcomed", "1"); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 18, cursor: "pointer", padding: 0, flexShrink: 0, lineHeight: 1 }}>✕</button>
-        </div>
-      )}
-      {communityTab === "feed" && !viewingProfile && <div style={{ background: "#0a150a", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "18px 20px", marginBottom: 2 }}>
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ position: "relative" }}>
-            <svg style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--text3)", pointerEvents: "none" }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input
-              placeholder="Search users..."
-              value={searchQuery}
-              onChange={e => { setSearchQuery(e.target.value); searchUsers(e.target.value); }}
-              style={{ width: "100%", padding: "9px 14px 9px 34px", borderRadius: "var(--radius-sm)", fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }}
-            />
-          </div>
-          {searchResults.length > 0 && (
-            <div style={{ marginTop: 8, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", overflow: "hidden" }}>
-              {searchResults.map(u => (
-                <div key={u.user_id} onClick={() => { setViewingProfile(u.user_id); setSearchQuery(""); setSearchResults([]); }} style={{ padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid var(--border)", color: "var(--text)", fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 10 }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.08)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                >
-                  <div style={{ width: 32, height: 32, borderRadius: "50%", overflow: "hidden", background: "linear-gradient(135deg, #1e4010, #0f2408)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "1px solid var(--border-accent)" }}>
-                    {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 14, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700 }}>{u.username?.[0]?.toUpperCase()}</span>}
-                  </div>
-                  {u.username}
-                </div>
-              ))}
+      {communityTab === "feed" && !viewingProfile && <>
+        {showWelcomeBanner && (
+          <div className="fade-in" style={{ background: "linear-gradient(135deg, rgba(35,70,15,0.6), rgba(15,35,8,0.8))", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)", padding: "16px 18px", display: "flex", alignItems: "flex-start", gap: 12 }}>
+            <span style={{ fontSize: 24, flexShrink: 0 }}>🌲</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Welcome to WildAI Community</div>
+              <div style={{ color: "var(--text2)", fontSize: 12, lineHeight: 1.6 }}>Share spots, follow other hunters & anglers, and message privately. Your pins stay private unless you choose to post them.</div>
             </div>
-          )}
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
-          {user && <button onClick={() => { if (!user) { openSignIn(); return; } setShowForm(s => !s); }} className="btn-primary" style={{ padding: "7px 16px", fontSize: 13 }}>{showForm ? "Cancel" : "+ Post"}</button>}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-          <div style={{ display: "flex", gap: 6 }}>
-            <button onClick={() => setFeedFilter("all")} className={feedFilter === "all" ? "pill pill-active" : "pill"} style={{ padding: "7px 14px", fontSize: 13 }}>All</button>
-            {user && <button onClick={() => setFeedFilter("following")} className={feedFilter === "following" ? "pill pill-active" : "pill"} style={{ padding: "7px 14px", fontSize: 13 }}>Following</button>}
-            <button onClick={() => setStateFilter("all")} className={stateFilter === "all" ? "pill pill-active" : "pill"} style={{ padding: "7px 14px", fontSize: 13 }}>All States</button>
-            {selectedState && <button onClick={() => setStateFilter(selectedState)} className={stateFilter === selectedState ? "pill pill-active" : "pill"} style={{ padding: "7px 14px", fontSize: 13 }}>📍 {selectedState}</button>}
+            <button onClick={() => { setShowWelcomeBanner(false); localStorage.setItem("wildai_community_welcomed", "1"); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 18, cursor: "pointer", padding: 0, flexShrink: 0, lineHeight: 1 }}>✕</button>
           </div>
-          <div style={{ display: "flex", gap: 6 }}>
-            <button onClick={() => setSortBy("newest")} className={sortBy === "newest" ? "pill pill-active" : "pill"} style={{ padding: "7px 14px", fontSize: 13 }}>New</button>
-            <button onClick={() => setSortBy("top")} className={sortBy === "top" ? "pill pill-active" : "pill"} style={{ padding: "7px 14px", fontSize: 13 }}>🔥 Top</button>
-          </div>
+        )}
+        {/* Toggles */}
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={() => { if (!user && feedFilter === "all") { openSignIn(); return; } setFeedFilter(feedFilter === "all" ? "following" : "all"); }}
+            style={{
+              padding: "8px 18px", borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: "pointer", border: "1px solid", transition: "all 0.2s",
+              background: feedFilter === "following" ? "linear-gradient(135deg, #2d5a1b, #1e4010)" : "#0e160e",
+              borderColor: feedFilter === "following" ? "#3d7a25" : "#1c2a1c",
+              color: feedFilter === "following" ? "white" : "#4a6a4a",
+              boxShadow: feedFilter === "following" ? "0 4px 16px rgba(45,90,27,0.35)" : "none"
+            }}>
+            {feedFilter === "following" ? "Following" : "All"}
+          </button>
+          <button onClick={() => setSortBy(sortBy === "newest" ? "top" : "newest")}
+            style={{
+              padding: "8px 18px", borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: "pointer", border: "1px solid", transition: "all 0.2s",
+              background: sortBy === "top" ? "linear-gradient(135deg, #3a1a05, #2a1000)" : "#0e160e",
+              borderColor: sortBy === "top" ? "rgba(200,100,20,0.4)" : "#1c2a1c",
+              color: sortBy === "top" ? "#ff9500" : "#4a6a4a",
+              boxShadow: sortBy === "top" ? "0 4px 16px rgba(200,100,20,0.2)" : "none"
+            }}>
+            {sortBy === "top" ? "🔥 Trending" : "✦ New"}
+          </button>
         </div>
-      </div>}
+      </>}
 
       {(communityTab === "feed" || communityTab === "profile") && !viewingProfile && showForm && (
         <div className="card fade-in" style={{ padding: 20 }}>
@@ -1907,57 +1928,101 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
         </div>
       )}
 
-      {communityTab === "feed" && !viewingProfile && <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>{sortedPosts.map(post => {
+      {communityTab === "feed" && !viewingProfile && <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>{sortedPosts.map(post => {
         const likeCount = likeCounts[post.id] || 0;
         const isLiked = likedPostIds.has(post.id);
         const isHot = likeCount >= 5;
+        const timeAgo = (date) => {
+          const diff = (Date.now() - new Date(date)) / 1000;
+          if (diff < 60) return "just now";
+          if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+          if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+          return `${Math.floor(diff / 86400)}d ago`;
+        };
         return (
-          <div key={post.id} className="fade-in" style={{ overflow: "hidden", borderRadius: "var(--radius)", border: isHot ? "1px solid rgba(255,150,0,0.3)" : "1px solid var(--border)", background: "var(--bg2)" }}>
-            {isHot && <div style={{ background: "rgba(255,120,0,0.12)", padding: "5px 14px", fontSize: 11, color: "#ff9500", fontWeight: 700, letterSpacing: "0.05em" }}>🔥 HOT SPOT · {likeCount} likes</div>}
-            <div style={{ padding: "12px 14px 0" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div onClick={() => setViewingProfile(post.user_id)} style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg, #1e4010, #0f2408)", border: "1px solid var(--border-accent)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, overflow: "hidden" }}>
-                    {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "var(--green)", fontWeight: 700, fontSize: 14, fontFamily: "var(--font-display)" }}>{(post.username || "H")[0].toUpperCase()}</span>}
-                  </div>
-                  <div>
-                    <span onClick={() => setViewingProfile(post.user_id)} style={{ color: "#ffffff", fontWeight: 700, fontSize: 15, cursor: "pointer", display: "block", letterSpacing: "-0.2px" }}>{capName(post.username)}</span>
-                    {post.location && <span style={{ color: "var(--text3)", fontSize: 11 }}>{post.location}</span>}
-                    {!post.location && <span style={{ color: "var(--text3)", fontSize: 11 }}>{post.state} · {new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>}
-                  </div>
+          <div key={post.id} className="fade-in" style={{ borderRadius: 20, overflow: "hidden", border: isHot ? "1px solid rgba(255,150,0,0.25)" : "1px solid #1c2a1c", background: "#0d140d", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>
+
+            {/* Card Header */}
+            <div style={{ padding: "14px 16px 10px", display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ position: "relative", flexShrink: 0 }}>
+                <div onClick={() => setViewingProfile(post.user_id)} style={{ width: 44, height: 44, borderRadius: 14, background: "linear-gradient(135deg, #3d7a25, #1a3a0e)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden" }}>
+                  {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "white", fontWeight: 700, fontSize: 17, fontFamily: "var(--font-display)" }}>{(post.username || "H")[0].toUpperCase()}</span>}
                 </div>
-                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                  {(user?.id === post.user_id || user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a") && <button onClick={() => deletePost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.6)", fontSize: 12, padding: "2px 6px" }}>✕</button>}
-                  <button onClick={() => reportPost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text3)", fontSize: 11, padding: "2px 6px" }}>⚑</button>
-                </div>
+                {post.last_seen && (Date.now() - new Date(post.last_seen)) < 5 * 60 * 1000 && (
+                  <div style={{ position: "absolute", bottom: -1, right: -1, width: 13, height: 13, borderRadius: "50%", background: "#4ade80", border: "2px solid #0d140d" }} />
+                )}
+              </div>
+              <div style={{ flex: 1, textAlign: "left" }}>
+                <span onClick={() => setViewingProfile(post.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", display: "block" }}>{capName(post.username)}</span>
+                <span style={{ color: "#4a6a4a", fontSize: 11, display: "flex", alignItems: "center", gap: 3 }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#3d7a25" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+                  {post.location || post.state}
+                </span>
+              </div>
+              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                <span style={{ fontSize: 10, fontWeight: 600, color: "#3a5a3a", background: "#111a11", border: "1px solid #1c2c1c", padding: "3px 8px", borderRadius: 20 }}>
+                  {timeAgo(post.created_at)}
+                </span>
+                {(user?.id === post.user_id || user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a") && <button onClick={() => deletePost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.5)", fontSize: 12, padding: 0 }}>✕</button>}
+                <button onClick={() => reportPost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#3a5a3a", fontSize: 11, padding: 0 }}>⚑</button>
               </div>
             </div>
-            {post.photo && <img src={post.photo} style={{ width: "100%", maxHeight: 500, objectFit: "cover", display: "block" }} />}
-            <div style={{ padding: "10px 14px 12px" }}>
-              {post.caption && <p style={{ color: "rgba(238,245,232,0.7)", fontSize: 14, lineHeight: 1.6, margin: "0 0 8px" }}><span style={{ fontWeight: 800, color: "#ffffff", fontSize: 14 }}>{capName(post.username)}</span> {post.caption}</p>}
-              {post.species && <span style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)", padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600, display: "inline-block", marginBottom: 8 }}>{post.species}</span>}
-              <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                <button onClick={() => toggleLike(post)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: isLiked ? "#e8b020" : "var(--text3)", padding: 0, fontFamily: "var(--font-body)", transition: "color 0.15s" }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill={isLiked ? "#e8b020" : "none"} stroke={isLiked ? "#e8b020" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-                  <span style={{ fontSize: 12 }}>{likeCount > 0 ? likeCount : ""}</span>
-                </button>
-                <button onClick={() => setExpandedComments(prev => { const n = new Set(prev); n.has(post.id) ? n.delete(post.id) : n.add(post.id); return n; })} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: expandedComments.has(post.id) ? "var(--green)" : "var(--text3)", padding: 0, fontFamily: "var(--font-body)", transition: "color 0.15s" }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-                  <span style={{ fontSize: 12 }}>{commentCounts[post.id] > 0 ? commentCounts[post.id] : ""}</span>
-                </button>
-                {post.lat && post.lng && (
-                  <a href={`https://www.google.com/maps/dir/?api=1&destination=${post.lat},${post.lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 12, fontWeight: 600 }}>🗺️ Directions</a>
-                )}
-                {post.lat && post.lng && (
-                  <button onClick={() => saveToMap(post)} style={{ background: savedPinIds.has(post.id) ? "var(--green-dim)" : "rgba(255,255,255,0.04)", border: `1px solid ${savedPinIds.has(post.id) ? "var(--border-accent)" : "var(--border)"}`, color: savedPinIds.has(post.id) ? "var(--green)" : "var(--text2)", padding: "5px 12px", borderRadius: "var(--radius-sm)", fontSize: 12, cursor: savedPinIds.has(post.id) ? "default" : "pointer", fontFamily: "var(--font-body)" }}>
-                    {savedPinIds.has(post.id) ? "✓ Saved" : "📍 Save to Map"}
-                  </button>
-                )}
+
+            {/* Photo */}
+            {post.photo && (
+              <div style={{ position: "relative", margin: "0 12px", borderRadius: 16, overflow: "hidden" }}>
+                <img src={post.photo} style={{ width: "100%", maxHeight: 300, objectFit: "cover", display: "block" }} />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(13,20,13,0.85) 0%, transparent 50%)" }} />
+                <div style={{ position: "absolute", bottom: 10, left: 10, right: 10, display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                  {post.species && <span style={{ fontSize: 11, fontWeight: 700, padding: "5px 10px", borderRadius: 10, background: "rgba(45,90,27,0.85)", border: "1px solid rgba(61,122,37,0.6)", color: "white", backdropFilter: "blur(4px)" }}>🐟 {post.species}</span>}
+                  {isHot && <span style={{ fontSize: 11, fontWeight: 600, padding: "5px 10px", borderRadius: 10, background: "rgba(30,20,10,0.85)", border: "1px solid rgba(200,100,20,0.3)", color: "#ff9500", backdropFilter: "blur(4px)" }}>🔥 Trending</span>}
+                </div>
               </div>
-              {expandedComments.has(post.id) && (
-                <PostComments postId={post.id} postOwnerId={post.user_id} user={user} openSignIn={openSignIn} onCommentAdded={(delta = 1) => setCommentCounts(prev => ({ ...prev, [post.id]: Math.max(0, (prev[post.id] || 0) + delta) }))} />
+            )}
+            {!post.photo && post.species && (
+              <div style={{ padding: "0 16px 6px" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 10, background: "rgba(45,90,27,0.5)", border: "1px solid rgba(61,122,37,0.4)", color: "var(--green)", display: "inline-block" }}>🐟 {post.species}</span>
+              </div>
+            )}
+
+            {/* Caption */}
+            {post.caption && (
+              <div style={{ padding: "10px 16px 6px" }}>
+                <p style={{ color: "#b8ccb8", fontSize: 14, lineHeight: 1.6, margin: 0 }}>
+                  <span style={{ fontWeight: 700, color: "white" }}>{capName(post.username)}</span> {post.caption}
+                </p>
+              </div>
+            )}
+
+            {/* Divider */}
+            <div style={{ margin: "8px 16px", height: 1, background: "#192019" }} />
+
+            {/* Actions */}
+            <div style={{ padding: "4px 12px 12px", display: "flex", alignItems: "center", gap: 2 }}>
+              <button onClick={() => toggleLike(post)} style={{ background: isLiked ? "rgba(244,63,94,0.1)" : "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: isLiked ? "#f43f5e" : "#4a6a4a", padding: "6px 10px", borderRadius: 10, fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                {likeCount > 0 ? likeCount : ""}
+              </button>
+              <button onClick={() => setExpandedComments(prev => { const n = new Set(prev); n.has(post.id) ? n.delete(post.id) : n.add(post.id); return n; })} style={{ background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: expandedComments.has(post.id) ? "var(--green)" : "#4a6a4a", padding: "6px 10px", borderRadius: 10, fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                {commentCounts[post.id] > 0 ? commentCounts[post.id] : ""}
+              </button>
+              <div style={{ flex: 1 }} />
+              {post.lat && post.lng && (
+                <button onClick={() => saveToMap(post)} style={{ background: "none", border: "none", cursor: "pointer", color: savedPinIds.has(post.id) ? "var(--green)" : "#4a6a4a", padding: "6px 8px", borderRadius: 10, fontSize: 18, transition: "all 0.15s" }}>
+                  {savedPinIds.has(post.id) ? "🔖" : "🔖"}
+                </button>
               )}
+              <button onClick={() => navigator.share ? navigator.share({ title: "WildAI", text: post.caption, url: window.location.href }) : null} style={{ background: "none", border: "none", cursor: "pointer", color: "#4a6a4a", padding: "6px 8px", borderRadius: 10, fontSize: 16, transition: "all 0.15s" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
+              </button>
             </div>
+
+            {expandedComments.has(post.id) && (
+              <div style={{ borderTop: "1px solid #192019" }}>
+                <PostComments postId={post.id} postOwnerId={post.user_id} user={user} openSignIn={openSignIn} onCommentAdded={(delta = 1) => setCommentCounts(prev => ({ ...prev, [post.id]: Math.max(0, (prev[post.id] || 0) + delta) }))} />
+              </div>
+            )}
           </div>
         );
       })}</div>}
@@ -3451,10 +3516,10 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column", fontFamily: "var(--font-body)", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "#070e07", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-body)", transition: "opacity 0.6s ease", opacity: mapReady ? 0 : 1, pointerEvents: mapReady ? "none" : "all" }}>
-          <img src="/logo.png" style={{ width: 180, height: 180, objectFit: "contain", animation: "pulse 1.5s ease-in-out infinite", marginBottom: 32 }} />
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 56, color: "#f4f4f0", letterSpacing: "0.02em" }}>WildAI</div>
-          <div style={{ color: "rgba(120,180,80,0.6)", fontSize: 15, marginTop: 12, letterSpacing: "0.12em", fontFamily: "var(--font-display)", fontWeight: 400 }}>YOUR GUIDE FOR EVERY SEASON</div>
-        </div>
+        <img src="/logo.png" style={{ width: 180, height: 180, objectFit: "contain", animation: "pulse 1.5s ease-in-out infinite", marginBottom: 32 }} />
+        <div style={{ fontFamily: "var(--font-display)", fontSize: 56, color: "#f4f4f0", letterSpacing: "0.02em" }}>WildAI</div>
+        <div style={{ color: "rgba(120,180,80,0.6)", fontSize: 15, marginTop: 12, letterSpacing: "0.12em", fontFamily: "var(--font-display)", fontWeight: 400 }}>YOUR GUIDE FOR EVERY SEASON</div>
+      </div>
       {/* Nav */}
       <nav style={{ padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "absolute", top: 0, left: 0, right: 0, zIndex: 50, background: "linear-gradient(to bottom, rgba(7,14,7,0.7) 0%, transparent 100%)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -3463,7 +3528,7 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
 
-          
+
         </div>
       </nav>
 
@@ -4078,6 +4143,11 @@ export default function App() {
         handleSetSelectedState(data.selected_state);
       }
     });
+    supabase.from("profiles").update({ last_seen: new Date().toISOString() }).eq("user_id", user.id);
+    const interval = setInterval(() => {
+      supabase.from("profiles").update({ last_seen: new Date().toISOString() }).eq("user_id", user.id);
+    }, 60000);
+    return () => clearInterval(interval);
   }, [isLoaded, user?.id]);
   const [prevPage, setPrevPage] = useState("landing");
   const [messageCount, setMessageCount] = useState(() => {
