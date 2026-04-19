@@ -1594,7 +1594,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   const loadPosts = async () => {
     setLoading(true);
     let query = supabase.from("posts").select("*").order("created_at", { ascending: false });
-    if (stateFilter !== "all") query = query.eq("state", stateFilter);
+    
     const { data } = await query.limit(50);
     if (data?.length) {
       const userIds = [...new Set(data.map(p => p.user_id))];
