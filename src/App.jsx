@@ -217,8 +217,8 @@ const PUBLIC_LANDS = [
   { name: "Lake Pleasant", lat: 33.8, lng: -112.3, type: "fishing", state: "Arizona", species: ["Bass", "Striped Bass", "Catfish"], desc: "Phoenix metro bass fishing" },
 ];
 
-const FREE_LIMIT = 5;
-const FREE_PIN_LIMIT = 10;
+const FREE_LIMIT = 10;
+const FREE_PIN_LIMIT = 5;
 
 // ─── SVG NATURE DECORATIONS ───────────────────────────────────────────────────
 const DeerSVG = ({ style: s = {} }) => (
@@ -2742,7 +2742,7 @@ Use **bold** for key terms. Be specific and practical.`;
             <div style={{ fontSize: 28, marginBottom: 8 }}>🔒</div>
             <div style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "var(--text)", marginBottom: 6 }}>Upgrade to WildAI Pro</div>
             <div style={{ color: "var(--text2)", fontSize: 13, marginBottom: 14, lineHeight: 1.6 }}>You've used your free interactions. Upgrade for unlimited trip plans and more.</div>
-            <button className="btn-primary" style={{ padding: "12px 28px", fontSize: 14 }} onClick={onUpgrade}>Upgrade for $4.99/month →</button>
+            <button className="btn-primary" style={{ padding: "12px 28px", fontSize: 14 }} onClick={onUpgrade}>Upgrade for $2.99/month →</button>
           </div>
         ) : (
           <button onClick={generate} disabled={!description.trim() || loading} className="btn-primary" style={{ width: "100%", padding: "12px", fontSize: 14, opacity: (!description.trim() || loading) ? 0.5 : 1 }}>
@@ -3679,8 +3679,18 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
   useEffect(() => {
     if (!user || isPro) return;
     const loadCount = async () => {
-      const { data } = await supabase.from("message_counts").select("count").eq("user_id", user.id).single();
-      if (data) setMessageCount(data.count);
+      const { data } = await supabase.from("message_counts").select("count, updated_at").eq("user_id", user.id).single();
+      if (data) {
+        const lastUpdate = new Date(data.updated_at);
+        const now = new Date();
+        if (lastUpdate.getMonth() !== now.getMonth() || lastUpdate.getFullYear() !== now.getFullYear()) {
+          await supabase.from("message_counts").upsert({ user_id: user.id, count: 0, updated_at: now.toISOString() });
+          setMessageCount(0);
+          localStorage.setItem("wildai_message_count", 0);
+        } else {
+          setMessageCount(data.count);
+        }
+      }
     };
     loadCount();
   }, [user]);
@@ -3869,7 +3879,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
             <span style={{ fontSize: 20, flexShrink: 0 }}>⚡</span>
             <div style={{ flex: 1 }}>
               <div style={{ color: "var(--amber)", fontWeight: 600, fontSize: 13 }}>Upgrade to Pro</div>
-              <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>Unlimited messages · $4.99/mo</div>
+              <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>Unlimited messages · $2.99/mo</div>
             </div>
             <button onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }} style={{ background: "none", border: "1px solid rgba(212,147,10,0.3)", borderRadius: "var(--radius-sm)", padding: "6px 14px", fontSize: 12, color: "var(--amber)", cursor: "pointer", flexShrink: 0, fontFamily: "var(--font-body)", fontWeight: 600 }}>
               {checkoutLoading ? "..." : "Go Pro →"}
@@ -3929,7 +3939,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                       <span style={{ color: "#e8b020", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em" }}>WILDAI PRO</span>
                     </div>
                     <div style={{ fontFamily: "var(--font-display)", fontSize: 21, color: "#f4f4f0", marginBottom: 6, lineHeight: 1.2 }}>Every season. Every state.<br /><span style={{ color: "#e8b020" }}>Every question.</span></div>
-                    <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>You've hit your free limit — unlock everything</div>
+                    <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>You've used your 10 free messages — WildAI is clearly working for you 🎯</div>
                   </div>
                   <div style={{ margin: "16px 20px", background: "linear-gradient(135deg, rgba(120,180,80,0.12), rgba(80,140,50,0.06))", border: "1px solid rgba(120,180,80,0.3)", borderRadius: 12, padding: 16 }}>
                     <div style={{ color: "#78b450", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 8 }}>★ COMMUNITY — OUR BIGGEST FEATURE</div>
@@ -3952,7 +3962,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                   </div>
                   <div style={{ padding: "20px 20px 24px", textAlign: "center" }}>
                     <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 6, marginBottom: 6 }}>
-                      <span style={{ color: "#f4f4f0", fontSize: 42, fontWeight: 900, fontFamily: "var(--font-display)", letterSpacing: "-1px" }}>$4.99</span>
+                      <span style={{ color: "#f4f4f0", fontSize: 42, fontWeight: 900, fontFamily: "var(--font-display)", letterSpacing: "-1px" }}>$2.99</span>
                       <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 14 }}>/ month</span>
                     </div>
                     <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 11, marginBottom: 14 }}>Less than a cup of coffee</div>
