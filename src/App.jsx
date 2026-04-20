@@ -1594,7 +1594,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   const loadPosts = async () => {
     setLoading(true);
     let query = supabase.from("posts").select("*").order("created_at", { ascending: false });
-    
+
     const { data } = await query.limit(50);
     if (data?.length) {
       const userIds = [...new Set(data.map(p => p.user_id))];
@@ -4143,9 +4143,9 @@ export default function App() {
         handleSetSelectedState(data.selected_state);
       }
     });
-    supabase.from("profiles").update({ last_seen: new Date().toISOString() }).eq("user_id", user.id);
+    supabase.rpc("update_last_seen", { uid: user.id });
     const interval = setInterval(() => {
-      supabase.from("profiles").update({ last_seen: new Date().toISOString() }).eq("user_id", user.id);
+      supabase.rpc("update_last_seen", { uid: user.id });
     }, 60000);
     return () => clearInterval(interval);
   }, [isLoaded, user?.id]);
