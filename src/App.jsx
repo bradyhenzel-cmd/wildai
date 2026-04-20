@@ -4143,9 +4143,9 @@ export default function App() {
         handleSetSelectedState(data.selected_state);
       }
     });
-    supabase.rpc("update_last_seen", { uid: user.id }).then(({ error }) => console.log("last_seen:", user.id, error));
+    supabase.rpc("update_last_seen", { uid: user.id }).then(() => {});
     const interval = setInterval(() => {
-      supabase.rpc("update_last_seen", { uid: user.id }).then(({ error }) => console.log("last_seen interval:", error));
+      supabase.rpc("update_last_seen", { uid: user.id }).then(() => {});
     }, 60000);
     return () => clearInterval(interval);
   }, [isLoaded, user?.id]);
