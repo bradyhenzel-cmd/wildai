@@ -473,13 +473,14 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
       <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 12 }}>LIVE WEATHER</div>
 
       <div style={{ position: "relative", marginBottom: 20 }}>
+        <svg style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#4a6a4a", pointerEvents: "none" }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input
           value={query}
           onChange={e => { const v = e.target.value; setQuery(v); clearTimeout(window._wt); window._wt = setTimeout(() => searchLocations(v), 300); }}
           onFocus={() => suggestions.length > 0 && setShowDropdown(true)}
           onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-          placeholder="Search a location (e.g. Bozeman, MT)..."
-          style={{ width: "100%", padding: "12px 16px", borderRadius: "var(--radius-sm)", fontSize: 14 }}
+          placeholder="Search a location..."
+          style={{ width: "100%", padding: "12px 16px 12px 34px", borderRadius: "var(--radius-sm)", fontSize: 14 }}
         />
         {showDropdown && suggestions.length > 0 && (
           <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#0d1a0d", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", zIndex: 100, maxHeight: 220, overflowY: "auto", marginTop: 4 }}>
