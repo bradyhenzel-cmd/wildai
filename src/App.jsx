@@ -339,6 +339,7 @@ const css = `
     box-shadow:0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.15); }
   .btn-ghost:hover { background:rgba(255,255,255,0.09); border-color:var(--border-accent); color:var(--text); transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.4); }
   .btn-ghost:active { transform:translateY(0px); }
+  .more-btn:hover .more-icon { transform: scale(1.15); }
   .card { background:linear-gradient(160deg, rgba(255,255,255,0.055) 0%, rgba(20,14,8,0.35) 100%);
     border:1px solid var(--border); border-top-color:rgba(255,255,255,0.13);
     border-radius:var(--radius); transition:all 0.2s;
@@ -4095,8 +4096,8 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                 { id: "about", label: "About", desc: "App info & account", accent: "#2a2a2a", color: "#8a8a8a", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> },
                 ...(user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a" ? [{ id: "admin", label: "Admin", desc: "Manage reports", accent: "#3a1a1a", color: "#d44a4a", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg> }] : []),
               ].map(t => (
-                <button key={t.id} onClick={() => setTab(t.id)} style={{ padding: "16px", textAlign: "left", cursor: "pointer", border: "1px solid #1a2a1a", borderRadius: 16, background: "linear-gradient(135deg, #0d140d, #101810)", display: "flex", alignItems: "center", gap: 14, minHeight: 80 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 12, background: `linear-gradient(135deg, ${t.accent}cc, ${t.accent}66)`, border: `1px solid ${t.accent}44`, display: "flex", alignItems: "center", justifyContent: "center", color: t.color, flexShrink: 0 }}>
+                <button key={t.id} onClick={() => setTab(t.id)} className="more-btn" style={{ padding: "16px", textAlign: "left", cursor: "pointer", border: "1px solid #1a2a1a", borderRadius: 16, background: "linear-gradient(135deg, #0d140d, #101810)", display: "flex", alignItems: "center", gap: 14, minHeight: 80 }}>
+                  <div className="more-icon" style={{ width: 44, height: 44, borderRadius: 12, background: `linear-gradient(135deg, ${t.accent}cc, ${t.accent}66)`, border: `1px solid ${t.accent}44`, display: "flex", alignItems: "center", justifyContent: "center", color: t.color, flexShrink: 0, transition: "transform 0.15s, box-shadow 0.15s" }}>
                     {t.svg}
                   </div>
                   <div>
