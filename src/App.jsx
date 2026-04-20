@@ -1402,9 +1402,16 @@ function MessagesTab({ user, openSignIn, supabase }) {
             {m.image_url ? (
               <img src={m.image_url} style={{ maxWidth: "70%", borderRadius: 12, maxHeight: 200, objectFit: "cover" }} />
             ) : m.pin_lat ? (
-              <div style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", borderRadius: 12, padding: "8px 12px", maxWidth: "70%" }}>
-                <div style={{ color: "var(--green)", fontSize: 12, fontWeight: 600 }}>📍 {m.pin_name || "Shared Pin"}</div>
-                <a href={`https://www.google.com/maps/dir/?api=1&destination=${m.pin_lat},${m.pin_lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 11 }}>View on map →</a>
+              <div style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", borderRadius: 12, padding: "10px 14px", maxWidth: "70%" }}>
+                <div style={{ color: "var(--green)", fontSize: 13, fontWeight: 700, marginBottom: 6 }}>📍 {m.pin_name || "Shared Pin"}</div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <a href={`https://www.google.com/maps/dir/?api=1&destination=${m.pin_lat},${m.pin_lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 11, fontWeight: 600 }}>🗺️ Directions</a>
+                  {m.sender_id !== user.id && (
+                    <button onClick={() => {
+                      supabase.from("saved_pins").insert({ user_id: user.id, name: m.pin_name || "Shared Pin", lat: m.pin_lat, lng: m.pin_lng, location: m.pin_name || "Shared Pin" }).then(() => alert("📍 Saved to your map!"));
+                    }} style={{ background: "none", border: "none", color: "var(--green)", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: 0, fontFamily: "var(--font-body)" }}>📌 Save to Map</button>
+                  )}
+                </div>
               </div>
             ) : (
               <div style={{ background: m.sender_id === user.id ? "var(--green)" : "rgba(255,255,255,0.07)", borderRadius: m.sender_id === user.id ? "18px 18px 4px 18px" : "18px 18px 18px 4px", padding: "9px 13px", maxWidth: "70%", fontSize: 13, color: m.sender_id === user.id ? "#fff" : "var(--text)", lineHeight: 1.45 }}>
@@ -1419,6 +1426,13 @@ function MessagesTab({ user, openSignIn, supabase }) {
         <label style={{ cursor: "pointer", color: "var(--text3)", fontSize: 20, lineHeight: 1 }}>
           📎<input type="file" accept="image/*" style={{ display: "none" }} onChange={e => sendImage(e.target.files[0])} />
         </label>
+        <PinPicker user={user} onSelect={async (pin) => {
+          await fetch("https://wildai-server.onrender.com/messages/send", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sender_id: user.id, recipient_id: activeThread.otherId, pin_lat: pin.lat, pin_lng: pin.lng, pin_name: pin.name || pin.location || "Shared Pin" })
+          });
+          await loadConversation(activeThread.otherId);
+        }} />
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Message..." style={{ flex: 1, padding: "9px 14px", borderRadius: 20, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)" }} />
         <button onClick={send} disabled={!input.trim() || sending} className="btn-primary" style={{ padding: "9px 16px", fontSize: 13, borderRadius: 20, opacity: !input.trim() ? 0.5 : 1 }}>Send</button>
       </div>
@@ -1548,23 +1562,28 @@ function PinPicker({ user, onSelect }) {
   if (!user) return null;
 
   return (
-    <div style={{ position: "relative", marginTop: 4 }}>
-      <button onClick={() => setOpen(o => !o)} style={{ background: "none", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", color: "var(--text3)", fontSize: 11, padding: "4px 10px", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+    <>
+      <button onClick={() => setOpen(o => !o)} style={{ background: "none", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", color: "var(--text3)", fontSize: 11, padding: "4px 10px", cursor: "pointer", fontFamily: "var(--font-body)", flexShrink: 0 }}>
         📍 Attach a pin
       </button>
       {open && (
-        <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#0d140d", border: "1px solid #2a3a2a", borderRadius: "var(--radius-sm)", zIndex: 100, maxHeight: 180, overflowY: "auto", marginTop: 4 }}>
-          {pins.length === 0 && <div style={{ padding: "10px 12px", fontSize: 12, color: "var(--text3)" }}>No saved pins yet — drop a pin on the Map tab first</div>}
-          {pins.map(pin => (
-            <div key={pin.id} onClick={() => { onSelect(pin); setOpen(false); }} style={{ padding: "8px 12px", cursor: "pointer", borderBottom: "1px solid var(--border)", fontSize: 13, color: "var(--text)" }}
-              onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.08)"}
-              onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-              📍 {pin.name || pin.location || "Unnamed pin"}
-            </div>
-          ))}
-        </div>
+        <>
+          <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.5)" }} />
+          <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 201, background: "#0d140d", borderTop: "1px solid #2a3a2a", borderRadius: "20px 20px 0 0", maxHeight: "50vh", overflowY: "auto", padding: "8px 0" }}>
+            <div style={{ width: 36, height: 4, background: "#2a3a2a", borderRadius: 2, margin: "8px auto 16px" }} />
+            <div style={{ padding: "0 16px 8px", color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em" }}>SELECT A PIN</div>
+            {pins.length === 0 && <div style={{ padding: "16px", fontSize: 13, color: "var(--text3)" }}>No saved pins yet — drop a pin on the Map tab first</div>}
+            {pins.map(pin => (
+              <div key={pin.id} onClick={() => { onSelect(pin); setOpen(false); }} style={{ padding: "12px 16px", cursor: "pointer", borderBottom: "1px solid var(--border)", fontSize: 13, color: "var(--text)", display: "flex", alignItems: "center", gap: 10 }}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.08)"}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                📍 {pin.name || pin.location || "Unnamed pin"}
+              </div>
+            ))}
+          </div>
+        </>
       )}
-    </div>
+    </>
   );
 }
 
@@ -4097,7 +4116,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         {tab === "about" && (
           <div className="fade-in card" style={{ padding: 32 }}>
             <div style={{ textAlign: "center", marginBottom: 32 }}>
-              <div style={{ fontSize: 56, marginBottom: 16 }} className="float">🦌</div>
+              <img src="/logo.png" style={{ width: 80, height: 80, objectFit: "contain", marginBottom: 16 }} className="float" />
               <h2 style={{ fontFamily: "var(--font-display)", fontSize: 28, color: "var(--text)", marginBottom: 8 }}>WildAI</h2>
               <p style={{ color: "var(--green)", fontSize: 14, fontWeight: 500 }}>Built for hunters & anglers, by outdoorsmen</p>
             </div>
