@@ -283,7 +283,7 @@ const css = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
   * { box-sizing:border-box; margin:0; padding:0; }
   :root {
-    --bg:#070e07; --bg2:#0d1a0d;
+    --bg:#080808; --bg2:#111111;
     --card:rgba(255,255,255,0.04); --card-hover:rgba(255,255,255,0.07);
     --border:rgba(255,255,255,0.08); --border-accent:rgba(120,180,80,0.3);
     --border-top:rgba(255,255,255,0.13);
@@ -298,10 +298,10 @@ const css = `
   body { background:var(--bg); color:var(--text); font-family:var(--font-body); }
   body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
     background:
-      radial-gradient(ellipse 90% 50% at 50% -10%, rgba(40,80,25,0.65) 0%, transparent 65%),
-      radial-gradient(ellipse 50% 30% at 15% 60%, rgba(20,50,15,0.3) 0%, transparent 55%),
-      radial-gradient(ellipse 40% 25% at 85% 40%, rgba(25,45,10,0.25) 0%, transparent 50%),
-      radial-gradient(ellipse 60% 40% at 50% 100%, rgba(10,25,8,0.4) 0%, transparent 60%); }
+      radial-gradient(ellipse 90% 50% at 50% -10%, rgba(0,0,0,0) 0%, transparent 65%),
+      radial-gradient(ellipse 50% 30% at 15% 60%, rgba(0,0,0,0) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 25% at 85% 40%, rgba(0,0,0,0) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 40% at 50% 100%, rgba(0,0,0,0) 0%, transparent 60%); }
   body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
     background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(120,180,80,0.008) 2px, rgba(120,180,80,0.008) 4px),
       repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(120,180,80,0.005) 2px, rgba(120,180,80,0.005) 4px); }
@@ -2009,8 +2009,8 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
               </button>
               <div style={{ flex: 1 }} />
               {post.lat && post.lng && (
-                <button onClick={() => saveToMap(post)} style={{ background: "none", border: "none", cursor: "pointer", color: savedPinIds.has(post.id) ? "var(--green)" : "#4a6a4a", padding: "6px 8px", borderRadius: 10, fontSize: 18, transition: "all 0.15s" }}>
-                  {savedPinIds.has(post.id) ? "🔖" : "🔖"}
+                <button onClick={() => saveToMap(post)} style={{ background: "none", border: "none", cursor: "pointer", color: savedPinIds.has(post.id) ? "var(--green)" : "#4a6a4a", padding: "6px 8px", borderRadius: 10, transition: "all 0.15s" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill={savedPinIds.has(post.id) ? "var(--green)" : "none"} stroke={savedPinIds.has(post.id) ? "var(--green)" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 </button>
               )}
               <button onClick={() => navigator.share ? navigator.share({ title: "WildAI", text: post.caption, url: window.location.href }) : null} style={{ background: "none", border: "none", cursor: "pointer", color: "#4a6a4a", padding: "6px 8px", borderRadius: 10, fontSize: 16, transition: "all 0.15s" }}>
@@ -4193,7 +4193,7 @@ export default function App() {
   return (
     <>
       <style>{css}</style>
-      <div className="grain" />
+      
       {page === "terms" && <TermsPage onBack={() => setPage(prevPage === "chat" ? "chat" : "landing")} />}
       {page === "landing" && <LandingPage onStart={() => goTo("chat")} onSignIn={() => { window._triggerSignIn?.(); }} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} />}
       {page === "chat" && <ChatPage onBack={() => { localStorage.removeItem("wildai_selected_state"); setSelectedState(""); goTo("landing"); }} messageCount={messageCount} setMessageCount={setMessageCount} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} />}
