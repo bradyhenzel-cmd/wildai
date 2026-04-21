@@ -410,6 +410,32 @@ const css = `
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 function capName(str) { if (!str) return "Hunter"; return str.charAt(0).toUpperCase() + str.slice(1); }
 
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+let _showToast = null;
+function useToast() {
+  const [toasts, setToasts] = useState([]);
+  const show = (msg, type = "info") => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, msg, type }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
+  };
+  _showToast = show;
+  return { toasts };
+}
+function toast(msg, type = "info") { _showToast?.(msg, type); }
+function ToastContainer({ toasts }) {
+  return createPortal(
+    <div style={{ position: "fixed", bottom: 80, left: "50%", transform: "translateX(-50%)", zIndex: 999999, display: "flex", flexDirection: "column", gap: 8, alignItems: "center", pointerEvents: "none" }}>
+      {toasts.map(t => (
+        <div key={t.id} className="fade-in" style={{ background: t.type === "error" ? "rgba(220,50,50,0.95)" : t.type === "success" ? "rgba(45,90,27,0.97)" : "rgba(20,30,20,0.97)", color: "white", padding: "10px 20px", borderRadius: 24, fontSize: 14, fontWeight: 600, fontFamily: "var(--font-body)", boxShadow: "0 4px 24px rgba(0,0,0,0.4)", border: t.type === "success" ? "1px solid rgba(120,180,80,0.4)" : "1px solid rgba(255,255,255,0.1)", whiteSpace: "nowrap" }}>
+          {t.msg}
+        </div>
+      ))}
+    </div>,
+    document.body
+  );
+}
+
 function TypewriterText({ text, onDone }) {
   const [displayed, setDisplayed] = useState("");
   useEffect(() => {
@@ -780,7 +806,7 @@ function MapTab({ selectedState, user, onSharePin, isPro }) {
   const saveDropPin = async () => {
     if (!dropName.trim() || !user) return;
     if (!isPro && pins.length >= FREE_PIN_LIMIT) {
-      alert(`Free accounts can save up to ${FREE_PIN_LIMIT} pins. Upgrade to Pro for unlimited pins.`);
+      toast(`Free accounts can save up to ${FREE_PIN_LIMIT} pins. Upgrade to Pro for unlimited pins.`, "error");
       setDropForm(null);
       return;
     }
@@ -1177,9 +1203,9 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
             <button onClick={async () => {
               if (!currentUser) { openSignIn(); return; }
               const { data: existing } = await supabase.from("reported_users").select("id").eq("user_id", userId).eq("reported_by", currentUser.id).single();
-              if (existing) { alert("You've already reported this user."); return; }
+              if (existing) { toast("You've already reported this user."); return; }
               await supabase.from("reported_users").insert({ user_id: userId, reported_by: currentUser.id });
-              alert("User reported. Thank you.");
+              toast("User reported. Thank you.", "success");
             }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 11, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>Report user</button>
             <button onClick={async () => {
               if (!currentUser) { openSignIn(); return; }
@@ -1385,7 +1411,7 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
     if (!file || !user || !activeThread) return;
     const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
     const { error } = await supabase.storage.from("post-photos").upload(fileName, file, { contentType: file.type });
-    if (error) { alert("Image upload failed."); return; }
+    if (error) { toast("Image upload failed.", "error"); return; }
     const { data: urlData } = supabase.storage.from("post-photos").getPublicUrl(fileName);
     await fetch("https://wildai-server.onrender.com/messages/send", {
       method: "POST", headers: { "Content-Type": "application/json" },
@@ -1468,7 +1494,7 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
                       <a href={`https://www.google.com/maps/dir/?api=1&destination=${m.pin_lat},${m.pin_lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 11, fontWeight: 600 }}>🗺️ Directions</a>
                       {m.sender_id !== user.id && (
                         <button onClick={() => {
-                          supabase.from("saved_pins").insert({ user_id: user.id, name: m.pin_name || "Shared Pin", lat: m.pin_lat, lng: m.pin_lng, location: m.pin_name || "Shared Pin" }).then(() => alert("📍 Saved to your map!"));
+                          supabase.from("saved_pins").insert({ user_id: user.id, name: m.pin_name || "Shared Pin", lat: m.pin_lat, lng: m.pin_lng, location: m.pin_name || "Shared Pin" }).then(() => toast("📍 Saved to your map!", "success"));
                         }} style={{ background: "none", border: "none", color: "var(--green)", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: 0, fontFamily: "var(--font-body)" }}>📌 Save to Map</button>
                       )}
                     </div>
@@ -1479,7 +1505,7 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
                       onClick={() => {
                         if (m.sender_id !== user.id) return;
                         const ageMinutes = (Date.now() - new Date(m.created_at)) / 60000;
-                        if (ageMinutes > 5) { alert("You can only delete messages within 5 minutes of sending."); return; }
+                        if (ageMinutes > 5) { toast("You can only delete messages within 5 minutes of sending.", "error"); return; }
                         if (window.confirm("Delete this message?")) { supabase.from("messages").delete().eq("id", m.id).then(() => setMessages(prev => prev.filter(msg => msg.id !== m.id))); }
                       }}>
                       {m.content}
@@ -1574,7 +1600,7 @@ function HotspotsTab({ posts, loading, user, selectedState, savedPinIds, saveToM
       setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
       setFilter("nearme");
       setLocating(false);
-    }, () => { alert("Couldn't get your location."); setLocating(false); });
+    }, () => { toast("Couldn't get your location.", "error"); setLocating(false); });
   };
 
   const filtered = hotspots
@@ -1886,15 +1912,15 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
     });
     setSavedPinIds(prev => new Set([...prev, post.id]));
     onPinSaved?.();
-    alert("📍 Saved to your map!");
+    toast("📍 Saved to your map!", "success");
   };
 
   const reportPost = async (postId) => {
     if (!user) { openSignIn(); return; }
     const { data: existing } = await supabase.from("reports").select("id").eq("post_id", postId).eq("user_id", user.id).single();
-    if (existing) { alert("You've already reported this post."); return; }
+    if (existing) { toast("You've already reported this post."); return; }
     await supabase.from("reports").insert({ post_id: postId, reason: "User reported", user_id: user.id });
-    alert("Post reported. Thank you.");
+    toast("Post reported. Thank you.", "success");
   };
 
   const deletePost = async (postId) => {
@@ -2091,7 +2117,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
               if (!file) return;
               const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
               const { data, error } = await supabase.storage.from("post-photos").upload(fileName, file, { contentType: file.type });
-              if (error) { alert("Photo upload failed. Try again."); return; }
+              if (error) { toast("Photo upload failed. Try again.", "error"); return; }
               const { data: urlData } = supabase.storage.from("post-photos").getPublicUrl(fileName);
               setForm(f => ({ ...f, photo: urlData.publicUrl }));
             }} />
@@ -2749,7 +2775,7 @@ function TrophyBoardTab({ user, openSignIn, selectedState }) {
                     <button onClick={async () => {
                       if (!user) { openSignIn(); return; }
                       await supabase.from("reports").insert({ post_id: e.id, user_id: user.id, reason: "trophy_fake" });
-                      alert("Thanks for reporting — we'll review this entry.");
+                      toast("Thanks for reporting — we'll review this entry.", "success");
                     }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text3)", fontSize: 12, padding: "4px 8px", fontFamily: "var(--font-body)" }}>🚩</button>
                   </>
                 ) : (
@@ -4539,6 +4565,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 // ─── ROOT ─────────────────────────────────────────────────────────────────────
 export default function App() {
   const { user, isLoaded } = useUser();
+  const { toasts } = useToast();
   const [page, setPage] = useState(() => {
     const savedState = localStorage.getItem("wildai_selected_state");
     return savedState ? "chat" : "landing";
@@ -4665,6 +4692,7 @@ export default function App() {
   return (
     <>
       <style>{css}</style>
+      <ToastContainer toasts={toasts} />
 
       {showPushBanner && (
         <div style={{ position: 'fixed', bottom: 80, left: 16, right: 16, zIndex: 9000, background: '#1a2a1a', border: '1px solid var(--border-accent)', borderRadius: 16, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
