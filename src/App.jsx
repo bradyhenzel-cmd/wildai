@@ -2023,7 +2023,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
           return `${Math.floor(diff / 86400)}d ago`;
         };
         return (
-          <div key={post.id} className="fade-in" style={{ borderRadius: 20, overflow: "hidden", border: isHot ? "1px solid rgba(255,150,0,0.25)" : "1px solid #1c2a1c", background: "#0d140d", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>
+          <div key={post.id} className="fade-in" style={{ borderRadius: 20, overflow: "hidden", border: isHot ? "1px solid rgba(255,150,0,0.3)" : "1px solid rgba(255,255,255,0.07)", background: "#0e1510", boxShadow: "0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.04) inset" }}>
 
             {/* Card Header */}
             <div style={{ padding: "14px 16px 10px", display: "flex", alignItems: "center", gap: 12 }}>
@@ -2143,7 +2143,14 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded })
     setLoading(false);
   };
 
-  useEffect(() => { loadComments(); }, [postId]);
+  useEffect(() => {
+    loadComments();
+    if (user?.id) {
+      supabase.from("profiles").select("avatar_url").eq("user_id", user.id).single().then(({ data }) => {
+        if (data?.avatar_url) setAvatars(prev => ({ ...prev, [user.id]: data.avatar_url }));
+      });
+    }
+  }, [postId]);
 
   const submit = async () => {
     if (!text.trim()) return;
@@ -2203,14 +2210,14 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded })
     const replyList = repliesFor(c.id);
     const expanded = expandedReplies.has(c.id);
     return (
-      <div style={{ display: "flex", gap: 8, marginBottom: isReply ? 8 : 12, alignItems: "flex-start", paddingLeft: isReply ? 36 : 0 }}>
-        <div style={{ width: isReply ? 24 : 30, height: isReply ? 24 : 30, borderRadius: isReply ? 7 : 10, background: "linear-gradient(135deg, #1e4010, #0f2408)", flexShrink: 0, overflow: "hidden", boxShadow: `0 0 0 1.5px #3d7a25` }}>
-          {avatars[c.user_id] ? <img src={avatars[c.user_id]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", fontWeight: 700, fontSize: isReply ? 10 : 12 }}>{(c.username || "H")[0].toUpperCase()}</div>}
+      <div style={{ display: "flex", gap: 8, marginBottom: isReply ? 6 : 10, alignItems: "flex-start", paddingLeft: isReply ? 32 : 0 }}>
+        <div style={{ width: isReply ? 22 : 28, height: isReply ? 22 : 28, borderRadius: "50%", background: "linear-gradient(135deg, #1e4010, #0f2408)", flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px #3d7a25" }}>
+          {avatars[c.user_id] ? <img src={avatars[c.user_id]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", fontWeight: 700, fontSize: isReply ? 9 : 11 }}>{(c.username || "H")[0].toUpperCase()}</div>}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: "4px 12px 12px 12px", padding: "7px 10px" }}>
-            <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 13 }}>{capName(c.username || "Hunter")} </span>
-            <span style={{ color: "var(--text2)", fontSize: 13, lineHeight: 1.5 }}>{c.content}</span>
+          <div style={{ padding: "2px 0", textAlign: "left" }}>
+            <span style={{ color: "white", fontWeight: 700, fontSize: 13 }}>{capName(c.username || "Hunter")}</span>
+            <span style={{ color: "rgba(238,245,232,0.55)", fontSize: 13, lineHeight: 1.5 }}>&nbsp;&nbsp;{c.content}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 3, paddingLeft: 2 }}>
             <span style={{ color: "var(--text3)", fontSize: 11 }}>{timeAgo(c.created_at)}</span>
@@ -2234,7 +2241,7 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded })
   };
 
   return (
-    <div style={{ padding: "12px 16px 4px", background: "rgba(0,0,0,0.15)" }}>
+    <div style={{ padding: "14px 16px 4px", background: "rgba(0,0,0,0.15)", display: "flex", flexDirection: "column", gap: 4 }}>
       {loading && <div style={{ color: "var(--text3)", fontSize: 12, paddingBottom: 8 }} className="pulse">Loading...</div>}
       {topLevel.map(c => <CommentRow key={c.id} c={c} />)}
       {topLevel.length === 0 && !loading && <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 12 }}>No comments yet</div>}
@@ -2245,8 +2252,8 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded })
         </div>
       )}
       <div style={{ display: "flex", gap: 8, alignItems: "center", paddingBottom: 12, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg, #1e4010, #0f2408)", flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px #3d7a25", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", fontWeight: 700, fontSize: 12 }}>
-          {user?.imageUrl ? <img src={user.imageUrl} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (user?.username || user?.firstName || "?")[0].toUpperCase()}
+        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg, #1e4010, #0f2408)", flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px #3d7a25", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", fontWeight: 700, fontSize: 11 }}>
+          {avatars[user?.id] ? <img src={avatars[user?.id]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : user?.imageUrl ? <img src={user.imageUrl} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (user?.username || user?.firstName || "?")[0].toUpperCase()}
         </div>
         <input
           ref={inputRef}
