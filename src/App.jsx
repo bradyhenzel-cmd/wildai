@@ -4363,8 +4363,6 @@ export default function App() {
     }
   }, [isLoaded, showSplash]);
 
-  if (!isLoaded || (showSplash && page !== "chat")) return null;
-
   useEffect(() => {
     if (!user) return;
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
@@ -4373,6 +4371,8 @@ export default function App() {
     const t = setTimeout(() => setShowPushBanner(true), 3000);
     return () => clearTimeout(t);
   }, [user?.id]);
+
+  if (!isLoaded || (showSplash && page !== "chat")) return null;
 
   const enablePush = async () => {
     setShowPushBanner(false);
