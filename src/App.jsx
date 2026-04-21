@@ -1094,7 +1094,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
         <div style={{ padding: "0 20px 24px", background: "linear-gradient(160deg, rgba(255,255,255,0.045) 0%, rgba(20,14,8,0.3) 100%)", textAlign: "center" }}>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
             <div style={{ position: "relative", marginTop: -44 }}>
-              <div style={{ width: 88, height: 88, borderRadius: "50%", background: "linear-gradient(135deg, #1e4010, #0f2408)", border: "4px solid rgba(8,15,8,1)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.6), 0 0 0 1px rgba(120,180,80,0.2)" }}>
+              <div style={{ width: 88, height: 88, borderRadius: 20, background: "linear-gradient(135deg, #1e4010, #0f2408)", border: "4px solid rgba(8,15,8,1)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.6), 0 0 0 1px rgba(120,180,80,0.2)" }}>
                 {profile?.avatar_url ? <img src={`${profile.avatar_url}?t=${profile.avatar_updated_at || 0}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 36, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700, lineHeight: 1 }}>{displayName[0]?.toUpperCase()}</span>}
               </div>
 
@@ -1149,7 +1149,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
                     onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                   >
-                    <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, #1e4010, #0f2408)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0, border: "1px solid var(--border-accent)" }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg, #1e4010, #0f2408)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0, border: "1px solid var(--border-accent)" }}>
                       {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 16, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700 }}>{u.username?.[0]?.toUpperCase()}</span>}
                     </div>
                     <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{u.username}</span>
@@ -1393,7 +1393,7 @@ function MessagesTab({ user, openSignIn, supabase }) {
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", height: "70vh" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: "1px solid var(--border)", marginBottom: 8 }}>
         <button onClick={() => { setView("inbox"); loadInbox(); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text2)", fontSize: 14, padding: 0 }}>← Back</button>
-        <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "var(--green)", flexShrink: 0 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 10, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "var(--green)", flexShrink: 0, overflow: "hidden" }}>
           {activeThread.username?.[0]?.toUpperCase()}
         </div>
         <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{activeThread.username}</span>
@@ -1454,14 +1454,16 @@ function MessagesTab({ user, openSignIn, supabase }) {
       )}
       {inbox.map(t => (
         <div key={t.otherId} onClick={() => openThread(t.otherId, t.username, t.avatar)} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "12px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "var(--card)"}>
-          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "var(--green)", flexShrink: 0 }}>{t.username?.[0]?.toUpperCase()}</div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-              <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{t.username}</span>
+          <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "var(--green)", flexShrink: 0, overflow: "hidden" }}>
+            {t.avatar ? <img src={t.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : t.username?.[0]?.toUpperCase()}
+          </div>
+          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center", gap: 3 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14, lineHeight: 1 }}>{capName(t.username)}</span>
               <span style={{ color: "var(--text3)", fontSize: 11 }}>{new Date(t.lastMessage.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
             </div>
-            <div style={{ color: "var(--text3)", fontSize: 12, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-              {t.lastMessage.image_url ? "📷 Image" : t.lastMessage.pin_lat ? "📍 Pin" : t.lastMessage.content}
+            <div style={{ color: "var(--text3)", fontSize: 12, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1 }}>
+              {t.lastMessage.image_url ? "📷 Photo" : t.lastMessage.pin_lat ? "📍 Shared a pin" : t.lastMessage.content}
             </div>
           </div>
           {t.unread > 0 && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--green)", flexShrink: 0 }} />}
@@ -1806,7 +1808,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
                 onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.08)"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}
               >
-                <div style={{ width: 32, height: 32, borderRadius: "50%", overflow: "hidden", background: "linear-gradient(135deg, #1e4010, #0f2408)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "1px solid var(--border-accent)" }}>
+                <div style={{ width: 32, height: 32, borderRadius: 10, overflow: "hidden", background: "linear-gradient(135deg, #1e4010, #0f2408)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "1px solid var(--border-accent)" }}>
                   {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 14, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700 }}>{u.username?.[0]?.toUpperCase()}</span>}
                 </div>
                 {u.username}
@@ -3640,6 +3642,7 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
     return () => clearInterval(interval);
   }, []);
   const [locationPreference, setLocationPreference] = useState(null); // "gps" or "state"
+  const [botStatus, setBotStatus] = useState("online");
   const [gpsState, setGpsState] = useState("");
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   const [messages, setMessages] = useState([
@@ -3756,8 +3759,10 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         body: JSON.stringify({ messages: newMsgs.map(m => ({ role: m.role, content: m.content })), system })
       });
       const d = await res.json();
+      setBotStatus("online");
       setMessages([...newMsgs, { role: "assistant", content: d.reply, animate: true }]);
     } catch {
+      setBotStatus("offline");
       setMessages([...newMsgs, { role: "assistant", content: "Sorry, I had trouble connecting. Please try again.", animate: false }]);
     }
     setLoading(false);
@@ -3951,8 +3956,8 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                 <div>
                   <div style={{ color: "white", fontWeight: 700, fontSize: 14 }}>WildAI</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#4ade80", boxShadow: "0 0 6px rgba(74,222,128,0.8)" }} />
-                    <span style={{ color: "#4a7a4a", fontSize: 11 }}>Online · Always ready</span>
+                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: botStatus === "online" ? "#4ade80" : "#f43f5e", boxShadow: botStatus === "online" ? "0 0 6px rgba(74,222,128,0.8)" : "0 0 6px rgba(244,63,94,0.8)" }} />
+                    <span style={{ color: botStatus === "online" ? "#4a7a4a" : "#f43f5e", fontSize: 11 }}>{botStatus === "online" ? "Online" : "Not connected"}</span>
                   </div>
                 </div>
               </div>
