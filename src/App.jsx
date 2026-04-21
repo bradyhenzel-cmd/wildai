@@ -3910,20 +3910,20 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
             <button onClick={() => openSignIn()} className="btn-primary" style={{ padding: "7px 14px", fontSize: 13 }}>Sign In</button>
           ) : (
             <div style={{ borderRadius: "50%", outline: "2.5px solid var(--green)", outlineOffset: "1px", boxShadow: "0 0 10px rgba(139,195,74,0.25)", display: "inline-flex", lineHeight: 0 }}>
-            <UserButton afterSignOutUrl="https://wildai.netlify.app">
-              <UserButton.MenuItems>
-                <UserButton.Action
-                  label="Manage Subscription"
-                  labelIcon={<span>💳</span>}
-                  onClick={async () => {
-                    const customerId = user?.publicMetadata?.stripeCustomerId;
-                    const res = await fetch("https://wildai-server.onrender.com/customer-portal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ customerId }) });
-                    const data = await res.json();
-                    if (data.url) window.location.href = data.url;
-                  }}
-                />
-              </UserButton.MenuItems>
-            </UserButton>
+              <UserButton afterSignOutUrl="https://wildai.netlify.app">
+                <UserButton.MenuItems>
+                  <UserButton.Action
+                    label="Manage Subscription"
+                    labelIcon={<span>💳</span>}
+                    onClick={async () => {
+                      const customerId = user?.publicMetadata?.stripeCustomerId;
+                      const res = await fetch("https://wildai-server.onrender.com/customer-portal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ customerId }) });
+                      const data = await res.json();
+                      if (data.url) window.location.href = data.url;
+                    }}
+                  />
+                </UserButton.MenuItems>
+              </UserButton>
             </div>
           )}
         </div>
@@ -3963,18 +3963,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           </div>
         )}
 
-        {!isPro && !hitLimit && (
-          <div style={{ background: "linear-gradient(135deg, rgba(212,147,10,0.1), rgba(180,120,5,0.06))", border: "1px solid rgba(212,147,10,0.2)", borderRadius: "var(--radius)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ fontSize: 20, flexShrink: 0 }}>⚡</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ color: "var(--amber)", fontWeight: 600, fontSize: 13 }}>Upgrade to Pro</div>
-              <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>Unlimited messages · $2.99/mo</div>
-            </div>
-            <button onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }} style={{ background: "none", border: "1px solid rgba(212,147,10,0.3)", borderRadius: "var(--radius-sm)", padding: "6px 14px", fontSize: 12, color: "var(--amber)", cursor: "pointer", flexShrink: 0, fontFamily: "var(--font-body)", fontWeight: 600 }}>
-              {checkoutLoading ? "..." : "Go Pro →"}
-            </button>
-          </div>
-        )}
+
 
         {/* CHAT */}
         {tab === "chat" && (
