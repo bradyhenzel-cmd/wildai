@@ -1445,7 +1445,7 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
 
-      {loadingInbox && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)" }} className="pulse">Loading messages...</div>}
+      {loadingInbox && <div style={{ minHeight: 200 }} />}
       {!loadingInbox && inbox.length === 0 && (
         <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>💬</div>
@@ -1982,7 +1982,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
         </div>
       )}
 
-      {communityTab === "feed" && !viewingProfile && loading && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14 }} className="pulse">Loading posts...</div>}
+      {communityTab === "feed" && !viewingProfile && loading && <div style={{ minHeight: 300 }} />}
 
       {communityTab === "feed" && !viewingProfile && !loading && posts.length === 0 && (
         <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>
