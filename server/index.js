@@ -4,6 +4,13 @@ require("dotenv").config();
 const Anthropic = require("@anthropic-ai/sdk");
 const Stripe = require("stripe");
 const { createClerkClient } = require("@clerk/backend");
+const webpush = require("web-push");
+
+webpush.setVapidDetails(
+    `mailto:${process.env.VAPID_EMAIL}`,
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+);
 
 const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
@@ -162,6 +169,20 @@ app.post("/scrape-regulations", async (req, res) => {
     }
 });
 
+async function sendPushToUser(userId, payload) {
+    const { createClient } = require("@supabase/supabase-js");
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+    const { data } = await supabase.from("push_subscriptions").select("subscription").eq("user_id", userId).single();
+    if (!data?.subscription) return;
+    try {
+        await webpush.sendNotification(data.subscription, JSON.stringify(payload));
+    } catch (err) {
+        if (err.statusCode === 410) {
+            await supabase.from("push_subscriptions").delete().eq("user_id", userId);
+        }
+    }
+}
+
 app.post("/messages/send", async (req, res) => {
     const { sender_id, recipient_id, content, image_url, pin_lat, pin_lng, pin_name } = req.body;
     if (!sender_id || !recipient_id) return res.status(400).json({ error: "Missing fields" });
@@ -169,6 +190,13 @@ app.post("/messages/send", async (req, res) => {
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
     const { data, error } = await supabase.from("messages").insert([{ sender_id, recipient_id, content, image_url, pin_lat, pin_lng, pin_name }]).select().single();
     if (error) return res.status(500).json({ error: error.message });
+
+    sendPushToUser(recipient_id, {
+        title: "New Message",
+        body: content ? (content.length > 60 ? content.slice(0, 60) + "…" : content) : "📎 Attachment",
+        url: "/",
+    }).catch(() => { });
+
     res.json(data);
 });
 
@@ -212,24 +240,46 @@ app.post("/messages/mark-read", async (req, res) => {
     res.json({ ok: true });
 });
 
+app.post("/push/like", async (req, res) => {
+    const { post_owner_id, liker_username } = req.body;
+    if (!post_owner_id) return res.status(400).json({ error: "Missing post_owner_id" });
+    await sendPushToUser(post_owner_id, {
+        title: "New Like ❤️",
+        body: `${liker_username || "Someone"} liked your post`,
+        url: "/",
+    }).catch(() => { });
+    res.json({ ok: true });
+});
+
+app.post("/push/follow", async (req, res) => {
+    const { followed_id, follower_username } = req.body;
+    if (!followed_id) return res.status(400).json({ error: "Missing followed_id" });
+    await sendPushToUser(followed_id, {
+        title: "New Follower 🎯",
+        body: `${follower_username || "Someone"} followed you`,
+        url: "/",
+    }).catch(() => { });
+    res.json({ ok: true });
+});
+
 app.post("/clerk-webhook", async (req, res) => {
-  const { Webhook } = require("svix");
-  const secret = process.env.CLERK_WEBHOOK_SECRET;
-  const headers = { "svix-id": req.headers["svix-id"], "svix-timestamp": req.headers["svix-timestamp"], "svix-signature": req.headers["svix-signature"] };
-  try {
-    const wh = new Webhook(secret);
-    const evt = wh.verify(req.body, headers);
-    if (evt.type === "user.updated" || evt.type === "user.created") {
-      const { createClient } = require("@supabase/supabase-js");
-      const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
-      const { id, username, first_name, image_url } = evt.data;
-      const finalUsername = username || first_name || "Hunter";
-      await supabase.from("profiles").upsert({ user_id: id, username: finalUsername, avatar_url: image_url, avatar_updated_at: new Date().toISOString() }, { onConflict: "user_id" });
+    const { Webhook } = require("svix");
+    const secret = process.env.CLERK_WEBHOOK_SECRET;
+    const headers = { "svix-id": req.headers["svix-id"], "svix-timestamp": req.headers["svix-timestamp"], "svix-signature": req.headers["svix-signature"] };
+    try {
+        const wh = new Webhook(secret);
+        const evt = wh.verify(req.body, headers);
+        if (evt.type === "user.updated" || evt.type === "user.created") {
+            const { createClient } = require("@supabase/supabase-js");
+            const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+            const { id, username, first_name, image_url } = evt.data;
+            const finalUsername = username || first_name || "Hunter";
+            await supabase.from("profiles").upsert({ user_id: id, username: finalUsername, avatar_url: image_url, avatar_updated_at: new Date().toISOString() }, { onConflict: "user_id" });
+        }
+        res.json({ received: true });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
     }
-    res.json({ received: true });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
 });
 
 app.listen(3001, () => console.log("Server running on port 3001"));

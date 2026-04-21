@@ -1443,7 +1443,7 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
 
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      
+
       {loadingInbox && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)" }} className="pulse">Loading messages...</div>}
       {!loadingInbox && inbox.length === 0 && (
         <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>
@@ -1617,7 +1617,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
     fetch(`https://wildai-server.onrender.com/messages/inbox?userId=${user.id}`)
       .then(r => r.json())
       .then(data => { if (Array.isArray(data)) setMessagesUnread(data.reduce((sum, t) => sum + (t.unread || 0), 0)); })
-      .catch(() => {});
+      .catch(() => { });
   }, [user]);
   const [feedFilter, setFeedFilter] = useState("all");
   const [followingIds, setFollowingIds] = useState(new Set());
@@ -3643,7 +3643,7 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
           const geo = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
           const geoData = await geo.json();
           const city = geoData.address?.city || geoData.address?.town || geoData.address?.village || "Your Location";
-          const stateAbbr = { "Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY" };
+          const stateAbbr = { "Alabama": "AL", "Alaska": "AK", "Arizona": "AZ", "Arkansas": "AR", "California": "CA", "Colorado": "CO", "Connecticut": "CT", "Delaware": "DE", "Florida": "FL", "Georgia": "GA", "Hawaii": "HI", "Idaho": "ID", "Illinois": "IL", "Indiana": "IN", "Iowa": "IA", "Kansas": "KS", "Kentucky": "KY", "Louisiana": "LA", "Maine": "ME", "Maryland": "MD", "Massachusetts": "MA", "Michigan": "MI", "Minnesota": "MN", "Mississippi": "MS", "Missouri": "MO", "Montana": "MT", "Nebraska": "NE", "Nevada": "NV", "New Hampshire": "NH", "New Jersey": "NJ", "New Mexico": "NM", "New York": "NY", "North Carolina": "NC", "North Dakota": "ND", "Ohio": "OH", "Oklahoma": "OK", "Oregon": "OR", "Pennsylvania": "PA", "Rhode Island": "RI", "South Carolina": "SC", "South Dakota": "SD", "Tennessee": "TN", "Texas": "TX", "Utah": "UT", "Vermont": "VT", "Virginia": "VA", "Washington": "WA", "West Virginia": "WV", "Wisconsin": "WI", "Wyoming": "WY" };
           const abbr = stateAbbr[geoData.address?.state] || "";
           const name = abbr ? `${city}, ${abbr}` : city;
           setLocationName(name);
@@ -3688,8 +3688,8 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
 
   const isPro = user?.publicMetadata?.isPro === true;
   const hitLimit = !isPro && messageCount >= FREE_LIMIT;
-  
-  useEffect(() => { 
+
+  useEffect(() => {
     if (selectedState && gpsState) {
       if (gpsState !== selectedState) { setLocationPreference(null); setShowLocationPrompt(true); }
       else { setShowLocationPrompt(false); }
@@ -3947,7 +3947,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                     <button onClick={() => { setLocationPreference("state"); setShowLocationPrompt(false); }} style={{ padding: "12px 16px", borderRadius: 12, background: "rgba(120,180,80,0.15)", border: "1px solid rgba(120,180,80,0.3)", color: "var(--green)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", transition: "transform 0.15s, box-shadow 0.15s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(120,180,80,0.25)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
                       🗺️ Selected State ({selectedState})
                     </button>
-                    
+
                   </div>
                 </div>
               </div>
@@ -3960,7 +3960,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                 <div style={{ display: "flex", flexDirection: "column" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ color: "white", fontSize: 13, fontWeight: 700 }}>{Math.round(weather.temperature_2m)}°F</span>
-                    <span style={{ color: "#4a6a4a", fontSize: 12, display: "flex", alignItems: "center", gap: 4 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4a6a4a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>{locationName}</span>
+                    <span style={{ color: "#4a6a4a", fontSize: 12, display: "flex", alignItems: "center", gap: 4 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4a6a4a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>{locationName}</span>
                   </div>
                   <span style={{ color: "#6dba4a", fontSize: 11, fontWeight: 600, marginTop: 2 }}>
                     {weather.weather_code === 0 ? "Clear" : weather.weather_code <= 3 ? "Partly cloudy" : weather.weather_code <= 48 ? "Foggy" : weather.weather_code <= 67 ? "Rain" : weather.weather_code <= 77 ? "Snow" : "Showers"} · {Math.round(weather.wind_speed_10m)} mph
@@ -4054,7 +4054,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                     placeholder={`Ask anything...`}
                     style={{ flex: 1, padding: "13px 18px", borderRadius: "var(--radius-sm)", fontSize: 14 }} />
                   <button onClick={() => sendMessage()} style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg, #78b450, #4a8a2a)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 16px rgba(120,180,80,0.35)", transition: "transform 0.15s" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
                   </button>
                 </div>
               )}
