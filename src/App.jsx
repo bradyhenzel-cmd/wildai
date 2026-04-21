@@ -1094,7 +1094,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
         <div style={{ padding: "0 20px 24px", background: "linear-gradient(160deg, rgba(255,255,255,0.045) 0%, rgba(20,14,8,0.3) 100%)", textAlign: "center" }}>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
             <div style={{ position: "relative", marginTop: -44 }}>
-              <div style={{ width: 88, height: 88, borderRadius: 20, background: "linear-gradient(135deg, #1e4010, #0f2408)", border: "4px solid rgba(8,15,8,1)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.6), 0 0 0 1px rgba(120,180,80,0.2)" }}>
+              <div style={{ width: 88, height: 88, borderRadius: 20, background: "linear-gradient(135deg, #1e4010, #0f2408)", border: "4px solid rgba(8,15,8,1)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.6), 0 0 0 2px #78b450, 0 0 16px rgba(120,180,80,0.35)" }}>
                 {profile?.avatar_url ? <img src={`${profile.avatar_url}?t=${profile.avatar_updated_at || 0}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 36, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700, lineHeight: 1 }}>{displayName[0]?.toUpperCase()}</span>}
               </div>
 
@@ -1149,7 +1149,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
                     onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                   >
-                    <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg, #1e4010, #0f2408)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0, border: "1px solid var(--border-accent)" }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg, #1e4010, #0f2408)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0, boxShadow: "0 0 0 2px #78b450, 0 0 10px rgba(120,180,80,0.25)" }}>
                       {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 16, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700 }}>{u.username?.[0]?.toUpperCase()}</span>}
                     </div>
                     <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{u.username}</span>
@@ -1391,7 +1391,7 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", height: "70vh" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: "1px solid var(--border)", marginBottom: 8 }}>
         <button onClick={() => { setView("inbox"); loadInbox(); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text2)", fontSize: 14, padding: 0 }}>← Back</button>
-        <div style={{ width: 32, height: 32, borderRadius: 10, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "var(--green)", flexShrink: 0, overflow: "hidden" }}>
+        <div style={{ width: 32, height: 32, borderRadius: 10, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "var(--green)", flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 2px #78b450, 0 0 10px rgba(120,180,80,0.25)" }}>
           {activeThread.username?.[0]?.toUpperCase()}
         </div>
         <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{activeThread.username}</span>
@@ -1455,7 +1455,7 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
       {inbox.map(t => (
         <div key={t.otherId} onClick={() => { openThread(t.otherId, t.username, t.avatar); setInbox(prev => { const updated = prev.map(i => i.otherId === t.otherId ? { ...i, unread: 0 } : i); setTimeout(() => onUnreadChange?.(updated.reduce((sum, i) => sum + (i.unread || 0), 0)), 0); return updated; }); }} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "12px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "var(--card)"}>
           <div style={{ position: "relative", flexShrink: 0 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "var(--green)", overflow: "hidden" }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "var(--green)", overflow: "hidden", boxShadow: "0 0 0 2px #78b450, 0 0 10px rgba(120,180,80,0.25)" }}>
               {t.avatar ? <img src={t.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : t.username?.[0]?.toUpperCase()}
             </div>
             {t.last_seen && (Date.now() - new Date(t.last_seen)) < 5 * 60 * 1000 && (
@@ -1821,7 +1821,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
                 onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.08)"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}
               >
-                <div style={{ width: 32, height: 32, borderRadius: 10, overflow: "hidden", background: "linear-gradient(135deg, #1e4010, #0f2408)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "1px solid var(--border-accent)" }}>
+                <div style={{ width: 32, height: 32, borderRadius: 10, overflow: "hidden", background: "linear-gradient(135deg, #1e4010, #0f2408)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 0 0 2px #78b450, 0 0 10px rgba(120,180,80,0.25)" }}>
                   {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 14, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700 }}>{u.username?.[0]?.toUpperCase()}</span>}
                 </div>
                 {u.username}
@@ -1994,7 +1994,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
             {/* Card Header */}
             <div style={{ padding: "14px 16px 10px", display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ position: "relative", flexShrink: 0 }}>
-                <div onClick={() => setViewingProfile(post.user_id)} style={{ width: 44, height: 44, borderRadius: 14, background: "linear-gradient(135deg, #3d7a25, #1a3a0e)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden" }}>
+                <div onClick={() => setViewingProfile(post.user_id)} style={{ width: 44, height: 44, borderRadius: 14, background: "linear-gradient(135deg, #3d7a25, #1a3a0e)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", boxShadow: "0 0 0 2px #78b450, 0 0 12px rgba(120,180,80,0.3)" }}>
                   {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "white", fontWeight: 700, fontSize: 17, fontFamily: "var(--font-display)" }}>{(post.username || "H")[0].toUpperCase()}</span>}
                 </div>
                 {post.last_seen && (Date.now() - new Date(post.last_seen)) < 5 * 60 * 1000 && (
