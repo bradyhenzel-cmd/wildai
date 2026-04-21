@@ -1618,7 +1618,7 @@ function PinPicker({ user, onSelect }) {
   );
 }
 
-function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
+function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSetUnread }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -1649,6 +1649,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
       .subscribe();
     return () => supabase.removeChannel(channel);
   }, [user]);
+  useEffect(() => { externalSetUnread?.(messagesUnread); }, [messagesUnread]);
   const [feedFilter, setFeedFilter] = useState("all");
   const [followingIds, setFollowingIds] = useState(new Set());
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(() => !localStorage.getItem("wildai_community_welcomed"));
@@ -3659,7 +3660,7 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
 }
 
 // ─── CHAT PAGE ────────────────────────────────────────────────────────────────
-function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSelectedState, onTerms }) {
+function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSelectedState, onTerms, messagesUnread, setMessagesUnread }) {
   const [tab, setTab] = useState("community");
   const [weather, setWeather] = useState(null);
   const [locationName, setLocationName] = useState("");
@@ -3891,15 +3892,20 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {hitLimit ? (
-            <button onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }} className="btn-gold mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12 }}>
-              {checkoutLoading ? "..." : "Go Pro →"}
-            </button>
-          ) : (
-            <div className="mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)" }}>
-              {isPro ? "Pro ✓" : `${Math.max(0, FREE_LIMIT - messageCount)} msgs left`}
-            </div>
-          )}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {messagesUnread > 0 && (
+              <div onClick={() => { setTab("community"); }} style={{ padding: "6px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, background: "#f43f5e22", border: "1px solid rgba(244,63,94,0.3)", color: "#f43f5e", cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
+                💬 {messagesUnread}
+              </div>
+            )}
+            {isPro ? (
+              <div className="mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)" }}>Pro ✓</div>
+            ) : (
+              <button onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }} className="btn-gold mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12 }}>
+                {checkoutLoading ? "..." : "Go Pro"}
+              </button>
+            )}
+          </div>
           {!user ? (
             <button onClick={() => openSignIn()} className="btn-primary" style={{ padding: "7px 14px", fontSize: 13 }}>Sign In</button>
           ) : (
@@ -4246,7 +4252,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         {tab === "harvest" && <HarvestLogTab user={user} openSignIn={openSignIn} isPro={isPro} />}
         {tab === "ballistics" && <BallisticsTab />}
         {tab === "trophy" && <TrophyBoardTab user={user} openSignIn={openSignIn} selectedState={selectedState} />}
-        {tab === "community" && <CommunityTab selectedState={selectedState} user={user} openSignIn={openSignIn} />}
+        {tab === "community" && <CommunityTab selectedState={selectedState} user={user} openSignIn={openSignIn} externalSetUnread={setMessagesUnread} />}
         {tab === "about" && (
           <div className="fade-in card" style={{ padding: 32 }}>
             <div style={{ textAlign: "center", marginBottom: 32 }}>
@@ -4339,6 +4345,7 @@ export default function App() {
   }, [user?.id]);
 
   const [prevPage, setPrevPage] = useState("landing");
+  const [messagesUnread, setMessagesUnread] = useState(0);
   const [messageCount, setMessageCount] = useState(() => {
     const saved = localStorage.getItem("wildai_message_count");
     return saved ? parseInt(saved) : 0;
@@ -4428,7 +4435,7 @@ export default function App() {
 
       {page === "terms" && <TermsPage onBack={() => setPage(prevPage === "chat" ? "chat" : "landing")} />}
       {page === "landing" && <LandingPage onStart={() => goTo("chat")} onSignIn={() => { window._triggerSignIn?.(); }} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} />}
-      {page === "chat" && <ChatPage onBack={() => { localStorage.removeItem("wildai_selected_state"); setSelectedState(""); goTo("landing"); }} messageCount={messageCount} setMessageCount={setMessageCount} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} />}
+      {page === "chat" && <ChatPage onBack={() => { localStorage.removeItem("wildai_selected_state"); setSelectedState(""); goTo("landing"); }} messageCount={messageCount} setMessageCount={setMessageCount} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} messagesUnread={messagesUnread} setMessagesUnread={setMessagesUnread} />}
     </>
   );
 }
