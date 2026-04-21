@@ -473,7 +473,7 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
       <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 12 }}>LIVE WEATHER</div>
 
       <div style={{ position: "relative", marginBottom: 20 }}>
-        <svg style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#4a6a4a", pointerEvents: "none" }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <svg style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#4a6a4a", pointerEvents: "none" }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
         <input
           value={query}
           onChange={e => { const v = e.target.value; setQuery(v); clearTimeout(window._wt); window._wt = setTimeout(() => searchLocations(v), 300); }}
@@ -2037,7 +2037,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
               <div style={{ flex: 1 }} />
               {post.lat && post.lng && (
                 <button onClick={() => saveToMap(post)} style={{ background: "none", border: "none", cursor: "pointer", color: savedPinIds.has(post.id) ? "var(--green)" : "#4a6a4a", padding: "6px 8px", borderRadius: 10, transition: "all 0.15s" }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill={savedPinIds.has(post.id) ? "var(--green)" : "none"} stroke={savedPinIds.has(post.id) ? "var(--green)" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill={savedPinIds.has(post.id) ? "var(--green)" : "none"} stroke={savedPinIds.has(post.id) ? "var(--green)" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
                 </button>
               )}
               <button onClick={() => navigator.share ? navigator.share({ title: "WildAI", text: post.caption, url: window.location.href }) : null} style={{ background: "none", border: "none", cursor: "pointer", color: "#4a6a4a", padding: "6px 8px", borderRadius: 10, fontSize: 16, transition: "all 0.15s" }}>
@@ -3209,6 +3209,16 @@ function RegulationsTab({ selectedState, currentUser }) {
         </div>
       )}
 
+      <div style={{ padding: "16px 20px", background: "var(--amber-dim)", border: "1px solid rgba(212,147,10,0.2)", borderRadius: "var(--radius)" }}>
+        <p style={{ color: "rgba(212,147,10,0.9)", fontSize: 13, lineHeight: 1.7 }}>⚠️ <strong>Info is generally accurate but dates and limits may vary.</strong> Always click the official links below for exact current regulations before heading out.</p>
+        {STATE_WILDLIFE_AGENCIES[selectedState] && (
+          <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+            <a href={STATE_WILDLIFE_AGENCIES[selectedState].hunting} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "8px 16px", background: "rgba(212,147,10,0.15)", border: "1px solid rgba(212,147,10,0.3)", borderRadius: "var(--radius-sm)", color: "rgba(212,147,10,0.9)", fontSize: 12, fontWeight: 600, textDecoration: "none", textAlign: "center", transition: "transform 0.15s" }} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"} onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>🎯 Official Hunting Regs →</a>
+            <a href={STATE_WILDLIFE_AGENCIES[selectedState].fishing} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "8px 16px", background: "rgba(212,147,10,0.15)", border: "1px solid rgba(212,147,10,0.3)", borderRadius: "var(--radius-sm)", color: "rgba(212,147,10,0.9)", fontSize: 12, fontWeight: 600, textDecoration: "none", textAlign: "center", transition: "transform 0.15s" }} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"} onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>🎣 Official Fishing Regs →</a>
+          </div>
+        )}
+      </div>
+
       {regs && !loading && !generating && (
         <>
           <div className="card" style={{ padding: 24 }}>
@@ -3255,15 +3265,6 @@ function RegulationsTab({ selectedState, currentUser }) {
         </div>
       )}
 
-      <div style={{ padding: "16px 20px", background: "var(--amber-dim)", border: "1px solid rgba(212,147,10,0.2)", borderRadius: "var(--radius)" }}>
-        <p style={{ color: "rgba(212,147,10,0.9)", fontSize: 13, lineHeight: 1.7 }}>⚠️ <strong>Info is generally accurate but dates and limits may vary.</strong> Always click the official links below for exact current regulations before heading out.</p>
-        {STATE_WILDLIFE_AGENCIES[selectedState] && (
-          <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
-            <a href={STATE_WILDLIFE_AGENCIES[selectedState].hunting} target="_blank" rel="noopener noreferrer" style={{ padding: "8px 16px", background: "rgba(212,147,10,0.15)", border: "1px solid rgba(212,147,10,0.3)", borderRadius: "var(--radius-sm)", color: "rgba(212,147,10,0.9)", fontSize: 12, fontWeight: 600, textDecoration: "none" }}>🎯 Official Hunting Regs →</a>
-            <a href={STATE_WILDLIFE_AGENCIES[selectedState].fishing} target="_blank" rel="noopener noreferrer" style={{ padding: "8px 16px", background: "rgba(212,147,10,0.15)", border: "1px solid rgba(212,147,10,0.3)", borderRadius: "var(--radius-sm)", color: "rgba(212,147,10,0.9)", fontSize: 12, fontWeight: 600, textDecoration: "none" }}>🎣 Official Fishing Regs →</a>
-          </div>
-        )}
-      </div>
       <div style={{ padding: "16px 20px", background: "var(--green-dim)", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)" }}>
         <p style={{ color: "var(--green)", fontSize: 13, lineHeight: 1.7 }}>💬 Have a specific regulation question? Ask the AI in the Chat tab for more detailed info.</p>
       </div>
@@ -3932,44 +3933,38 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                 </div>
               )}
               {hitLimit && (
-                <div style={{ margin: "0 20px 20px", background: "#0d1a0d", border: "1px solid rgba(180,140,60,0.25)", borderRadius: 18, overflow: "hidden" }}>
-                  <div style={{ background: "#0a150a", padding: "24px 24px 20px", borderBottom: "1px solid rgba(255,255,255,0.05)", textAlign: "center" }}>
-                    <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(180,140,60,0.1)", border: "1px solid rgba(180,140,60,0.35)", borderRadius: 20, padding: "5px 14px", marginBottom: 16 }}>
-                      <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#e8b020" }} />
-                      <span style={{ color: "#e8b020", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em" }}>WILDAI PRO</span>
-                    </div>
-                    <div style={{ fontFamily: "var(--font-display)", fontSize: 21, color: "#f4f4f0", marginBottom: 6, lineHeight: 1.2 }}>Every season. Every state.<br /><span style={{ color: "#e8b020" }}>Every question.</span></div>
-                    <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>You've used your 10 free messages — WildAI is clearly working for you 🎯</div>
-                  </div>
-                  <div style={{ margin: "16px 20px", background: "linear-gradient(135deg, rgba(120,180,80,0.12), rgba(80,140,50,0.06))", border: "1px solid rgba(120,180,80,0.3)", borderRadius: 12, padding: 16 }}>
-                    <div style={{ color: "#78b450", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 8 }}>★ COMMUNITY — OUR BIGGEST FEATURE</div>
-                    <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, lineHeight: 1.6, marginBottom: 10 }}>Post harvest photos, drop public hotspot pins, and see what hunters and anglers near you are tagging. A real community built for the field.</div>
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                      {["Harvest photos", "Public hotspots", "Live posts"].map((t, i) => (
-                        <div key={i} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "3px 10px", fontSize: 11, color: "rgba(255,255,255,0.4)" }}>{t}</div>
-                      ))}
+                <div style={{ margin: "0 20px 20px", background: "linear-gradient(160deg, #0d1a0d 0%, #080c08 60%)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, overflow: "hidden", position: "relative" }}>
+                  <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 260, height: 120, borderRadius: "50%", background: "radial-gradient(ellipse, rgba(232,176,32,0.18) 0%, transparent 70%)", filter: "blur(20px)", pointerEvents: "none" }} />
+                  <div style={{ position: "absolute", top: 20, right: 20 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(232,176,32,0.12)", border: "1px solid rgba(232,176,32,0.3)", borderRadius: 20, padding: "4px 12px" }}>
+                      <span style={{ color: "#e8b020", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em" }}>⚡ PRO</span>
                     </div>
                   </div>
-                  <div style={{ padding: "0 20px 4px" }}>
+                  <div style={{ padding: "32px 24px 20px", textAlign: "center" }}>
+                    <div style={{ fontFamily: "var(--font-display)", fontSize: 26, color: "#f4f4f0", marginBottom: 8, lineHeight: 1.2, fontWeight: 900 }}>Every season.<br />Every state.<br /><span style={{ color: "#e8b020" }}>Every question.</span></div>
+                    <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>You've used your 10 free messages —<br />WildAI is clearly working for you 🎯</div>
+                  </div>
+                  <div style={{ margin: "0 24px 16px", height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)" }} />
+                  <div style={{ padding: "0 20px 16px" }}>
                     {["Unlimited AI chat — no message limits", "Unlimited saved map pins", "AI trip planner", "Harvest log & season tracking", "State regulations & official season dates", "Live weather with real conditions"].map((f, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                        <div style={{ width: 16, height: 16, borderRadius: "50%", background: "rgba(120,180,80,0.12)", border: "1px solid rgba(120,180,80,0.35)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <span style={{ color: "#78b450", fontSize: 9, fontWeight: 700 }}>✓</span>
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, background: i % 2 === 0 ? "rgba(255,255,255,0.02)" : "transparent" }}>
+                        <div style={{ width: 20, height: 20, borderRadius: "50%", background: "rgba(232,176,32,0.15)", border: "1px solid rgba(232,176,32,0.4)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <span style={{ color: "#e8b020", fontSize: 10, fontWeight: 700 }}>✓</span>
                         </div>
                         <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}>{f}</span>
                       </div>
                     ))}
                   </div>
-                  <div style={{ padding: "20px 20px 24px", textAlign: "center" }}>
-                    <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 6, marginBottom: 6 }}>
-                      <span style={{ color: "#f4f4f0", fontSize: 42, fontWeight: 900, fontFamily: "var(--font-display)", letterSpacing: "-1px" }}>$2.99</span>
-                      <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 14 }}>/ month</span>
+                  <div style={{ padding: "8px 20px 28px", textAlign: "center" }}>
+                    <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 6, marginBottom: 4 }}>
+                      <span style={{ color: "white", fontSize: 52, fontWeight: 900, fontFamily: "var(--font-display)", letterSpacing: "-2px", lineHeight: 1 }}>$2.99</span>
+                      <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 14, paddingBottom: 8 }}>/ month</span>
                     </div>
-                    <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 11, marginBottom: 14 }}>Less than a cup of coffee</div>
-                    <button className="btn-gold" style={{ width: "100%", padding: "15px", borderRadius: 12, fontSize: 15, opacity: checkoutLoading ? 0.6 : 1 }} disabled={checkoutLoading} onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }}>
+                    <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 11, marginBottom: 16 }}>Less than a cup of coffee · Resets monthly</div>
+                    <button className="btn-gold" style={{ width: "100%", padding: "16px", borderRadius: 14, fontSize: 15, fontWeight: 700, opacity: checkoutLoading ? 0.6 : 1, boxShadow: "0 8px 32px rgba(232,176,32,0.35)" }} disabled={checkoutLoading} onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }}>
                       {checkoutLoading ? "Loading..." : "Upgrade to Pro →"}
                     </button>
-                    <div style={{ marginTop: 10, fontSize: 11, color: "rgba(255,255,255,0.2)" }}>Cancel anytime · Secure payment via Stripe</div>
+                    <div style={{ marginTop: 10, fontSize: 11, color: "rgba(255,255,255,0.18)" }}>Cancel anytime · Secure payment via Stripe</div>
                   </div>
                 </div>
               )}
@@ -3983,6 +3978,12 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
               )}
             </div>
           </>
+        )}
+
+        {!["chat", "more", "map", "community"].includes(tab) && !(tab === "gear" && selectedChecklist) && (
+          <button onClick={() => setTab("more")} style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", color: "var(--text3)", fontSize: 13, cursor: "pointer", padding: "0 0 8px 0", fontFamily: "var(--font-body)", transition: "color 0.2s" }} onMouseEnter={e => e.currentTarget.style.color = "var(--text)"} onMouseLeave={e => e.currentTarget.style.color = "var(--text3)"}>
+            ← Back
+          </button>
         )}
 
         {tab === "weather" && (
@@ -4062,7 +4063,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
                     <button onClick={() => setCheckedItems({})} className="btn-ghost" style={{ padding: "7px 14px", fontSize: 12 }}>Reset</button>
-                    <button onClick={() => setSelectedChecklist(null)} className="btn-ghost" style={{ padding: "7px 14px", fontSize: 12 }}>← Back</button>
+                    <button onClick={() => setSelectedChecklist(null)} className="btn-ghost" style={{ padding: "7px 14px", fontSize: 12, transition: "transform 0.15s" }} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"} onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>← Back</button>
                   </div>
                 </div>
                 <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 14 }}>{Object.values(checkedItems).filter(Boolean).length} / {GEAR_CHECKLISTS[selectedChecklist].items.length} packed</div>
@@ -4095,16 +4096,16 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
             <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 4 }}>TOOLS & FEATURES</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               {[
-                { id: "species", label: "Species", desc: "Hunting & fishing guides", accent: "#2d5a1b", color: "#6dba4a", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg> },
-                { id: "regs", label: "Regulations", desc: "State-specific rules", accent: "#1a3a5c", color: "#4a8fd4", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> },
-                { id: "trip", label: "Trip Planner", desc: "AI-generated plans", accent: "#3a2a5c", color: "#9a7ad4", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
-                { id: "gear", label: "Gear", desc: "Pack checklists", accent: "#4a2a1a", color: "#d4804a", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> },
-                { id: "licenses", label: "Licenses", desc: "Buy state licenses", accent: "#1a4a3a", color: "#4ad4aa", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg> },
-                { id: "harvest", label: "Harvest Log", desc: "Track your catches", accent: "#3a3a1a", color: "#d4c44a", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> },
-                { id: "trophy", label: "Trophy Board", desc: "Community verified harvests", accent: "#4a3a1a", color: "#d4944a", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg> },
-                { id: "ballistics", label: "Ballistics", desc: "Bullet drop calculator", accent: "#2d1a3a", color: "#c47ad4", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2c-2 0-4 1.5-4 4v8h8V6c0-2.5-2-4-4-4z"/><rect x="8" y="14" width="8" height="4" rx="1"/><line x1="10" y1="18" x2="10" y2="21"/><line x1="14" y1="18" x2="14" y2="21"/></svg> },
-                { id: "weather", label: "Weather", desc: "Live conditions", accent: "#1a2a4a", color: "#4aaad4", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/></svg> },
-                { id: "about", label: "About", desc: "App info & account", accent: "#2a2a2a", color: "#8a8a8a", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> },
+                { id: "species", label: "Species", desc: "Hunting & fishing guides", accent: "#2d5a1b", color: "#6dba4a", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="22" y1="12" x2="18" y2="12" /><line x1="6" y1="12" x2="2" y2="12" /><line x1="12" y1="6" x2="12" y2="2" /><line x1="12" y1="22" x2="12" y2="18" /></svg> },
+                { id: "regs", label: "Regulations", desc: "State-specific rules", accent: "#1a3a5c", color: "#4a8fd4", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg> },
+                { id: "trip", label: "Trip Planner", desc: "AI-generated plans", accent: "#3a2a5c", color: "#9a7ad4", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg> },
+                { id: "gear", label: "Gear", desc: "Pack checklists", accent: "#4a2a1a", color: "#d4804a", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" /></svg> },
+                { id: "licenses", label: "Licenses", desc: "Buy state licenses", accent: "#1a4a3a", color: "#4ad4aa", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></svg> },
+                { id: "harvest", label: "Harvest Log", desc: "Track your catches", accent: "#3a3a1a", color: "#d4c44a", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg> },
+                { id: "trophy", label: "Trophy Board", desc: "Community verified harvests", accent: "#4a3a1a", color: "#d4944a", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2z" /></svg> },
+                { id: "ballistics", label: "Ballistics", desc: "Bullet drop calculator", accent: "#2d1a3a", color: "#c47ad4", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2c-2 0-4 1.5-4 4v8h8V6c0-2.5-2-4-4-4z" /><rect x="8" y="14" width="8" height="4" rx="1" /><line x1="10" y1="18" x2="10" y2="21" /><line x1="14" y1="18" x2="14" y2="21" /></svg> },
+                { id: "weather", label: "Weather", desc: "Live conditions", accent: "#1a2a4a", color: "#4aaad4", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z" /></svg> },
+                { id: "about", label: "About", desc: "App info & account", accent: "#2a2a2a", color: "#8a8a8a", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg> },
                 ...(user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a" ? [{ id: "admin", label: "Admin", desc: "Manage reports", accent: "#3a1a1a", color: "#d44a4a", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg> }] : []),
               ].map(t => (
                 <button key={t.id} onClick={() => setTab(t.id)} className="more-btn" style={{ padding: "16px", textAlign: "left", cursor: "pointer", border: "1px solid #1a2a1a", borderRadius: 16, background: "linear-gradient(135deg, #0d140d, #101810)", display: "flex", alignItems: "center", gap: 14, minHeight: 80 }}>
@@ -4180,9 +4181,9 @@ export default function App() {
         handleSetSelectedState(data.selected_state);
       }
     });
-    supabase.rpc("update_last_seen", { uid: user.id }).then(() => {});
+    supabase.rpc("update_last_seen", { uid: user.id }).then(() => { });
     const interval = setInterval(() => {
-      supabase.rpc("update_last_seen", { uid: user.id }).then(() => {});
+      supabase.rpc("update_last_seen", { uid: user.id }).then(() => { });
     }, 60000);
     return () => clearInterval(interval);
   }, [isLoaded, user?.id]);
@@ -4230,7 +4231,7 @@ export default function App() {
   return (
     <>
       <style>{css}</style>
-      
+
       {page === "terms" && <TermsPage onBack={() => setPage(prevPage === "chat" ? "chat" : "landing")} />}
       {page === "landing" && <LandingPage onStart={() => goTo("chat")} onSignIn={() => { window._triggerSignIn?.(); }} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} />}
       {page === "chat" && <ChatPage onBack={() => { localStorage.removeItem("wildai_selected_state"); setSelectedState(""); goTo("landing"); }} messageCount={messageCount} setMessageCount={setMessageCount} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} />}
