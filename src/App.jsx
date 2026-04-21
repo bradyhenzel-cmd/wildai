@@ -1727,6 +1727,12 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
       await supabase.from("likes").insert({ post_id: post.id, user_id: user.id });
       setLikedPostIds(prev => new Set([...prev, post.id]));
       setLikeCounts(prev => ({ ...prev, [post.id]: (prev[post.id] || 0) + 1 }));
+      if (post.user_id !== user.id) {
+        fetch("https://wildai-server.onrender.com/push/like", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ post_owner_id: post.user_id, liker_username: user.username || user.firstName || "Someone" }) }).catch(() => {});
+      }
+      if (post.user_id !== user.id) {
+        fetch("https://wildai-server.onrender.com/push/like", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ post_owner_id: post.user_id, liker_username: user.username || user.firstName || "Someone" }) }).catch(() => {});
+      }
     }
   };
 
@@ -2106,6 +2112,9 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded })
       username: user.username || user.firstName || "Hunter",
       content: text.trim(),
     });
+    if (postOwnerId && postOwnerId !== user.id) {
+      fetch("https://wildai-server.onrender.com/push/comment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ post_owner_id: postOwnerId, commenter_username: user.username || user.firstName || "Someone", comment: text.trim() }) }).catch(() => {});
+    }
     setText("");
     await loadComments();
     onCommentAdded?.();

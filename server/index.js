@@ -253,6 +253,17 @@ app.post("/push/like", async (req, res) => {
     res.json({ ok: true });
 });
 
+app.post("/push/comment", async (req, res) => {
+  const { post_owner_id, commenter_username, comment } = req.body;
+  if (!post_owner_id) return res.status(400).json({ error: "Missing post_owner_id" });
+  await sendPushToUser(post_owner_id, {
+    title: "New Comment 💬",
+    body: `${commenter_username || "Someone"}: ${comment?.slice(0, 50) || ""}`,
+    url: "/",
+  }).catch(() => {});
+  res.json({ ok: true });
+});
+
 app.post("/push/follow", async (req, res) => {
     const { followed_id, follower_username } = req.body;
     if (!followed_id) return res.status(400).json({ error: "Missing followed_id" });
