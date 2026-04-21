@@ -956,7 +956,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
       setFollowerCount(followers?.length || 0);
       setFollowingCount(following?.length || 0);
       if (currentUser && currentUser.id !== userId) {
-        const { data: followCheck } = await supabase.from("follows").select("id").eq("follower_id", currentUser.id).eq("following_id", userId).single();
+        const { data: followCheck } = await supabase.from("follows").select("id").eq("follower_id", currentUser.id).eq("following_id", userId).maybeSingle();
         setIsFollowing(!!followCheck);
       }
       const spotPosts = (postData || []).filter(p => p.lat && p.lng);
