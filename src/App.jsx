@@ -1390,12 +1390,14 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
 
   if (view === "thread" && activeThread) return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", height: "70vh" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: "1px solid var(--border)", marginBottom: 8 }}>
-        <button onClick={() => { setView("inbox"); loadInbox(); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text2)", fontSize: 14, padding: 0 }}>← Back</button>
-        <div style={{ width: 32, height: 32, borderRadius: 10, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "var(--green)", flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 2px #78b450, 0 0 10px rgba(120,180,80,0.25)" }}>
-          {activeThread.username?.[0]?.toUpperCase()}
+      <div style={{ borderBottom: "1px solid var(--border)", marginBottom: 8, padding: "10px 0", display: "flex", alignItems: "center", position: "relative" }}>
+        <button onClick={() => { setView("inbox"); loadInbox(); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text2)", fontSize: 14, padding: 0, flexShrink: 0 }}>← Back</button>
+        <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 10, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "var(--green)", flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 2px #78b450" }}>
+            {activeThread.avatar ? <img src={activeThread.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : activeThread.username?.[0]?.toUpperCase()}
+          </div>
+          <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>{activeThread.username}</span>
         </div>
-        <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{activeThread.username}</span>
       </div>
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8, paddingBottom: 8 }}>
         {messages.map(m => (
@@ -1573,8 +1575,8 @@ function PinPicker({ user, onSelect }) {
 
   return (
     <>
-      <button onClick={() => setOpen(o => !o)} style={{ background: "none", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", color: "var(--text3)", fontSize: 11, padding: "4px 10px", cursor: "pointer", fontFamily: "var(--font-body)", flexShrink: 0 }}>
-        📍 Attach a pin
+      <button onClick={() => setOpen(o => !o)} title="Attach a pin" style={{ background: "none", border: "1px solid var(--border)", borderRadius: "50%", color: "var(--text3)", fontSize: 18, width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        📍
       </button>
       {open && (
         <>
