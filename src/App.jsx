@@ -1709,12 +1709,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   };
 
   useEffect(() => { loadPosts(); }, [stateFilter]);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (posts.length) loadPosts();
-    }, 60000);
-    return () => clearInterval(interval);
-  }, [posts.length]);
+  
   useEffect(() => { if (posts.length) loadLikes(posts); }, [posts, user]);
   useEffect(() => {
     const channel = supabase
