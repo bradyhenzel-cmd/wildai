@@ -4301,15 +4301,7 @@ export default function App() {
         const reg = await navigator.serviceWorker.register('/sw.js');
         await navigator.serviceWorker.ready;
         let sub = await reg.pushManager.getSubscription();
-        if (!sub) {
-          const permission = await Notification.requestPermission();
-          if (permission !== 'granted') return;
-          sub = await reg.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: VAPID_PUBLIC_KEY,
-          });
-        }
-
+        if (!sub) return; // don't auto-request, wait for user tap
         await fetch(`https://jlzbzkdhjufyjwjmdvmp.supabase.co/rest/v1/push_subscriptions?on_conflict=user_id`, {
           method: 'POST',
           headers: {
@@ -4372,9 +4364,49 @@ export default function App() {
 
   if (!isLoaded || (showSplash && page !== "chat")) return null;
 
+  const [showPushBanner, setShowPushBanner] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    if (localStorage.getItem('wildai_push_dismissed')) return;
+    if (Notification.permission === 'granted') return;
+    const t = setTimeout(() => setShowPushBanner(true), 3000);
+    return () => clearTimeout(t);
+  }, [user?.id]);
+
+  const enablePush = async () => {
+    setShowPushBanner(false);
+    try {
+      const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+      const reg = await navigator.serviceWorker.register('/sw.js');
+      await navigator.serviceWorker.ready;
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') return;
+      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: VAPID_PUBLIC_KEY });
+      await fetch(`https://jlzbzkdhjufyjwjmdvmp.supabase.co/rest/v1/push_subscriptions?on_conflict=user_id`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsemJ6a2RoanVmeWp3am1kdm1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDAzOTYsImV4cCI6MjA5MTY3NjM5Nn0.iGLUa4y5GqmisT3O3FIE4lc9Mr9VpsNXDYKsOeyquKE', 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify({ user_id: user.id, subscription: sub.toJSON() }),
+      });
+    } catch (e) { console.error('Push enable failed:', e); }
+  };
+
   return (
     <>
       <style>{css}</style>
+
+      {showPushBanner && (
+        <div style={{ position: 'fixed', bottom: 80, left: 16, right: 16, zIndex: 9000, background: '#1a2a1a', border: '1px solid var(--border-accent)', borderRadius: 16, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
+          <span style={{ fontSize: 24 }}>🔔</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: 'var(--text)', fontWeight: 700, fontSize: 14 }}>Enable Notifications</div>
+            <div style={{ color: 'var(--text2)', fontSize: 12, marginTop: 2 }}>Get notified for messages, likes & follows</div>
+          </div>
+          <button onClick={enablePush} className="btn-primary" style={{ padding: '8px 14px', fontSize: 13, flexShrink: 0 }}>Enable</button>
+          <button onClick={() => { setShowPushBanner(false); localStorage.setItem('wildai_push_dismissed', '1'); }} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 18, cursor: 'pointer', padding: 0, flexShrink: 0 }}>✕</button>
+        </div>
+      )}
 
       {page === "terms" && <TermsPage onBack={() => setPage(prevPage === "chat" ? "chat" : "landing")} />}
       {page === "landing" && <LandingPage onStart={() => goTo("chat")} onSignIn={() => { window._triggerSignIn?.(); }} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} />}
