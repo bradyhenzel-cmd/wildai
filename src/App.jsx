@@ -4302,13 +4302,11 @@ export default function App() {
         });
 
         const { data: { session } } = await supabase.auth.getSession();
-        const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/push_subscriptions?on_conflict=user_id`, {
+        await fetch(`https://jlzbzkdhjufyjwjmdvmp.supabase.co/rest/v1/push_subscriptions?on_conflict=user_id`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'apikey': anonKey,
-            'Authorization': `Bearer ${session?.access_token || anonKey}`,
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsemJ6a2RoanVmeWp3am1kdm1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDAzOTYsImV4cCI6MjA5MTY3NjM5Nn0.iGLUa4y5GqmisT3O3FIE4lc9Mr9VpsNXDYKsOeyquKE',
             'Prefer': 'resolution=merge-duplicates',
           },
           body: JSON.stringify({ user_id: user.id, subscription: sub.toJSON() }),
