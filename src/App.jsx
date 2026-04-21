@@ -1720,11 +1720,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
     if (!user) return;
     setLoadingNotifs(true);
     const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    const [{ data: likeData }, { data: commentData }, { data: followData }] = await Promise.all([
-      supabase.from("likes").select("*, posts(caption, photo)").eq("posts.user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(30),
-      supabase.from("comments").select("*").eq("post_id", supabase.from("posts").select("id").eq("user_id", user.id)).gte("created_at", since).order("created_at", { ascending: false }).limit(30),
-      supabase.from("follows").select("*, profiles(username, avatar_url)").eq("following_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(30),
-    ]);
+    const { data: followData } = await supabase.from("follows").select("*, profiles(username, avatar_url)").eq("following_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(30);
     const myPostIds = (await supabase.from("posts").select("id").eq("user_id", user.id)).data?.map(p => p.id) || [];
     const [{ data: realLikes }, { data: realComments }] = await Promise.all([
       myPostIds.length ? supabase.from("likes").select("post_id, user_id, created_at, profiles(username, avatar_url)").in("post_id", myPostIds).neq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(30) : { data: [] },
