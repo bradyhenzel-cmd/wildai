@@ -282,7 +282,7 @@ const FireSVG = ({ style: s = {} }) => (
 // ─── GLOBAL CSS ───────────────────────────────────────────────────────────────
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
-  * { box-sizing:border-box; margin:0; padding:0; }
+  * { box-sizing:border-box; margin:0; padding:0; word-break:break-word; overflow-wrap:break-word; }
   :root {
     --bg:#050505; --bg2:#0a0a0a;
     --card:rgba(255,255,255,0.02); --card-hover:rgba(255,255,255,0.05);
