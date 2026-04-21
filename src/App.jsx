@@ -4349,6 +4349,7 @@ export default function App() {
   const goTo = (p) => { setPrevPage(page); setPage(p); };
 
   const [showSplash, setShowSplash] = useState(true);
+  const [showPushBanner, setShowPushBanner] = useState(false);
   useEffect(() => { setTimeout(() => setShowSplash(false), 2000); }, []);
 
   useEffect(() => {
@@ -4363,8 +4364,6 @@ export default function App() {
   }, [isLoaded, showSplash]);
 
   if (!isLoaded || (showSplash && page !== "chat")) return null;
-
-  const [showPushBanner, setShowPushBanner] = useState(false);
 
   useEffect(() => {
     if (!user) return;
