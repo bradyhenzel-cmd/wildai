@@ -4358,11 +4358,11 @@ export default function App() {
   useEffect(() => { setTimeout(() => setShowSplash(false), 1500); }, []);
 
   if (!isLoaded || (showSplash && page !== "chat")) return (
-    <div style={{ minHeight: "100vh", background: "#070e07", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-body)" }}>
+    <div style={{ position: "fixed", inset: 0, background: "#070e07", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-body)", zIndex: 9999 }}>
       <style>{css}</style>
-      <img src="/logo.png" style={{ width: 180, height: 180, objectFit: "contain", animation: "pulse 1.5s ease-in-out infinite", marginBottom: 32 }} />
-      <div style={{ fontFamily: "var(--font-display)", fontSize: 56, color: "#f4f4f0", letterSpacing: "0.02em" }}>WildAI</div>
-      <div style={{ color: "rgba(120,180,80,0.6)", fontSize: 15, marginTop: 12, letterSpacing: "0.12em", fontFamily: "var(--font-display)", fontWeight: 400 }}>YOUR GUIDE FOR EVERY SEASON</div>
+      <img src="/logo.png" style={{ width: 160, height: 160, objectFit: "contain", objectPosition: "center", animation: "pulse 1.5s ease-in-out infinite", marginBottom: 32, flexShrink: 0 }} />
+      <div style={{ fontFamily: "var(--font-display)", fontSize: 52, color: "#f4f4f0", letterSpacing: "0.02em", lineHeight: 1 }}>WildAI</div>
+      <div style={{ color: "rgba(120,180,80,0.6)", fontSize: 14, marginTop: 12, letterSpacing: "0.12em", fontFamily: "var(--font-display)", fontWeight: 400 }}>YOUR GUIDE FOR EVERY SEASON</div>
     </div>
   );
 
