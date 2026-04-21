@@ -203,6 +203,15 @@ app.get("/messages/inbox", async (req, res) => {
     res.json(Object.values(threads));
 });
 
+app.post("/messages/mark-read", async (req, res) => {
+    const { userId, otherId } = req.body;
+    if (!userId || !otherId) return res.status(400).json({ error: "Missing params" });
+    const { createClient } = require("@supabase/supabase-js");
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+    await supabase.from("messages").update({ read: true }).eq("recipient_id", userId).eq("sender_id", otherId).eq("read", false);
+    res.json({ ok: true });
+});
+
 app.post("/clerk-webhook", async (req, res) => {
   const { Webhook } = require("svix");
   const secret = process.env.CLERK_WEBHOOK_SECRET;

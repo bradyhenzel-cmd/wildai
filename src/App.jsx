@@ -1268,7 +1268,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
 }
 
 // ─── COMMUNITY TAB ────────────────────────────────────────────────────────────
-function MessagesTab({ user, openSignIn, supabase }) {
+function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
   const [view, setView] = useState("inbox");
   const [inbox, setInbox] = useState([]);
   const [loadingInbox, setLoadingInbox] = useState(true);
@@ -1287,10 +1287,12 @@ function MessagesTab({ user, openSignIn, supabase }) {
     const data = await res.json();
     if (Array.isArray(data)) {
       const enriched = await Promise.all(data.map(async t => {
-        const { data: profile } = await supabase.from("profiles").select("username, avatar_url").eq("user_id", t.otherId).single();
-        return { ...t, username: profile?.username || "Hunter", avatar: profile?.avatar_url };
+        const { data: profile } = await supabase.from("profiles").select("username, avatar_url, last_seen").eq("user_id", t.otherId).single();
+        return { ...t, username: profile?.username || "Hunter", avatar: profile?.avatar_url, last_seen: profile?.last_seen };
       }));
       setInbox(enriched);
+      const total = enriched.reduce((sum, t) => sum + (t.unread || 0), 0);
+      onUnreadChange?.(total);
     }
     setLoadingInbox(false);
   };
@@ -1312,6 +1314,7 @@ function MessagesTab({ user, openSignIn, supabase }) {
     setActiveThread({ otherId, username, avatar });
     setView("thread");
     await loadConversation(otherId);
+    if (user) fetch("https://wildai-server.onrender.com/messages/mark-read", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, otherId }) });
   };
 
   const send = async () => {
@@ -1441,9 +1444,11 @@ function MessagesTab({ user, openSignIn, supabase }) {
     </div>
   );
 
+  const totalUnread = inbox.reduce((sum, t) => sum + (t.unread || 0), 0);
+
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-
+      
       {loadingInbox && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)" }} className="pulse">Loading messages...</div>}
       {!loadingInbox && inbox.length === 0 && (
         <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>
@@ -1453,9 +1458,14 @@ function MessagesTab({ user, openSignIn, supabase }) {
         </div>
       )}
       {inbox.map(t => (
-        <div key={t.otherId} onClick={() => openThread(t.otherId, t.username, t.avatar)} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "12px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "var(--card)"}>
-          <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "var(--green)", flexShrink: 0, overflow: "hidden" }}>
-            {t.avatar ? <img src={t.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : t.username?.[0]?.toUpperCase()}
+        <div key={t.otherId} onClick={() => { openThread(t.otherId, t.username, t.avatar); setInbox(prev => { const updated = prev.map(i => i.otherId === t.otherId ? { ...i, unread: 0 } : i); onUnreadChange?.(updated.reduce((sum, i) => sum + (i.unread || 0), 0)); return updated; }); }} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "12px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "var(--card)"}>
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "var(--green)", overflow: "hidden" }}>
+              {t.avatar ? <img src={t.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : t.username?.[0]?.toUpperCase()}
+            </div>
+            {t.last_seen && (Date.now() - new Date(t.last_seen)) < 5 * 60 * 1000 && (
+              <div style={{ position: "absolute", bottom: -2, right: -2, width: 11, height: 11, borderRadius: "50%", background: "#4ade80", border: "2px solid #0d140d" }} />
+            )}
           </div>
           <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center", gap: 3 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -1466,7 +1476,7 @@ function MessagesTab({ user, openSignIn, supabase }) {
               {t.lastMessage.image_url ? "📷 Photo" : t.lastMessage.pin_lat ? "📍 Shared a pin" : t.lastMessage.content}
             </div>
           </div>
-          {t.unread > 0 && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--green)", flexShrink: 0 }} />}
+          {t.unread > 0 && <div style={{ background: "#f43f5e", borderRadius: 20, minWidth: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "white", padding: "0 5px", flexShrink: 0, boxShadow: "0 2px 8px rgba(244,63,94,0.4)" }}>{t.unread > 9 ? "9+" : t.unread}</div>}
         </div>
       ))}
     </div>
@@ -1606,6 +1616,14 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   const [commentCounts, setCommentCounts] = useState({});
   const [expandedComments, setExpandedComments] = useState(new Set());
   const [communityTab, setCommunityTab] = useState("feed");
+  const [messagesUnread, setMessagesUnread] = useState(0);
+  useEffect(() => {
+    if (!user) return;
+    fetch(`https://wildai-server.onrender.com/messages/inbox?userId=${user.id}`)
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setMessagesUnread(data.reduce((sum, t) => sum + (t.unread || 0), 0)); })
+      .catch(() => {});
+  }, [user]);
   const [feedFilter, setFeedFilter] = useState("all");
   const [followingIds, setFollowingIds] = useState(new Set());
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(() => !localStorage.getItem("wildai_community_welcomed"));
@@ -1827,12 +1845,19 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
             color: communityTab === t ? "white" : "#4a6a4a",
             boxShadow: communityTab === t ? "0 4px 16px rgba(45,90,27,0.4)" : "none"
           }}>
-            {t === "feed" ? "Feed" : t === "hotspots" ? "Hotspots" : t === "messages" ? "Messages" : "Profile"}
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+              {t === "feed" ? "Feed" : t === "hotspots" ? "Hotspots" : t === "messages" ? "Messages" : "Profile"}
+              {t === "messages" && messagesUnread > 0 && (
+                <span style={{ background: "#f43f5e", borderRadius: 20, minWidth: 16, height: 16, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "white", padding: "0 4px", boxShadow: "0 2px 8px rgba(244,63,94,0.5)" }}>
+                  {messagesUnread > 9 ? "9+" : messagesUnread}
+                </span>
+              )}
+            </span>
           </button>
         ))}
       </div>
       {communityTab === "messages" && !viewingProfile && (
-        <MessagesTab user={user} openSignIn={openSignIn} supabase={supabase} />
+        <MessagesTab user={user} openSignIn={openSignIn} supabase={supabase} onUnreadChange={setMessagesUnread} />
       )}
       {communityTab === "hotspots" && !viewingProfile && (
         <HotspotsTab posts={posts} loading={loading} user={user} selectedState={selectedState} savedPinIds={savedPinIds} saveToMap={saveToMap} openSignIn={openSignIn} />
@@ -1999,7 +2024,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
 
             {/* Photo */}
             {post.photo && (
-              <div style={{ position: "relative", margin: "0 12px", borderRadius: 16, overflow: "hidden" }}>
+              <div style={{ position: "relative", margin: "0", borderRadius: 0, overflow: "hidden" }}>
                 <img src={post.photo} style={{ width: "100%", maxHeight: 300, objectFit: "cover", display: "block" }} />
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(13,20,13,0.85) 0%, transparent 50%)" }} />
                 <div style={{ position: "absolute", bottom: 10, left: 10, right: 10, display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
@@ -3668,6 +3693,7 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
 
   const isPro = user?.publicMetadata?.isPro === true;
   const hitLimit = !isPro && messageCount >= FREE_LIMIT;
+  
   useEffect(() => { 
     if (selectedState && gpsState) {
       if (gpsState !== selectedState) { setLocationPreference(null); setShowLocationPrompt(true); }
