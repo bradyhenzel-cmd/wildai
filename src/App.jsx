@@ -4355,11 +4355,20 @@ export default function App() {
   const goTo = (p) => { setPrevPage(page); setPage(p); };
 
   const [showSplash, setShowSplash] = useState(true);
-  useEffect(() => { setTimeout(() => setShowSplash(false), 1500); }, []);
+  useEffect(() => { setTimeout(() => setShowSplash(false), 2000); }, []);
+
+  useEffect(() => {
+    if (isLoaded && !showSplash) {
+      const splashEl = document.getElementById('splash');
+      if (splashEl) {
+        splashEl.style.transition = 'opacity 0.3s ease';
+        splashEl.style.opacity = '0';
+        setTimeout(() => { splashEl.style.display = 'none'; }, 300);
+      }
+    }
+  }, [isLoaded, showSplash]);
 
   if (!isLoaded || (showSplash && page !== "chat")) return null;
-  const splashEl = document.getElementById('splash');
-  if (splashEl) splashEl.style.display = 'none';
 
   return (
     <>
