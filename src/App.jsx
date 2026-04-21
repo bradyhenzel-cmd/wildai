@@ -4298,18 +4298,16 @@ export default function App() {
       try {
         const reg = await navigator.serviceWorker.register('/sw.js');
         await navigator.serviceWorker.ready;
-        const existing = await reg.pushManager.getSubscription();
-        if (existing) return; // already subscribed
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) {
+          const permission = await Notification.requestPermission();
+          if (permission !== 'granted') return;
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: VAPID_PUBLIC_KEY,
+          });
+        }
 
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') return;
-
-        const sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: VAPID_PUBLIC_KEY,
-        });
-
-        const { data: { session } } = await supabase.auth.getSession();
         await fetch(`https://jlzbzkdhjufyjwjmdvmp.supabase.co/rest/v1/push_subscriptions?on_conflict=user_id`, {
           method: 'POST',
           headers: {
