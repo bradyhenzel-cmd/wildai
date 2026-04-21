@@ -3599,7 +3599,7 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
 
 // ─── CHAT PAGE ────────────────────────────────────────────────────────────────
 function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSelectedState, onTerms }) {
-  const [tab, setTab] = useState("chat");
+  const [tab, setTab] = useState("community");
   const [weather, setWeather] = useState(null);
   const [locationName, setLocationName] = useState("");
 
@@ -3620,7 +3620,10 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
         try {
           const geo = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
           const geoData = await geo.json();
-          const name = geoData.address?.city || geoData.address?.town || geoData.address?.village || "Your Location";
+          const city = geoData.address?.city || geoData.address?.town || geoData.address?.village || "Your Location";
+          const stateAbbr = { "Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY" };
+          const abbr = stateAbbr[geoData.address?.state] || "";
+          const name = abbr ? `${city}, ${abbr}` : city;
           setLocationName(name);
           const detectedState = geoData.address?.state;
           if (detectedState && STATES.includes(detectedState) && !selectedState) {
@@ -3733,7 +3736,8 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 - Current moon phase: ${moonPhase()}
 - User's selected state: ${selectedState || "not specified"}
 - User's GPS location: ${locationName || "not detected"}
-- Note: If GPS location and selected state conflict, prioritize GPS location for weather and local conditions advice, but use selected state for regulations questions.
+- User's selected state for regulations: ${selectedState || "not specified"}
+- IMPORTANT: These may be completely different locations. GPS location is where the user physically is right now. Selected state is where they hunt/fish and want regulations for. Use GPS location for weather and nearby conditions ONLY. Use selected state for regulations, seasons, licenses, and species ONLY. If a user asks something ambiguous like "what can I hunt near me" or "what are the regulations here", ask them to clarify whether they mean where they currently are or their selected state.
 - Season: ${["Winter", "Winter", "Spring", "Spring", "Spring", "Summer", "Summer", "Summer", "Fall", "Fall", "Fall", "Winter"][now.getMonth()]}${weather && locationName ? `\n- Current weather at ${locationName}: ${Math.round(weather.temperature_2m)}°F, wind ${Math.round(weather.wind_speed_10m)}mph, precip ${weather.precipitation}"` : `\n- Current weather: not loaded. If the user asks about current conditions, tell them to enter a location in the Weather tab and then come back to chat.`}`;
     try {
       const res = await fetch("https://wildai-server.onrender.com/chat", {
@@ -3844,9 +3848,9 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
       {/* BOTTOM NAV */}
       <div className="bottom-nav" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, background: "rgba(5,10,5,0.92)", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "stretch", height: 64, backdropFilter: "blur(24px)", boxShadow: "0 -4px 24px rgba(0,0,0,0.4), 0 -1px 0 rgba(120,180,80,0.08)" }}>
         {[
-          { id: "chat", label: "Chat", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> },
-          { id: "map", label: "Map", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" /><line x1="9" y1="3" x2="9" y2="18" /><line x1="15" y1="6" x2="15" y2="21" /></svg> },
           { id: "community", label: "Community", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg> },
+          { id: "map", label: "Map", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" /><line x1="9" y1="3" x2="9" y2="18" /><line x1="15" y1="6" x2="15" y2="21" /></svg> },
+          { id: "chat", label: "Chat", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> },
           { id: "more", label: "More", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg> },
         ].map(t => (
           <button key={t.id} onClick={() => { setTab(t.id); setShowMore(false); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, background: "none", border: "none", cursor: "pointer", color: tab === t.id ? "var(--green)" : "var(--text3)", transition: "color 0.2s", position: "relative" }}>
@@ -3892,16 +3896,35 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         {tab === "chat" && (
           <>
             {weather && (
-              <div onClick={() => setTab("weather")} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", cursor: "pointer", marginBottom: 4 }}>
-                <span style={{ fontSize: 18 }}>{weather.weather_code === 0 ? "☀️" : weather.weather_code <= 3 ? "⛅" : weather.weather_code <= 48 ? "🌫️" : weather.weather_code <= 67 ? "🌧️" : weather.weather_code <= 77 ? "❄️" : "⛈️"}</span>
-                <span style={{ color: "var(--text)", fontSize: 13, fontWeight: 600 }}>{Math.round(weather.temperature_2m)}°F</span>
-                <span style={{ color: "var(--text3)", fontSize: 12 }}>{locationName}</span>
-                <span style={{ marginLeft: "auto", fontSize: 12, fontWeight: 600, color: weather.wind_speed_10m < 10 && weather.temperature_2m < 50 ? "var(--green)" : weather.wind_speed_10m > 20 || weather.temperature_2m > 70 ? "var(--amber)" : "var(--text2)" }}>
-                  {weather.weather_code === 0 ? "Clear" : weather.weather_code <= 3 ? "Partly cloudy" : weather.weather_code <= 48 ? "Foggy" : weather.weather_code <= 67 ? "Rain" : weather.weather_code <= 77 ? "Snow" : weather.weather_code <= 82 ? "Showers" : "Thunderstorms"} · {Math.round(weather.wind_speed_10m)} mph wind
-                </span>
+              <div onClick={() => setTab("weather")} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: "linear-gradient(135deg, #0d160d, #111a11)", border: "1px solid #1c2c1c", borderRadius: 16, cursor: "pointer" }}>
+                <div style={{ width: 36, height: 36, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: "rgba(109,186,74,0.12)", border: "1px solid rgba(109,186,74,0.2)" }}>
+                  <span style={{ fontSize: 18 }}>{weather.weather_code === 0 ? "☀️" : weather.weather_code <= 3 ? "⛅" : weather.weather_code <= 48 ? "🌫️" : weather.weather_code <= 67 ? "🌧️" : weather.weather_code <= 77 ? "❄️" : "⛈️"}</span>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ color: "white", fontSize: 13, fontWeight: 700 }}>{Math.round(weather.temperature_2m)}°F</span>
+                    <span style={{ color: "#4a6a4a", fontSize: 12, display: "flex", alignItems: "center", gap: 4 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4a6a4a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>{locationName}</span>
+                  </div>
+                  <span style={{ color: "#6dba4a", fontSize: 11, fontWeight: 600, marginTop: 2 }}>
+                    {weather.weather_code === 0 ? "Clear" : weather.weather_code <= 3 ? "Partly cloudy" : weather.weather_code <= 48 ? "Foggy" : weather.weather_code <= 67 ? "Rain" : weather.weather_code <= 77 ? "Snow" : "Showers"} · {Math.round(weather.wind_speed_10m)} mph
+                  </span>
+                </div>
+                <div style={{ marginLeft: "auto", background: "rgba(109,186,74,0.1)", border: "1px solid rgba(109,186,74,0.15)", borderRadius: 20, padding: "3px 10px", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", color: "rgba(109,186,74,0.7)" }}>LIVE</div>
               </div>
             )}
-            <div className="fade-in card" style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div className="fade-in" style={{ display: "flex", flexDirection: "column", overflow: "hidden", background: "linear-gradient(160deg, #0d140d 0%, #090d09 100%)", border: "1px solid #1a261a", borderRadius: 20, boxShadow: "0 24px 60px rgba(0,0,0,0.6)" }}>
+              <div style={{ padding: "14px 18px", display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid #141e14", background: "rgba(0,0,0,0.2)" }}>
+                <div style={{ width: 36, height: 36, borderRadius: 12, background: "linear-gradient(135deg, #78b450, #4a8a2a)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 16px rgba(120,180,80,0.3)" }}>
+                  <img src="/logo.png" style={{ width: 20, height: 20, objectFit: "contain" }} />
+                </div>
+                <div>
+                  <div style={{ color: "white", fontWeight: 700, fontSize: 14 }}>WildAI</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#4ade80", boxShadow: "0 0 6px rgba(74,222,128,0.8)" }} />
+                    <span style={{ color: "#4a7a4a", fontSize: 11 }}>Online · Always ready</span>
+                  </div>
+                </div>
+              </div>
               <div style={{ overflowY: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 16, minHeight: 400, maxHeight: "60vh" }}>
                 {messages.map((m, i) => (
                   <div key={i} className="fade-in" style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start", gap: 10, alignItems: "flex-end" }}>
@@ -3973,7 +3996,9 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                   <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && sendMessage()}
                     placeholder={`Ask anything...`}
                     style={{ flex: 1, padding: "13px 18px", borderRadius: "var(--radius-sm)", fontSize: 14 }} />
-                  <button onClick={() => sendMessage()} className="btn-primary" style={{ padding: "13px 22px", fontSize: 14, borderRadius: "var(--radius-sm)", flexShrink: 0 }}>Send →</button>
+                  <button onClick={() => sendMessage()} style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg, #78b450, #4a8a2a)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 16px rgba(120,180,80,0.35)", transition: "transform 0.15s" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  </button>
                 </div>
               )}
             </div>
