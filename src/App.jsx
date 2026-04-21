@@ -1615,10 +1615,18 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
   const [messagesUnread, setMessagesUnread] = useState(0);
   useEffect(() => {
     if (!user) return;
-    fetch(`https://wildai-server.onrender.com/messages/inbox?userId=${user.id}`)
-      .then(r => r.json())
-      .then(data => { if (Array.isArray(data)) setMessagesUnread(data.reduce((sum, t) => sum + (t.unread || 0), 0)); })
-      .catch(() => { });
+    const loadUnread = () => {
+      fetch(`https://wildai-server.onrender.com/messages/inbox?userId=${user.id}`)
+        .then(r => r.json())
+        .then(data => { if (Array.isArray(data)) setMessagesUnread(data.reduce((sum, t) => sum + (t.unread || 0), 0)); })
+        .catch(() => { });
+    };
+    loadUnread();
+    const channel = supabase.channel('messages-unread')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `recipient_id=eq.${user.id}` }, () => loadUnread())
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages', filter: `recipient_id=eq.${user.id}` }, () => loadUnread())
+      .subscribe();
+    return () => supabase.removeChannel(channel);
   }, [user]);
   const [feedFilter, setFeedFilter] = useState("all");
   const [followingIds, setFollowingIds] = useState(new Set());
