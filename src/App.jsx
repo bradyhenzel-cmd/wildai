@@ -1015,6 +1015,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
       await supabase.from("follows").insert({ follower_id: currentUser.id, following_id: userId });
       setIsFollowing(true);
       setFollowerCount(c => c + 1);
+      fetch("https://wildai-server.onrender.com/push/follow", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ followed_id: userId, follower_username: currentUser.username || currentUser.firstName || "Someone" }) }).catch(() => {});
     }
   };
 
