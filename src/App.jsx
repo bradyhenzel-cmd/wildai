@@ -2044,8 +2044,8 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                 <span style={{ fontSize: 10, fontWeight: 600, color: "#3a5a3a", background: "#111a11", border: "1px solid #1c2c1c", padding: "3px 8px", borderRadius: 20 }}>
                   {timeAgo(post.created_at)}
                 </span>
-                {(user?.id === post.user_id || user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a") && <button onClick={() => deletePost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.5)", fontSize: 12, padding: 0 }}>✕</button>}
-                <button onClick={() => reportPost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#3a5a3a", fontSize: 11, padding: 0 }}>⚑</button>
+                {(user?.id === post.user_id || user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a") && <button onClick={() => deletePost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.4)", padding: "2px 4px" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>}
+                <button onClick={() => reportPost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#3a5a3a", padding: "2px 4px" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></button>
               </div>
             </div>
 
@@ -2069,34 +2069,31 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
             {/* Caption */}
             {post.caption && (
               <div style={{ padding: "10px 16px 6px" }}>
-                <p style={{ color: "#b8ccb8", fontSize: 14, lineHeight: 1.6, margin: 0 }}>
+                <p style={{ color: "#b8ccb8", fontSize: 14, lineHeight: 1.6, margin: 0, textAlign: "left" }}>
                   <span style={{ fontWeight: 700, color: "white" }}>{capName(post.username)}</span> {post.caption}
                 </p>
               </div>
             )}
 
-            {/* Divider */}
-            <div style={{ margin: "8px 16px", height: 1, background: "#192019" }} />
-
-            {/* Actions */}
-            <div style={{ padding: "4px 12px 12px", display: "flex", alignItems: "center", gap: 2 }}>
-              <button onClick={() => toggleLike(post)} style={{ background: isLiked ? "rgba(244,63,94,0.1)" : "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: isLiked ? "#f43f5e" : "#4a6a4a", padding: "6px 10px", borderRadius: 10, fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-                {likeCount > 0 ? likeCount : ""}
+            {/* Actions — IG style */}
+            <div style={{ padding: "8px 14px 12px", display: "flex", alignItems: "center", gap: 14 }}>
+              <button onClick={() => toggleLike(post)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: isLiked ? "#f43f5e" : "#6a8a6a", padding: "4px 0", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                {likeCount > 0 && <span>{likeCount}</span>}
               </button>
-              <button onClick={() => setExpandedComments(prev => { const n = new Set(prev); n.has(post.id) ? n.delete(post.id) : n.add(post.id); return n; })} style={{ background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: expandedComments.has(post.id) ? "var(--green)" : "#4a6a4a", padding: "6px 10px", borderRadius: 10, fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-                {commentCounts[post.id] > 0 ? commentCounts[post.id] : ""}
+              <button onClick={() => setExpandedComments(prev => { const n = new Set(prev); n.has(post.id) ? n.delete(post.id) : n.add(post.id); return n; })} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: expandedComments.has(post.id) ? "var(--green)" : "#6a8a6a", padding: "4px 0", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                {commentCounts[post.id] > 0 && <span>{commentCounts[post.id]}</span>}
+              </button>
+              <button onClick={() => navigator.share ? navigator.share({ title: "WildAI", text: post.caption, url: window.location.href }) : null} style={{ background: "none", border: "none", cursor: "pointer", color: "#6a8a6a", padding: "4px 0", transition: "all 0.15s" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
               </button>
               <div style={{ flex: 1 }} />
               {post.lat && post.lng && (
-                <button onClick={() => saveToMap(post)} style={{ background: "none", border: "none", cursor: "pointer", color: savedPinIds.has(post.id) ? "var(--green)" : "#4a6a4a", padding: "6px 8px", borderRadius: 10, transition: "all 0.15s" }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill={savedPinIds.has(post.id) ? "var(--green)" : "none"} stroke={savedPinIds.has(post.id) ? "var(--green)" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+                <button onClick={() => saveToMap(post)} style={{ background: "none", border: "none", cursor: "pointer", color: savedPinIds.has(post.id) ? "var(--green)" : "#6a8a6a", padding: "4px 0", transition: "all 0.15s" }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill={savedPinIds.has(post.id) ? "var(--green)" : "none"} stroke={savedPinIds.has(post.id) ? "var(--green)" : "currentColor"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
                 </button>
               )}
-              <button onClick={() => navigator.share ? navigator.share({ title: "WildAI", text: post.caption, url: window.location.href }) : null} style={{ background: "none", border: "none", cursor: "pointer", color: "#4a6a4a", padding: "6px 8px", borderRadius: 10, fontSize: 16, transition: "all 0.15s" }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
-              </button>
             </div>
 
             {expandedComments.has(post.id) && (
