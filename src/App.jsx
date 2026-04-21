@@ -316,6 +316,8 @@ const css = `
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
   .float { animation:float 5s ease-in-out infinite; }
   @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  @keyframes likePop { 0%{transform:scale(1)} 25%{transform:scale(1.35)} 50%{transform:scale(0.9)} 75%{transform:scale(1.15)} 100%{transform:scale(1)} }
+  .like-pop { animation:likePop 0.4s cubic-bezier(0.36,0.07,0.19,0.97); }
   
   input, textarea, select { font-size: 16px !important; scroll-margin-bottom: 20px; }
   body.map-fullscreen header, body.map-fullscreen .bottom-nav { display: none !important; }
@@ -2077,7 +2079,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
 
             {/* Actions — IG style */}
             <div style={{ padding: "8px 14px 12px", display: "flex", alignItems: "center", gap: 14 }}>
-              <button onClick={() => toggleLike(post)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: isLiked ? "#f43f5e" : "#6a8a6a", padding: "4px 0", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>
+              <button onClick={(e) => { toggleLike(post); const svg = e.currentTarget.querySelector('svg'); svg.classList.remove('like-pop'); void svg.offsetWidth; svg.classList.add('like-pop'); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: isLiked ? "#f43f5e" : "#6a8a6a", padding: "4px 0", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600 }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
                 {likeCount > 0 && <span>{likeCount}</span>}
               </button>
