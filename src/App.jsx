@@ -1844,9 +1844,6 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
       if (post.user_id !== user.id) {
         fetch("https://wildai-server.onrender.com/push/like", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ post_owner_id: post.user_id, liker_username: user.username || user.firstName || "Someone" }) }).catch(() => { });
       }
-      if (post.user_id !== user.id) {
-        fetch("https://wildai-server.onrender.com/push/like", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ post_owner_id: post.user_id, liker_username: user.username || user.firstName || "Someone" }) }).catch(() => { });
-      }
     }
   };
 
@@ -2484,7 +2481,11 @@ function HarvestLogTab({ user, openSignIn, isPro }) {
   useEffect(() => {
     const loadSubmitted = async () => {
       if (!user) return;
-      const { data } = await supabase.from("trophy_board").select("id").eq("user_id", user.id);
+      const { data: trophies } = await supabase.from("trophy_board").select("species, date").eq("user_id", user.id);
+      if (trophies && entries.length) {
+        const submitted = new Set(entries.filter(e => trophies.some(t => t.species === e.species && t.date === e.date)).map(e => e.id));
+        setSubmittedIds(submitted);
+      }
     };
     loadSubmitted();
   }, [user]);
