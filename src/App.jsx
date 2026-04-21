@@ -1711,7 +1711,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   };
 
   useEffect(() => { loadPosts(); }, [stateFilter]);
-  
+
   useEffect(() => { if (posts.length) loadLikes(posts); }, [posts, user]);
   useEffect(() => {
     const channel = supabase
@@ -2046,8 +2046,8 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                 <span style={{ fontSize: 10, fontWeight: 600, color: "#3a5a3a", background: "#111a11", border: "1px solid #1c2c1c", padding: "3px 8px", borderRadius: 20 }}>
                   {timeAgo(post.created_at)}
                 </span>
-                {(user?.id === post.user_id || user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a") && <button onClick={() => deletePost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.4)", padding: "2px 4px" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>}
-                <button onClick={() => reportPost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#3a5a3a", padding: "2px 4px" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></button>
+                {(user?.id === post.user_id || user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a") && <button onClick={() => deletePost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.4)", padding: "2px 4px" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /></svg></button>}
+                <button onClick={() => reportPost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#3a5a3a", padding: "2px 4px" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" y1="22" x2="4" y2="15" /></svg></button>
               </div>
             </div>
 
@@ -2088,7 +2088,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                 {commentCounts[post.id] > 0 && <span>{commentCounts[post.id]}</span>}
               </button>
               <button onClick={() => navigator.share ? navigator.share({ title: "WildAI", text: post.caption, url: window.location.href }) : null} style={{ background: "none", border: "none", cursor: "pointer", color: "#6a8a6a", padding: "4px 0", transition: "all 0.15s" }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
               </button>
               <div style={{ flex: 1 }} />
               {post.lat && post.lng && (
@@ -2116,11 +2116,29 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded })
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [avatars, setAvatars] = useState({});
+  const [commentLikes, setCommentLikes] = useState({});
+  const [replyTo, setReplyTo] = useState(null);
+  const inputRef = useRef(null);
 
   const loadComments = async () => {
     setLoading(true);
     const { data } = await supabase.from("comments").select("*").eq("post_id", postId).order("created_at", { ascending: true });
     setComments(data || []);
+    if (data?.length) {
+      const userIds = [...new Set(data.map(c => c.user_id))];
+      const { data: profiles } = await supabase.from("profiles").select("user_id, avatar_url").in("user_id", userIds);
+      const avatarMap = {};
+      (profiles || []).forEach(p => { avatarMap[p.user_id] = p.avatar_url; });
+      setAvatars(avatarMap);
+      const { data: likes } = await supabase.from("comment_likes").select("comment_id, user_id").in("comment_id", data.map(c => c.id));
+      const likeMap = {};
+      (likes || []).forEach(l => {
+        if (!likeMap[l.comment_id]) likeMap[l.comment_id] = [];
+        likeMap[l.comment_id].push(l.user_id);
+      });
+      setCommentLikes(likeMap);
+    }
     setLoading(false);
   };
 
@@ -2140,6 +2158,7 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded })
       fetch("https://wildai-server.onrender.com/push/comment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ post_owner_id: postOwnerId, commenter_username: user.username || user.firstName || "Someone", comment: text.trim() }) }).catch(() => { });
     }
     setText("");
+    setReplyTo(null);
     await loadComments();
     onCommentAdded?.();
     setSubmitting(false);
@@ -2151,30 +2170,70 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded })
     onCommentAdded?.(-1);
   };
 
+  const toggleCommentLike = async (commentId) => {
+    if (!user) { openSignIn(); return; }
+    const liked = commentLikes[commentId]?.includes(user.id);
+    if (liked) {
+      await supabase.from("comment_likes").delete().eq("comment_id", commentId).eq("user_id", user.id);
+      setCommentLikes(prev => ({ ...prev, [commentId]: (prev[commentId] || []).filter(id => id !== user.id) }));
+    } else {
+      await supabase.from("comment_likes").insert({ comment_id: commentId, user_id: user.id });
+      setCommentLikes(prev => ({ ...prev, [commentId]: [...(prev[commentId] || []), user.id] }));
+    }
+  };
+
+  const timeAgo = (date) => {
+    const diff = (Date.now() - new Date(date)) / 1000;
+    if (diff < 60) return "just now";
+    if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+    return `${Math.floor(diff / 86400)}d`;
+  };
+
   return (
-    <div style={{ borderTop: "1px solid var(--border)", padding: "12px 16px", background: "rgba(255,255,255,0.02)" }}>
-      {loading && <div style={{ color: "var(--text3)", fontSize: 12, paddingBottom: 8 }} className="pulse">Loading comments...</div>}
-      {comments.map(c => (
-        <div key={c.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
-          <div>
-            <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 13 }}>{c.username || "Hunter"} </span>
-            <span style={{ color: "var(--text2)", fontSize: 13 }}>{c.content}</span>
-            <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>{new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</div>
+    <div style={{ padding: "12px 16px 4px", background: "rgba(0,0,0,0.15)" }}>
+      {loading && <div style={{ color: "var(--text3)", fontSize: 12, paddingBottom: 8 }} className="pulse">Loading...</div>}
+      {comments.map(c => {
+        const liked = commentLikes[c.id]?.includes(user?.id);
+        const likeCount = commentLikes[c.id]?.length || 0;
+        return (
+          <div key={c.id} style={{ display: "flex", gap: 10, marginBottom: 14, alignItems: "flex-start" }}>
+            <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg, #1e4010, #0f2408)", flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px #3d7a25" }}>
+              {avatars[c.user_id] ? <img src={avatars[c.user_id]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", fontWeight: 700, fontSize: 13 }}>{(c.username || "H")[0].toUpperCase()}</div>}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: "4px 14px 14px 14px", padding: "8px 12px" }}>
+                <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 13 }}>{capName(c.username || "Hunter")} </span>
+                <span style={{ color: "var(--text2)", fontSize: 13, lineHeight: 1.5 }}>{c.content}</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 4, paddingLeft: 4 }}>
+                <span style={{ color: "var(--text3)", fontSize: 11 }}>{timeAgo(c.created_at)}</span>
+                <button onClick={() => { setReplyTo(c.username); setText(`@${c.username} `); inputRef.current?.focus(); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>Reply</button>
+                <button onClick={() => toggleCommentLike(c.id)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 3, color: liked ? "#f43f5e" : "var(--text3)", fontSize: 11, fontWeight: 600, fontFamily: "var(--font-body)", padding: 0 }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill={liked ? "#f43f5e" : "none"} stroke={liked ? "#f43f5e" : "currentColor"} strokeWidth="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                  {likeCount > 0 && likeCount}
+                </button>
+                {(user?.id === c.user_id || user?.id === postOwnerId) && <button onClick={() => deleteComment(c.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.4)", fontSize: 11, padding: 0, fontFamily: "var(--font-body)" }}>Delete</button>}
+              </div>
+            </div>
           </div>
-          {(user?.id === c.user_id || user?.id === postOwnerId) && <button onClick={() => deleteComment(c.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.5)", fontSize: 11, padding: "0 4px", flexShrink: 0 }}>✕</button>}
+        );
+      })}
+      {comments.length === 0 && !loading && <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 12 }}>No comments yet</div>}
+      <div style={{ display: "flex", gap: 8, alignItems: "center", paddingBottom: 12, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg, #1e4010, #0f2408)", flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px #3d7a25", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", fontWeight: 700, fontSize: 12 }}>
+          {user?.imageUrl ? <img src={user.imageUrl} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (user?.username || user?.firstName || "?")[0].toUpperCase()}
         </div>
-      ))}
-      {comments.length === 0 && !loading && <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 10 }}>No comments yet — be the first!</div>}
-      <div style={{ display: "flex", gap: 8 }}>
         <input
-          placeholder="Add a comment..."
+          ref={inputRef}
+          placeholder={replyTo ? `Reply to ${capName(replyTo)}...` : "Add a comment..."}
           value={text}
           onChange={e => setText(e.target.value)}
           onKeyDown={e => { if (e.key === "Enter") submit(); }}
-          style={{ flex: 1, padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }}
+          style={{ flex: 1, padding: "7px 12px", borderRadius: 20, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)" }}
         />
-        <button onClick={submit} disabled={!text.trim() || submitting} className="btn-primary" style={{ padding: "7px 14px", fontSize: 13, opacity: !text.trim() ? 0.5 : 1 }}>
-          {submitting ? "..." : "Post"}
+        <button onClick={submit} disabled={!text.trim() || submitting} style={{ background: "none", border: "none", cursor: "pointer", color: text.trim() ? "var(--green)" : "var(--text3)", padding: "4px", transition: "color 0.15s" }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
         </button>
       </div>
     </div>
