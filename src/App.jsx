@@ -3626,8 +3626,11 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
           const name = abbr ? `${city}, ${abbr}` : city;
           setLocationName(name);
           const detectedState = geoData.address?.state;
+          if (detectedState) setGpsState(detectedState);
           if (detectedState && STATES.includes(detectedState) && !selectedState) {
             setSelectedState(detectedState);
+          } else if (detectedState && selectedState && detectedState !== selectedState) {
+            setShowLocationPrompt(true);
           }
           await fetchWeather();
         } catch { }
@@ -3636,6 +3639,9 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
     const interval = setInterval(fetchWeather, 10 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
+  const [locationPreference, setLocationPreference] = useState(null); // "gps" or "state"
+  const [gpsState, setGpsState] = useState("");
+  const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   const [messages, setMessages] = useState([
     { role: "assistant", content: `Hey, I'm WildAI — your hunting and fishing assistant${selectedState ? ` for ${selectedState}` : ""}. Ask me anything about gear, tactics, seasons, regulations, or trip planning. If you want location-specific advice, make sure your location is set in the Weather tab. What are you after?`, animate: false },
   ]);
@@ -3659,6 +3665,12 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
 
   const isPro = user?.publicMetadata?.isPro === true;
   const hitLimit = !isPro && messageCount >= FREE_LIMIT;
+  useEffect(() => { 
+    if (selectedState && gpsState) {
+      if (gpsState !== selectedState) { setLocationPreference(null); setShowLocationPrompt(true); }
+      else { setShowLocationPrompt(false); }
+    }
+  }, [selectedState]);
 
   useEffect(() => {
     const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone;
@@ -3734,10 +3746,9 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 - Today's date: ${now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
 - Time of day: ${timeOfDay}
 - Current moon phase: ${moonPhase()}
-- User's selected state: ${selectedState || "not specified"}
-- User's GPS location: ${locationName || "not detected"}
-- User's selected state for regulations: ${selectedState || "not specified"}
-- IMPORTANT: These may be completely different locations. GPS location is where the user physically is right now. Selected state is where they hunt/fish and want regulations for. Use GPS location for weather and nearby conditions ONLY. Use selected state for regulations, seasons, licenses, and species ONLY. If a user asks something ambiguous like "what can I hunt near me" or "what are the regulations here", ask them to clarify whether they mean where they currently are or their selected state.
+- User's selected state (for regulations/seasons): ${selectedState || "not specified"}
+- User's GPS location (physical location right now): ${locationName || "not detected"}
+- User's location preference: ${locationPreference === "gps" ? `User chose GPS — use ${locationName} for ALL advice` : locationPreference === "state" ? `User chose selected state — use ${selectedState} for ALL advice` : "Not chosen yet — use selected state for regulations, GPS for weather only. Do NOT mix them."}
 - Season: ${["Winter", "Winter", "Spring", "Spring", "Spring", "Summer", "Summer", "Summer", "Fall", "Fall", "Fall", "Winter"][now.getMonth()]}${weather && locationName ? `\n- Current weather at ${locationName}: ${Math.round(weather.temperature_2m)}°F, wind ${Math.round(weather.wind_speed_10m)}mph, precip ${weather.precipitation}"` : `\n- Current weather: not loaded. If the user asks about current conditions, tell them to enter a location in the Weather tab and then come back to chat.`}`;
     try {
       const res = await fetch("https://wildai-server.onrender.com/chat", {
@@ -3895,6 +3906,26 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         {/* CHAT */}
         {tab === "chat" && (
           <>
+            {showLocationPrompt && locationPreference === null && (
+              <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+                <div className="fade-in" style={{ background: "linear-gradient(160deg, #0d1a0d, #080c08)", border: "1px solid #1c2a1c", borderRadius: 20, padding: 24, maxWidth: 340, width: "100%" }}>
+                  <div style={{ fontSize: 32, textAlign: "center", marginBottom: 12 }}>📍</div>
+                  <div style={{ color: "white", fontWeight: 800, fontSize: 16, textAlign: "center", marginBottom: 8 }}>Which location should I use?</div>
+                  <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, textAlign: "center", lineHeight: 1.6, marginBottom: 20 }}>
+                    You're in <strong style={{ color: "white" }}>{locationName}</strong> but your selected state is <strong style={{ color: "var(--green)" }}>{selectedState}</strong>. Which should I base my advice on?
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <button onClick={() => { setLocationPreference("gps"); setShowLocationPrompt(false); }} style={{ padding: "12px 16px", borderRadius: 12, background: "rgba(74,170,200,0.15)", border: "1px solid rgba(74,170,200,0.3)", color: "rgba(74,170,200,0.9)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", transition: "transform 0.15s, box-shadow 0.15s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(74,170,200,0.25)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
+                      📍 My Current Location ({locationName})
+                    </button>
+                    <button onClick={() => { setLocationPreference("state"); setShowLocationPrompt(false); }} style={{ padding: "12px 16px", borderRadius: 12, background: "rgba(120,180,80,0.15)", border: "1px solid rgba(120,180,80,0.3)", color: "var(--green)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", transition: "transform 0.15s, box-shadow 0.15s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(120,180,80,0.25)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
+                      🗺️ Selected State ({selectedState})
+                    </button>
+                    
+                  </div>
+                </div>
+              </div>
+            )}
             {weather && (
               <div onClick={() => setTab("weather")} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: "linear-gradient(135deg, #0d160d, #111a11)", border: "1px solid #1c2c1c", borderRadius: 16, cursor: "pointer" }}>
                 <div style={{ width: 36, height: 36, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: "rgba(109,186,74,0.12)", border: "1px solid rgba(109,186,74,0.2)" }}>
