@@ -1341,7 +1341,10 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
     setView("thread");
     document.body.classList.add("dm-fullscreen");
     await loadConversation(otherId);
-    if (user) fetch("https://wildai-server.onrender.com/messages/mark-read", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, otherId }) });
+    if (user) {
+      fetch("https://wildai-server.onrender.com/messages/mark-read", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, otherId }) });
+      supabase.from("messages").update({ seen_at: new Date().toISOString() }).eq("recipient_id", user.id).eq("sender_id", otherId).is("seen_at", null);
+    }
   };
 
   const send = async () => {
@@ -1401,8 +1404,13 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `recipient_id=eq.${user.id}` }, payload => {
         if (payload.new.sender_id === activeThread.otherId) {
           setMessages(prev => [...prev, payload.new]);
+          supabase.from("messages").update({ seen_at: new Date().toISOString() }).eq("id", payload.new.id);
         }
-      }).subscribe();
+      })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "messages" }, payload => {
+        setMessages(prev => prev.filter(m => m.id !== payload.old.id));
+      })
+      .subscribe();
     return () => supabase.removeChannel(channel);
   }, [user, activeThread]);
 
@@ -1417,58 +1425,71 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
   if (view === "thread" && activeThread) return createPortal(
     <div className="fade-in" style={{ position: "fixed", inset: 0, zIndex: 99999, background: "var(--bg)", display: "flex", justifyContent: "center" }}>
       <div style={{ width: "100%", maxWidth: 760, display: "flex", flexDirection: "column", height: "100%" }}>
-      <div style={{ borderBottom: "1px solid var(--border)", padding: "12px 16px", display: "flex", alignItems: "center", position: "relative", flexShrink: 0 }}>
-        <button onClick={() => { setView("inbox"); loadInbox(); document.body.classList.remove("dm-fullscreen"); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text2)", fontSize: 14, padding: 0, flexShrink: 0 }}>← Back</button>
-        <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 32, height: 32, borderRadius: 10, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "var(--green)", flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 2px #78b450" }}>
-            {activeThread.avatar ? <img src={activeThread.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : activeThread.username?.[0]?.toUpperCase()}
+        <div style={{ borderBottom: "1px solid var(--border)", padding: "12px 16px", display: "flex", alignItems: "center", position: "relative", flexShrink: 0 }}>
+          <button onClick={() => { setView("inbox"); loadInbox(); document.body.classList.remove("dm-fullscreen"); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text2)", fontSize: 14, padding: 0, flexShrink: 0 }}>← Back</button>
+          <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 10, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "var(--green)", flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 2px #78b450" }}>
+              {activeThread.avatar ? <img src={activeThread.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : activeThread.username?.[0]?.toUpperCase()}
+            </div>
+            <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>{capName(activeThread.username)}</span>
           </div>
-          <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>{capName(activeThread.username)}</span>
+        </div>
+        <div style={{ flex: 1, overflowY: "auto", padding: "12px 16px 8px" }}>
+          <div style={{ maxWidth: 680, margin: "0 auto", display: "flex", flexDirection: "column", gap: 8 }}>
+            {messages.map(m => (
+              <div key={m.id} style={{ display: "flex", justifyContent: m.sender_id === user.id ? "flex-end" : "flex-start", flexDirection: "column", alignItems: m.sender_id === user.id ? "flex-end" : "flex-start" }}>
+                {m.image_url ? (
+                  <img src={m.image_url} style={{ maxWidth: "70%", borderRadius: 12, maxHeight: 200, objectFit: "cover" }} />
+                ) : m.pin_lat ? (
+                  <div style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", borderRadius: 12, padding: "10px 14px", maxWidth: "70%" }}>
+                    <div style={{ color: "var(--green)", fontSize: 13, fontWeight: 700, marginBottom: 6 }}>📍 {m.pin_name || "Shared Pin"}</div>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <a href={`https://www.google.com/maps/dir/?api=1&destination=${m.pin_lat},${m.pin_lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 11, fontWeight: 600 }}>🗺️ Directions</a>
+                      {m.sender_id !== user.id && (
+                        <button onClick={() => {
+                          supabase.from("saved_pins").insert({ user_id: user.id, name: m.pin_name || "Shared Pin", lat: m.pin_lat, lng: m.pin_lng, location: m.pin_name || "Shared Pin" }).then(() => alert("📍 Saved to your map!"));
+                        }} style={{ background: "none", border: "none", color: "var(--green)", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: 0, fontFamily: "var(--font-body)" }}>📌 Save to Map</button>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: m.sender_id === user.id ? "flex-end" : "flex-start", maxWidth: "70%" }}>
+                    <div style={{ background: m.sender_id === user.id ? "var(--green)" : "rgba(255,255,255,0.07)", borderRadius: m.sender_id === user.id ? "18px 18px 4px 18px" : "18px 18px 18px 4px", padding: "10px 14px", fontSize: 14, color: m.sender_id === user.id ? "#fff" : "var(--text)", lineHeight: 1.5, wordBreak: "break-word", overflowWrap: "break-word", cursor: m.sender_id === user.id ? "pointer" : "default" }}
+                      onClick={() => {
+                        if (m.sender_id !== user.id) return;
+                        const ageMinutes = (Date.now() - new Date(m.created_at)) / 60000;
+                        if (ageMinutes > 5) { alert("You can only delete messages within 5 minutes of sending."); return; }
+                        if (window.confirm("Delete this message?")) { supabase.from("messages").delete().eq("id", m.id).then(() => setMessages(prev => prev.filter(msg => msg.id !== m.id))); }
+                      }}>
+                      {m.content}
+                    </div>
+                    {m.sender_id === user.id && (() => {
+                      const isLast = messages.filter(msg => msg.sender_id === user.id).slice(-1)[0]?.id === m.id;
+                      if (!isLast) return null;
+                      return <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", marginTop: 3 }}>{m.seen_at ? "Seen" : "Delivered"}</div>;
+                    })()}
+                  </div>
+                )}
+              </div>
+            ))}
+            <div ref={bottomRef} />
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", borderTop: "1px solid var(--border)", padding: "10px 16px 24px", flexShrink: 0, marginTop: "auto" }}>
+          <label style={{ cursor: "pointer", color: "var(--text3)", fontSize: 20, lineHeight: 1 }}>
+            📎<input type="file" accept="image/*" style={{ display: "none" }} onChange={e => sendImage(e.target.files[0])} />
+          </label>
+          <PinPicker user={user} onSelect={async (pin) => {
+            await fetch("https://wildai-server.onrender.com/messages/send", {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ sender_id: user.id, recipient_id: activeThread.otherId, pin_lat: pin.lat, pin_lng: pin.lng, pin_name: pin.name || pin.location || "Shared Pin" })
+            });
+            await loadConversation(activeThread.otherId);
+          }} />
+          <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Message..." style={{ flex: 1, padding: "11px 16px", borderRadius: 24, fontSize: 15, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)" }} />
+          <button onClick={send} disabled={!input.trim() || sending} className="btn-primary" style={{ padding: "9px 16px", fontSize: 13, borderRadius: 20, opacity: !input.trim() ? 0.5 : 1 }}>Send</button>
         </div>
       </div>
-      <div style={{ flex: 1, overflowY: "auto", padding: "12px 16px 8px" }}>
-        <div style={{ maxWidth: 680, margin: "0 auto", display: "flex", flexDirection: "column", gap: 8 }}>
-        {messages.map(m => (
-          <div key={m.id} style={{ display: "flex", justifyContent: m.sender_id === user.id ? "flex-end" : "flex-start" }}>
-            {m.image_url ? (
-              <img src={m.image_url} style={{ maxWidth: "70%", borderRadius: 12, maxHeight: 200, objectFit: "cover" }} />
-            ) : m.pin_lat ? (
-              <div style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", borderRadius: 12, padding: "10px 14px", maxWidth: "70%" }}>
-                <div style={{ color: "var(--green)", fontSize: 13, fontWeight: 700, marginBottom: 6 }}>📍 {m.pin_name || "Shared Pin"}</div>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <a href={`https://www.google.com/maps/dir/?api=1&destination=${m.pin_lat},${m.pin_lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 11, fontWeight: 600 }}>🗺️ Directions</a>
-                  {m.sender_id !== user.id && (
-                    <button onClick={() => {
-                      supabase.from("saved_pins").insert({ user_id: user.id, name: m.pin_name || "Shared Pin", lat: m.pin_lat, lng: m.pin_lng, location: m.pin_name || "Shared Pin" }).then(() => alert("📍 Saved to your map!"));
-                    }} style={{ background: "none", border: "none", color: "var(--green)", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: 0, fontFamily: "var(--font-body)" }}>📌 Save to Map</button>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div style={{ background: m.sender_id === user.id ? "var(--green)" : "rgba(255,255,255,0.07)", borderRadius: m.sender_id === user.id ? "18px 18px 4px 18px" : "18px 18px 18px 4px", padding: "10px 14px", maxWidth: "70%", fontSize: 14, color: m.sender_id === user.id ? "#fff" : "var(--text)", lineHeight: 1.5, wordBreak: "break-word", overflowWrap: "break-word" }}>
-                {m.content}
-              </div>
-            )}
-          </div>
-        ))}
-        <div ref={bottomRef} />
-        </div>
-      </div>
-      <div style={{ display: "flex", gap: 8, alignItems: "center", borderTop: "1px solid var(--border)", padding: "10px 16px 24px", flexShrink: 0, marginTop: "auto" }}>
-        <label style={{ cursor: "pointer", color: "var(--text3)", fontSize: 20, lineHeight: 1 }}>
-          📎<input type="file" accept="image/*" style={{ display: "none" }} onChange={e => sendImage(e.target.files[0])} />
-        </label>
-        <PinPicker user={user} onSelect={async (pin) => {
-          await fetch("https://wildai-server.onrender.com/messages/send", {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ sender_id: user.id, recipient_id: activeThread.otherId, pin_lat: pin.lat, pin_lng: pin.lng, pin_name: pin.name || pin.location || "Shared Pin" })
-          });
-          await loadConversation(activeThread.otherId);
-        }} />
-        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Message..." style={{ flex: 1, padding: "11px 16px", borderRadius: 24, fontSize: 15, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)" }} />
-        <button onClick={send} disabled={!input.trim() || sending} className="btn-primary" style={{ padding: "9px 16px", fontSize: 13, borderRadius: 20, opacity: !input.trim() ? 0.5 : 1 }}>Send</button>
-      </div>
-    </div>
     </div>, document.body
   );
 
@@ -1644,6 +1665,34 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   const [commentCounts, setCommentCounts] = useState({});
   const [expandedComments, setExpandedComments] = useState(new Set());
   const [communityTab, setCommunityTab] = useState("feed");
+  const [notifs, setNotifs] = useState([]);
+  const [notifUnread, setNotifUnread] = useState(0);
+  const [loadingNotifs, setLoadingNotifs] = useState(false);
+
+  const loadNotifs = async () => {
+    if (!user) return;
+    setLoadingNotifs(true);
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const [{ data: likeData }, { data: commentData }, { data: followData }] = await Promise.all([
+      supabase.from("likes").select("*, posts(caption, photo)").eq("posts.user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(30),
+      supabase.from("comments").select("*").eq("post_id", supabase.from("posts").select("id").eq("user_id", user.id)).gte("created_at", since).order("created_at", { ascending: false }).limit(30),
+      supabase.from("follows").select("*, profiles(username, avatar_url)").eq("following_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(30),
+    ]);
+    const myPostIds = (await supabase.from("posts").select("id").eq("user_id", user.id)).data?.map(p => p.id) || [];
+    const [{ data: realLikes }, { data: realComments }] = await Promise.all([
+      myPostIds.length ? supabase.from("likes").select("post_id, user_id, created_at, profiles(username, avatar_url)").in("post_id", myPostIds).neq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(30) : { data: [] },
+      myPostIds.length ? supabase.from("comments").select("post_id, user_id, username, content, created_at, profiles(avatar_url)").in("post_id", myPostIds).neq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(30) : { data: [] },
+    ]);
+    const all = [
+      ...(realLikes || []).map(l => ({ type: "like", username: l.profiles?.username || "Someone", avatar: l.profiles?.avatar_url, created_at: l.created_at, post_id: l.post_id })),
+      ...(realComments || []).map(c => ({ type: "comment", username: c.username || c.profiles?.username || "Someone", avatar: c.profiles?.avatar_url, created_at: c.created_at, post_id: c.post_id, content: c.content })),
+      ...(followData || []).map(f => ({ type: "follow", username: f.profiles?.username || "Someone", avatar: f.profiles?.avatar_url, created_at: f.created_at, follower_id: f.follower_id })),
+    ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    setNotifs(all);
+    const lastSeen = localStorage.getItem("wildai_notifs_seen") || "0";
+    setNotifUnread(all.filter(n => new Date(n.created_at) > new Date(lastSeen)).length);
+    setLoadingNotifs(false);
+  };
   const [messagesUnread, setMessagesUnread] = useState(0);
   useEffect(() => {
     if (!user) return;
@@ -1845,7 +1894,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
           <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", color: "var(--green)", textTransform: "uppercase", marginBottom: 2 }}>Community</div>
           <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.3px" }}>Wild Feed</div>
         </div>
-        
+
       </div>
 
       {/* Search */}
@@ -1876,24 +1925,63 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
 
       {/* Tab Nav */}
       <div style={{ display: "flex", borderRadius: 16, padding: 4, gap: 2, background: "#0e160e", border: "1px solid #192019" }}>
-        {["feed", "hotspots", "messages", "profile"].map(t => (
-          <button key={t} onClick={() => { setCommunityTab(t); setViewingProfile(null); }} style={{
-            flex: 1, padding: "9px 0", fontSize: 12, fontWeight: 700, borderRadius: 12, border: "none", cursor: "pointer", transition: "all 0.2s", textTransform: "capitalize",
-            background: communityTab === t ? "linear-gradient(135deg, #2d5a1b, #1e4010)" : "transparent",
-            color: communityTab === t ? "white" : "#4a6a4a",
-            boxShadow: communityTab === t ? "0 4px 16px rgba(45,90,27,0.4)" : "none"
+        {[
+          { id: "feed", label: "Feed", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg> },
+          { id: "hotspots", label: "Spots", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg> },
+          { id: "notifs", label: "Activity", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg> },
+          { id: "messages", label: "DMs", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> },
+          { id: "profile", label: "Profile", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg> },
+        ].map(t => (
+          <button key={t.id} onClick={() => { setCommunityTab(t.id); setViewingProfile(null); if (t.id === "notifs") { loadNotifs(); localStorage.setItem("wildai_notifs_seen", new Date().toISOString()); setNotifUnread(0); } }} style={{
+            flex: 1, padding: "9px 0", fontSize: 10, fontWeight: 700, borderRadius: 12, border: "none", cursor: "pointer", transition: "all 0.2s",
+            background: communityTab === t.id ? "linear-gradient(135deg, #2d5a1b, #1e4010)" : "transparent",
+            color: communityTab === t.id ? "white" : "#4a6a4a",
+            boxShadow: communityTab === t.id ? "0 4px 16px rgba(45,90,27,0.4)" : "none"
           }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-              {t === "feed" ? "Feed" : t === "hotspots" ? "Hotspots" : t === "messages" ? "Messages" : "Profile"}
-              {t === "messages" && messagesUnread > 0 && (
-                <span style={{ background: "#f43f5e", borderRadius: 20, minWidth: 16, height: 16, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "white", padding: "0 4px", boxShadow: "0 2px 8px rgba(244,63,94,0.5)" }}>
+            <span style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, position: "relative" }}>
+              {t.icon}
+              {t.id === "messages" && messagesUnread > 0 && (
+                <span style={{ position: "absolute", top: -4, right: -6, background: "#f43f5e", borderRadius: 20, minWidth: 14, height: 14, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: "white", padding: "0 3px" }}>
                   {messagesUnread > 9 ? "9+" : messagesUnread}
                 </span>
               )}
+              {t.id === "notifs" && notifUnread > 0 && (
+                <span style={{ position: "absolute", top: -4, right: -6, background: "#f43f5e", borderRadius: 20, minWidth: 14, height: 14, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: "white", padding: "0 3px" }}>
+                  {notifUnread > 9 ? "9+" : notifUnread}
+                </span>
+              )}
+              {t.label}
             </span>
           </button>
         ))}
       </div>
+      {communityTab === "notifs" && !viewingProfile && (
+        <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {loadingNotifs && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)" }} className="pulse">Loading activity...</div>}
+          {!loadingNotifs && notifs.length === 0 && (
+            <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>🔔</div>
+              <div style={{ color: "var(--text)", fontWeight: 600, marginBottom: 6 }}>No activity yet</div>
+              Post something to start getting likes and follows!
+            </div>
+          )}
+          {notifs.map((n, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 4px", borderBottom: "1px solid var(--border)" }}>
+              <div style={{ width: 38, height: 38, borderRadius: 12, background: "linear-gradient(135deg, #1e4010, #0f2408)", overflow: "hidden", flexShrink: 0, boxShadow: "0 0 0 2px #78b450" }}>
+                {n.avatar ? <img src={n.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", fontWeight: 700, fontSize: 14 }}>{n.username[0].toUpperCase()}</div>}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 13 }}>{capName(n.username)}</span>
+                <span style={{ color: "var(--text2)", fontSize: 13 }}>
+                  {n.type === "like" ? " liked your post" : n.type === "comment" ? ` commented: "${n.content?.slice(0, 40)}${n.content?.length > 40 ? "..." : ""}"` : " followed you"}
+                </span>
+                <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>{(() => { const diff = (Date.now() - new Date(n.created_at)) / 1000; if (diff < 60) return "just now"; if (diff < 3600) return `${Math.floor(diff / 60)}m ago`; if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`; return `${Math.floor(diff / 86400)}d ago`; })()}</div>
+              </div>
+              <span style={{ fontSize: 18, flexShrink: 0 }}>{n.type === "like" ? "❤️" : n.type === "comment" ? "💬" : "➕"}</span>
+            </div>
+          ))}
+        </div>
+      )}
       {communityTab === "messages" && !viewingProfile && (
         <MessagesTab user={user} openSignIn={openSignIn} supabase={supabase} onUnreadChange={setMessagesUnread} />
       )}
@@ -1986,7 +2074,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
               </div>
             ) : (
               <div style={{ height: 120, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
                 <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 13 }}>Add a photo</span>
               </div>
             )}
