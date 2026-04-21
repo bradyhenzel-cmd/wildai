@@ -3909,6 +3909,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           {!user ? (
             <button onClick={() => openSignIn()} className="btn-primary" style={{ padding: "7px 14px", fontSize: 13 }}>Sign In</button>
           ) : (
+            <div style={{ borderRadius: "50%", outline: "2.5px solid var(--green)", outlineOffset: "1px", boxShadow: "0 0 10px rgba(139,195,74,0.25)", display: "inline-flex", lineHeight: 0 }}>
             <UserButton afterSignOutUrl="https://wildai.netlify.app">
               <UserButton.MenuItems>
                 <UserButton.Action
@@ -3923,6 +3924,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                 />
               </UserButton.MenuItems>
             </UserButton>
+            </div>
           )}
         </div>
       </header>
