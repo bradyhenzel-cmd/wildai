@@ -2118,7 +2118,8 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded })
   const [submitting, setSubmitting] = useState(false);
   const [avatars, setAvatars] = useState({});
   const [commentLikes, setCommentLikes] = useState({});
-  const [replyTo, setReplyTo] = useState(null);
+  const [replyTo, setReplyTo] = useState(null); // { id, username }
+  const [expandedReplies, setExpandedReplies] = useState(new Set());
   const inputRef = useRef(null);
 
   const loadComments = async () => {
@@ -2153,10 +2154,12 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded })
       user_id: user.id,
       username: user.username || user.firstName || "Hunter",
       content: text.trim(),
+      parent_id: replyTo?.id || null,
     });
     if (postOwnerId && postOwnerId !== user.id) {
       fetch("https://wildai-server.onrender.com/push/comment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ post_owner_id: postOwnerId, commenter_username: user.username || user.firstName || "Someone", comment: text.trim() }) }).catch(() => { });
     }
+    if (replyTo?.id) setExpandedReplies(prev => new Set([...prev, replyTo.id]));
     setText("");
     setReplyTo(null);
     await loadComments();
@@ -2190,43 +2193,64 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded })
     return `${Math.floor(diff / 86400)}d`;
   };
 
+  const topLevel = comments.filter(c => !c.parent_id);
+  const replies = comments.filter(c => c.parent_id);
+  const repliesFor = (id) => replies.filter(r => r.parent_id === id);
+
+  const CommentRow = ({ c, isReply = false }) => {
+    const liked = commentLikes[c.id]?.includes(user?.id);
+    const likeCount = commentLikes[c.id]?.length || 0;
+    const replyList = repliesFor(c.id);
+    const expanded = expandedReplies.has(c.id);
+    return (
+      <div style={{ display: "flex", gap: 8, marginBottom: isReply ? 8 : 12, alignItems: "flex-start", paddingLeft: isReply ? 36 : 0 }}>
+        <div style={{ width: isReply ? 24 : 30, height: isReply ? 24 : 30, borderRadius: isReply ? 7 : 10, background: "linear-gradient(135deg, #1e4010, #0f2408)", flexShrink: 0, overflow: "hidden", boxShadow: `0 0 0 1.5px #3d7a25` }}>
+          {avatars[c.user_id] ? <img src={avatars[c.user_id]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", fontWeight: 700, fontSize: isReply ? 10 : 12 }}>{(c.username || "H")[0].toUpperCase()}</div>}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: "4px 12px 12px 12px", padding: "7px 10px" }}>
+            <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 13 }}>{capName(c.username || "Hunter")} </span>
+            <span style={{ color: "var(--text2)", fontSize: 13, lineHeight: 1.5 }}>{c.content}</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 3, paddingLeft: 2 }}>
+            <span style={{ color: "var(--text3)", fontSize: 11 }}>{timeAgo(c.created_at)}</span>
+            {!isReply && <button onClick={() => { setReplyTo({ id: c.id, username: c.username }); setText(`@${c.username} `); inputRef.current?.focus(); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>Reply</button>}
+            <button onClick={() => toggleCommentLike(c.id)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 3, color: liked ? "#f43f5e" : "var(--text3)", fontSize: 11, fontFamily: "var(--font-body)", padding: 0 }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill={liked ? "#f43f5e" : "none"} stroke={liked ? "#f43f5e" : "currentColor"} strokeWidth="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+              {likeCount > 0 && likeCount}
+            </button>
+            {(user?.id === c.user_id || user?.id === postOwnerId) && <button onClick={() => deleteComment(c.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.4)", fontSize: 11, padding: 0, fontFamily: "var(--font-body)" }}>Delete</button>}
+          </div>
+          {!isReply && replyList.length > 0 && (
+            <button onClick={() => setExpandedReplies(prev => { const n = new Set(prev); n.has(c.id) ? n.delete(c.id) : n.add(c.id); return n; })} style={{ background: "none", border: "none", color: "var(--green)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", padding: "4px 0 2px 2px", display: "flex", alignItems: "center", gap: 4 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points={expanded ? "18 15 12 9 6 15" : "6 9 12 15 18 9"} /></svg>
+              {expanded ? "Hide" : `View ${replyList.length} repl${replyList.length === 1 ? "y" : "ies"}`}
+            </button>
+          )}
+          {!isReply && expanded && replyList.map(r => <CommentRow key={r.id} c={r} isReply />)}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div style={{ padding: "12px 16px 4px", background: "rgba(0,0,0,0.15)" }}>
       {loading && <div style={{ color: "var(--text3)", fontSize: 12, paddingBottom: 8 }} className="pulse">Loading...</div>}
-      {comments.map(c => {
-        const liked = commentLikes[c.id]?.includes(user?.id);
-        const likeCount = commentLikes[c.id]?.length || 0;
-        return (
-          <div key={c.id} style={{ display: "flex", gap: 10, marginBottom: 14, alignItems: "flex-start" }}>
-            <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg, #1e4010, #0f2408)", flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px #3d7a25" }}>
-              {avatars[c.user_id] ? <img src={avatars[c.user_id]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", fontWeight: 700, fontSize: 13 }}>{(c.username || "H")[0].toUpperCase()}</div>}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: "4px 14px 14px 14px", padding: "8px 12px" }}>
-                <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 13 }}>{capName(c.username || "Hunter")} </span>
-                <span style={{ color: "var(--text2)", fontSize: 13, lineHeight: 1.5 }}>{c.content}</span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 4, paddingLeft: 4 }}>
-                <span style={{ color: "var(--text3)", fontSize: 11 }}>{timeAgo(c.created_at)}</span>
-                <button onClick={() => { setReplyTo(c.username); setText(`@${c.username} `); inputRef.current?.focus(); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>Reply</button>
-                <button onClick={() => toggleCommentLike(c.id)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 3, color: liked ? "#f43f5e" : "var(--text3)", fontSize: 11, fontWeight: 600, fontFamily: "var(--font-body)", padding: 0 }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill={liked ? "#f43f5e" : "none"} stroke={liked ? "#f43f5e" : "currentColor"} strokeWidth="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-                  {likeCount > 0 && likeCount}
-                </button>
-                {(user?.id === c.user_id || user?.id === postOwnerId) && <button onClick={() => deleteComment(c.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.4)", fontSize: 11, padding: 0, fontFamily: "var(--font-body)" }}>Delete</button>}
-              </div>
-            </div>
-          </div>
-        );
-      })}
-      {comments.length === 0 && !loading && <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 12 }}>No comments yet</div>}
+      {topLevel.map(c => <CommentRow key={c.id} c={c} />)}
+      {topLevel.length === 0 && !loading && <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 12 }}>No comments yet</div>}
+      {replyTo && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 8px", background: "var(--green-dim)", borderRadius: 8, marginBottom: 6 }}>
+          <span style={{ color: "var(--green)", fontSize: 11 }}>Replying to {capName(replyTo.username)}</span>
+          <button onClick={() => { setReplyTo(null); setText(""); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 12, cursor: "pointer", marginLeft: "auto" }}>✕</button>
+        </div>
+      )}
       <div style={{ display: "flex", gap: 8, alignItems: "center", paddingBottom: 12, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
         <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg, #1e4010, #0f2408)", flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px #3d7a25", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", fontWeight: 700, fontSize: 12 }}>
           {user?.imageUrl ? <img src={user.imageUrl} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (user?.username || user?.firstName || "?")[0].toUpperCase()}
         </div>
         <input
           ref={inputRef}
-          placeholder={replyTo ? `Reply to ${capName(replyTo)}...` : "Add a comment..."}
+          placeholder={replyTo ? `Reply to ${capName(replyTo.username)}...` : "Add a comment..."}
           value={text}
           onChange={e => setText(e.target.value)}
           onKeyDown={e => { if (e.key === "Enter") submit(); }}
