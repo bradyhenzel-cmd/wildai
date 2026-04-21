@@ -938,7 +938,7 @@ function MapTab({ selectedState, user, onSharePin, isPro }) {
 }
 
 // ─── USER PROFILE ─────────────────────────────────────────────────────────────
-function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, onMessage, onPost }) {
+function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, onMessage, onPost, onBlock }) {
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [followerCount, setFollowerCount] = useState(0);
@@ -954,6 +954,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
   const [userRatings, setUserRatings] = useState({});
   const [savedPinIds, setSavedPinIds] = useState(new Set());
   const [showFollowList, setShowFollowList] = useState(null); // 'followers' or 'following'
+  const [isBlocked, setIsBlocked] = useState(false);
   const [followList, setFollowList] = useState([]);
   const [loadingFollowList, setLoadingFollowList] = useState(false);
 
@@ -976,6 +977,8 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
       if (currentUser && currentUser.id !== userId) {
         const { data: followCheck } = await supabase.from("follows").select("id").eq("follower_id", currentUser.id).eq("following_id", userId).maybeSingle();
         setIsFollowing(!!followCheck);
+        const { data: blockCheck } = await supabase.from("blocked_users").select("id").eq("blocker_id", currentUser.id).eq("blocked_id", userId).maybeSingle();
+        setIsBlocked(!!blockCheck);
       }
       const spotPosts = (postData || []).filter(p => p.lat && p.lng);
       if (spotPosts.length) {
@@ -1170,13 +1173,29 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
         )}
 
         {!isOwnProfile && (
-          <button onClick={async () => {
-            if (!currentUser) { openSignIn(); return; }
-            const { data: existing } = await supabase.from("reported_users").select("id").eq("user_id", userId).eq("reported_by", currentUser.id).single();
-            if (existing) { alert("You've already reported this user."); return; }
-            await supabase.from("reported_users").insert({ user_id: userId, reported_by: currentUser.id });
-            alert("User reported. Thank you.");
-          }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 11, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>Report user</button>
+          <div style={{ display: "flex", gap: 12 }}>
+            <button onClick={async () => {
+              if (!currentUser) { openSignIn(); return; }
+              const { data: existing } = await supabase.from("reported_users").select("id").eq("user_id", userId).eq("reported_by", currentUser.id).single();
+              if (existing) { alert("You've already reported this user."); return; }
+              await supabase.from("reported_users").insert({ user_id: userId, reported_by: currentUser.id });
+              alert("User reported. Thank you.");
+            }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 11, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>Report user</button>
+            <button onClick={async () => {
+              if (!currentUser) { openSignIn(); return; }
+              if (isBlocked) {
+                await supabase.from("blocked_users").delete().eq("blocker_id", currentUser.id).eq("blocked_id", userId);
+                setIsBlocked(false);
+                onBlock?.(userId, true); // true = unblock
+              } else {
+                if (!window.confirm("Block this user? You won't see their posts or messages.")) return;
+                await supabase.from("blocked_users").upsert({ blocker_id: currentUser.id, blocked_id: userId });
+                setIsBlocked(true);
+                onBlock?.(userId, false);
+                onBack?.();
+              }
+            }} style={{ background: "none", border: "none", color: isBlocked ? "var(--text3)" : "rgba(255,100,100,0.5)", fontSize: 11, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>{isBlocked ? "Unblock user" : "Block user"}</button>
+          </div>
         )}
       </div>
 
@@ -1312,7 +1331,9 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
     const res = await fetch(`https://wildai-server.onrender.com/messages/inbox?userId=${user.id}`);
     const data = await res.json();
     if (Array.isArray(data)) {
-      const enriched = await Promise.all(data.map(async t => {
+      const { data: blocks } = await supabase.from("blocked_users").select("blocked_id").eq("blocker_id", user.id);
+      const blockedSet = new Set((blocks || []).map(b => b.blocked_id));
+      const enriched = await Promise.all(data.filter(t => !blockedSet.has(t.otherId)).map(async t => {
         const { data: profile } = await supabase.from("profiles").select("username, avatar_url, last_seen").eq("user_id", t.otherId).single();
         return { ...t, username: profile?.username || "Hunter", avatar: profile?.avatar_url, last_seen: profile?.last_seen };
       }));
@@ -1712,6 +1733,14 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   useEffect(() => { externalSetUnread?.(messagesUnread); }, [messagesUnread]);
   const [feedFilter, setFeedFilter] = useState("all");
   const [followingIds, setFollowingIds] = useState(new Set());
+  const [blockedIds, setBlockedIds] = useState(new Set());
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("blocked_users").select("blocked_id").eq("blocker_id", user.id).then(({ data }) => {
+      if (data) setBlockedIds(new Set(data.map(b => b.blocked_id)));
+    });
+  }, [user]);
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(() => !localStorage.getItem("wildai_community_welcomed"));
   const [viewingProfile, setViewingProfile] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -1878,8 +1907,8 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   };
 
   const filteredByFollow = feedFilter === "following"
-    ? posts.filter(p => followingIds.has(p.user_id))
-    : posts;
+    ? posts.filter(p => followingIds.has(p.user_id) && !blockedIds.has(p.user_id))
+    : posts.filter(p => !blockedIds.has(p.user_id));
   const sortedPosts = [...filteredByFollow].sort((a, b) => {
     if (sortBy === "top") return (likeCounts[b.id] || 0) - (likeCounts[a.id] || 0);
     return new Date(b.created_at) - new Date(a.created_at);
@@ -2003,6 +2032,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
             openSignIn={openSignIn}
             onViewUser={(id) => { setViewingProfile(id); setCommunityTab("feed"); }}
             onPost={() => { setShowForm(true); setCommunityTab("feed"); }}
+            onBlock={(id, unblock) => { setBlockedIds(prev => { const n = new Set(prev); unblock ? n.delete(id) : n.add(id); return n; }); }}
           />
         )
       )}
@@ -2014,6 +2044,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
           openSignIn={openSignIn}
           onViewUser={(id) => setViewingProfile(id)}
           onMessage={(id) => { setViewingProfile(null); setCommunityTab("messages"); setTimeout(() => { window._openMessageThread = id; }, 100); }}
+          onBlock={(id, unblock) => { setBlockedIds(prev => { const n = new Set(prev); unblock ? n.delete(id) : n.add(id); return n; }); if (!unblock) setViewingProfile(null); }}
         />
       )}
       {communityTab === "feed" && !viewingProfile && <>
