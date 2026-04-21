@@ -3729,7 +3729,7 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
   useEffect(() => {
     if (!user || isPro) return;
     const loadCount = async () => {
-      const { data } = await supabase.from("message_counts").select("count, updated_at").eq("user_id", user.id).single();
+      const { data } = await supabase.from("message_counts").select("count, updated_at").eq("user_id", user.id).maybeSingle();
       if (data) {
         const lastUpdate = new Date(data.updated_at);
         const now = new Date();
