@@ -1015,7 +1015,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
       await supabase.from("follows").insert({ follower_id: currentUser.id, following_id: userId });
       setIsFollowing(true);
       setFollowerCount(c => c + 1);
-      fetch("https://wildai-server.onrender.com/push/follow", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ followed_id: userId, follower_username: currentUser.username || currentUser.firstName || "Someone" }) }).catch(() => {});
+      fetch("https://wildai-server.onrender.com/push/follow", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ followed_id: userId, follower_username: currentUser.username || currentUser.firstName || "Someone" }) }).catch(() => { });
     }
   };
 
@@ -1075,46 +1075,60 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
   const isOwnProfile = currentUser?.id === userId;
 
   return (
-    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div style={{ borderRadius: "var(--radius)", overflow: "hidden", border: "1px solid var(--border)", borderTopColor: "rgba(255,255,255,0.13)", boxShadow: "0 2px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.07)" }}>
-        {/* Header banner */}
-        <div style={{ height: 100, background: "linear-gradient(135deg, rgba(35,70,15,0.9) 0%, rgba(15,35,8,0.95) 50%, rgba(25,55,12,0.85) 100%)", position: "relative", overflow: "hidden" }}>
-          <svg viewBox="0 0 400 100" style={{ position: "absolute", bottom: 0, left: 0, right: 0, width: "100%", opacity: 0.15 }} preserveAspectRatio="none">
-            <polygon points="0,100 60,40 120,65 180,20 240,55 300,30 360,50 400,35 400,100" fill="rgba(120,180,80,0.6)" />
-            <polygon points="0,100 40,60 90,75 150,45 210,70 270,50 330,65 400,45 400,100" fill="rgba(80,140,50,0.4)" />
-          </svg>
-          {onBack && <button onClick={onBack} className="btn-ghost" style={{ position: "absolute", top: 12, left: 12, padding: "5px 12px", fontSize: 12 }}>← Back</button>}
-          {!isOwnProfile && (
-            <button onClick={toggleFollow} className={isFollowing ? "btn-ghost" : "btn-primary"} style={{ position: "absolute", top: 12, right: 12, padding: "6px 18px", fontSize: 13 }}>
-              {isFollowing ? "Following" : "Follow"}
-            </button>
-          )}
-        </div>
+    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 0 }}>
 
-        {/* Avatar + info — centered layout */}
-        <div style={{ padding: "0 20px 24px", background: "linear-gradient(160deg, rgba(255,255,255,0.045) 0%, rgba(20,14,8,0.3) 100%)", textAlign: "center" }}>
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
-            <div style={{ position: "relative", marginTop: -44 }}>
-              <div style={{ width: 88, height: 88, borderRadius: 20, background: "linear-gradient(135deg, #1e4010, #0f2408)", border: "4px solid rgba(8,15,8,1)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.6), 0 0 0 2px #78b450, 0 0 16px rgba(120,180,80,0.35)" }}>
-                {profile?.avatar_url ? <img src={`${profile.avatar_url}?t=${profile.avatar_updated_at || 0}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 36, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700, lineHeight: 1 }}>{displayName[0]?.toUpperCase()}</span>}
+      {/* Banner */}
+      <div style={{ height: 110, position: "relative", overflow: "hidden", background: "#0a0f0a" }}>
+        <img src="/banner.png" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%", opacity: 0.7 }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(8,13,8,0.3) 60%, rgba(8,13,8,1) 100%)" }} />
+        {onBack && <button onClick={onBack} style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 20, color: "var(--text2)", fontSize: 13, padding: "5px 14px", cursor: "pointer", fontFamily: "var(--font-body)", backdropFilter: "blur(8px)" }}>← Back</button>}
+      </div>
+
+      {/* Profile card */}
+      <div style={{ background: "#080d08", padding: "0 16px 16px", borderBottom: "1px solid var(--border)" }}>
+        {/* Avatar + info row — IG style */}
+        <div style={{ display: "flex", gap: 16, alignItems: "flex-end", marginBottom: 12 }}>
+          {/* Avatar */}
+          <div style={{ position: "relative", marginTop: -36, flexShrink: 0 }}>
+            <label style={{ cursor: isOwnProfile ? "pointer" : "default", display: "block" }}>
+              {isOwnProfile && <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => uploadAvatar(e.target.files[0])} />}
+              <div style={{ width: 90, height: 90, borderRadius: 20, background: "linear-gradient(135deg, #1e4010, #0f2408)", border: "4px solid #080d08", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", boxShadow: "0 0 0 2.5px var(--green), 0 4px 16px rgba(0,0,0,0.5)" }}>
+                {uploadingAvatar
+                  ? <span style={{ color: "var(--text3)", fontSize: 11 }}>...</span>
+                  : profile?.avatar_url
+                    ? <img src={`${profile.avatar_url}?t=${profile.avatar_updated_at || 0}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    : <span style={{ fontSize: 32, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700 }}>{displayName[0]?.toUpperCase()}</span>
+                }
               </div>
-
+              {isOwnProfile && <div style={{ position: "absolute", bottom: 2, right: 2, background: "var(--green)", borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, border: "2px solid #080d08" }}>✏️</div>}
+            </label>
+          </div>
+          {/* Name + stats */}
+          <div style={{ flex: 1, paddingBottom: 4 }}>
+            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 17, fontFamily: "var(--font-display)", marginBottom: 6, textAlign: "left" }}>{capName(displayName)}</div>
+            <div style={{ display: "flex", gap: 16 }}>
+              {[["Posts", posts.length, null], ["Followers", followerCount, "followers"], ["Following", followingCount, "following"]].map(([label, val, type], i) => (
+                <div key={i} onClick={() => type && openFollowList(type)} style={{ cursor: type ? "pointer" : "default", textAlign: "center" }}>
+                  <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>{val}</div>
+                  <div style={{ color: "var(--text3)", fontSize: 11 }}>{label}</div>
+                </div>
+              ))}
             </div>
           </div>
+        </div>
 
-          <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 24, fontFamily: "var(--font-display)", marginBottom: 6 }}>{displayName}</div>
-          {isOwnProfile && <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 6 }}>Change name & photo in account settings →</div>}
-
+        {/* Bio */}
+        <div style={{ marginBottom: 10 }}>
           {!editingBio && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 16 }}>
-              <div style={{ color: profile?.bio ? "var(--text2)" : "var(--text3)", fontSize: 13, fontStyle: profile?.bio ? "normal" : "italic" }}>
-                {profile?.bio || (isOwnProfile ? "Add a bio to tell your story..." : "")}
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ color: profile?.bio ? "var(--text2)" : "var(--text3)", fontSize: 13, fontStyle: profile?.bio ? "normal" : "italic", lineHeight: 1.5 }}>
+                {profile?.bio || (isOwnProfile ? "Add a bio..." : "")}
               </div>
-              {isOwnProfile && <button onClick={() => { setEditingBio(true); setBioInput(profile?.bio || ""); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 11, cursor: "pointer", padding: 0 }}>✏️</button>}
+              {isOwnProfile && <button onClick={() => { setEditingBio(true); setBioInput(profile?.bio || ""); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 11, cursor: "pointer", padding: 0, flexShrink: 0 }}>✏️</button>}
             </div>
           )}
           {editingBio && (
-            <div style={{ marginBottom: 16, display: "flex", flexDirection: "column", gap: 6, textAlign: "left" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <textarea value={bioInput} onChange={e => setBioInput(e.target.value)} placeholder="Write a short bio..." maxLength={150} style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", fontSize: 13, minHeight: 60, resize: "none", background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
               <div style={{ display: "flex", gap: 6 }}>
                 <button onClick={saveBio} disabled={savingBio} className="btn-primary" style={{ padding: "5px 14px", fontSize: 12 }}>{savingBio ? "Saving..." : "Save"}</button>
@@ -1122,67 +1136,60 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
               </div>
             </div>
           )}
-
-
-
-          <div style={{ display: "flex", gap: 0, borderTop: "1px solid var(--border)", paddingTop: 16 }}>
-            {[["Posts", posts.length, null], ["Followers", followerCount, "followers"], ["Following", followingCount, "following"]].map(([label, val, type], i) => (
-              <div key={i} onClick={() => type && openFollowList(type)} style={{ flex: 1, textAlign: "center", borderRight: i < 2 ? "1px solid var(--border)" : "none", cursor: type ? "pointer" : "default" }}>
-                <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 22, fontFamily: "var(--font-display)" }}>{val}</div>
-                <div style={{ color: type ? "var(--green)" : "var(--text3)", fontSize: 11, marginTop: 2, letterSpacing: "0.06em" }}>{label.toUpperCase()}</div>
-              </div>
-            ))}
-          </div>
-
-          {showFollowList && (
-            <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 200, display: "flex", alignItems: "flex-end" }} onClick={() => setShowFollowList(null)}>
-              <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxHeight: "70vh", background: "#0d1a0d", borderRadius: "20px 20px 0 0", padding: 24, overflowY: "auto", border: "1px solid var(--border)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                  <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, fontFamily: "var(--font-display)" }}>{showFollowList === "followers" ? "Followers" : "Following"}</div>
-                  <button onClick={() => setShowFollowList(null)} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 20, cursor: "pointer", padding: 0 }}>✕</button>
-                </div>
-                {loadingFollowList && <div style={{ textAlign: "center", padding: 20, color: "var(--text3)" }} className="pulse">Loading...</div>}
-                {!loadingFollowList && followList.length === 0 && (
-                  <div style={{ textAlign: "center", padding: 20, color: "var(--text3)", fontSize: 13 }}>No {showFollowList} yet</div>
-                )}
-                {followList.map(u => (
-                  <div key={u.user_id} onClick={() => { setShowFollowList(null); onViewUser(u.user_id); }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid var(--border)", cursor: "pointer" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"}
-                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                  >
-                    <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg, #1e4010, #0f2408)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0, boxShadow: "0 0 0 2px #78b450, 0 0 10px rgba(120,180,80,0.25)" }}>
-                      {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 16, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700 }}>{u.username?.[0]?.toUpperCase()}</span>}
-                    </div>
-                    <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{u.username}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
-      </div>
 
-      {!isOwnProfile && onMessage && (
-        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-          <button onClick={toggleFollow} className={isFollowing ? "btn-ghost" : "btn-primary"} style={{ flex: 1, padding: "8px 0", fontSize: 13 }}>
-            {isFollowing ? "Following" : "Follow"}
-          </button>
-          <button onClick={() => onMessage(userId)} className="btn-ghost" style={{ flex: 1, padding: "8px 0", fontSize: 13 }}>💬 Message</button>
+        {/* Buttons row */}
+        {!isOwnProfile && (
+          <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+            <button onClick={toggleFollow} className={isFollowing ? "btn-ghost" : "btn-primary"} style={{ flex: 1, padding: "8px 0", fontSize: 13, borderRadius: 20 }}>
+              {isFollowing ? "Following" : "Follow"}
+            </button>
+            <button onClick={() => onMessage?.(userId)} className="btn-ghost" style={{ flex: 1, padding: "8px 0", fontSize: 13, borderRadius: 20 }}>Message</button>
+          </div>
+        )}
+        {isOwnProfile && (
+          <button onClick={() => onPost?.()} className="btn-primary" style={{ width: "100%", padding: "8px 0", fontSize: 13, borderRadius: 20, marginBottom: 10 }}>+ New Post</button>
+        )}
+
+        {!isOwnProfile && (
           <button onClick={async () => {
             if (!currentUser) { openSignIn(); return; }
             const { data: existing } = await supabase.from("reported_users").select("id").eq("user_id", userId).eq("reported_by", currentUser.id).single();
             if (existing) { alert("You've already reported this user."); return; }
             await supabase.from("reported_users").insert({ user_id: userId, reported_by: currentUser.id });
             alert("User reported. Thank you.");
-          }} className="btn-ghost" style={{ padding: "8px 14px", fontSize: 13 }}>Report</button>
+          }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 11, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>Report user</button>
+        )}
+      </div>
+
+      {/* Follow list modal */}
+      {showFollowList && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 200, display: "flex", alignItems: "flex-end" }} onClick={() => setShowFollowList(null)}>
+          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxHeight: "70vh", background: "#0d1a0d", borderRadius: "20px 20px 0 0", padding: 24, overflowY: "auto", border: "1px solid var(--border)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, fontFamily: "var(--font-display)" }}>{showFollowList === "followers" ? "Followers" : "Following"}</div>
+              <button onClick={() => setShowFollowList(null)} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 20, cursor: "pointer", padding: 0 }}>✕</button>
+            </div>
+            {loadingFollowList && <div style={{ textAlign: "center", padding: 20, color: "var(--text3)" }} className="pulse">Loading...</div>}
+            {!loadingFollowList && followList.length === 0 && <div style={{ textAlign: "center", padding: 20, color: "var(--text3)", fontSize: 13 }}>No {showFollowList} yet</div>}
+            {followList.map(u => (
+              <div key={u.user_id} onClick={() => { setShowFollowList(null); onViewUser(u.user_id); }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid var(--border)", cursor: "pointer" }}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg, #1e4010, #0f2408)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0, boxShadow: "0 0 0 2px #78b450" }}>
+                  {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 16, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700 }}>{u.username?.[0]?.toUpperCase()}</span>}
+                </div>
+                <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{capName(u.username)}</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
-      {isOwnProfile && (
-        <button onClick={() => onPost?.()} className="btn-primary" style={{ width: "100%", padding: "10px", fontSize: 14, marginBottom: 12 }}>+ New Post</button>
-      )}
-      <div style={{ display: "flex", gap: 8, marginBottom: 4, alignItems: "center" }}>
-        <button onClick={() => setProfileTab("posts")} className={`nav-tab ${profileTab === "posts" ? "active" : "inactive"}`} style={{ padding: "7px 18px", fontSize: 13 }}>Posts</button>
-        <button onClick={() => setProfileTab("spots")} className={`nav-tab ${profileTab === "spots" ? "active" : "inactive"}`} style={{ padding: "7px 18px", fontSize: 13 }}>📍 Spots</button>
+
+      {/* Tabs */}
+      <div style={{ display: "flex", borderBottom: "1px solid var(--border)", marginBottom: 12 }}>
+        <button onClick={() => setProfileTab("posts")} style={{ flex: 1, background: "none", border: "none", borderBottom: profileTab === "posts" ? "2px solid var(--green)" : "2px solid transparent", color: profileTab === "posts" ? "var(--text)" : "var(--text3)", padding: "10px 0", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", transition: "all 0.2s" }}>Posts</button>
+        <button onClick={() => setProfileTab("spots")} style={{ flex: 1, background: "none", border: "none", borderBottom: profileTab === "spots" ? "2px solid var(--green)" : "2px solid transparent", color: profileTab === "spots" ? "var(--text)" : "var(--text3)", padding: "10px 0", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", transition: "all 0.2s" }}>📍 Spots</button>
       </div>
 
       {profileTab === "posts" && (
@@ -1396,7 +1403,7 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
           <div style={{ width: 32, height: 32, borderRadius: 10, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "var(--green)", flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 2px #78b450" }}>
             {activeThread.avatar ? <img src={activeThread.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : activeThread.username?.[0]?.toUpperCase()}
           </div>
-          <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>{activeThread.username}</span>
+          <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>{capName(activeThread.username)}</span>
         </div>
       </div>
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8, paddingBottom: 8 }}>
@@ -1738,10 +1745,10 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
       setLikedPostIds(prev => new Set([...prev, post.id]));
       setLikeCounts(prev => ({ ...prev, [post.id]: (prev[post.id] || 0) + 1 }));
       if (post.user_id !== user.id) {
-        fetch("https://wildai-server.onrender.com/push/like", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ post_owner_id: post.user_id, liker_username: user.username || user.firstName || "Someone" }) }).catch(() => {});
+        fetch("https://wildai-server.onrender.com/push/like", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ post_owner_id: post.user_id, liker_username: user.username || user.firstName || "Someone" }) }).catch(() => { });
       }
       if (post.user_id !== user.id) {
-        fetch("https://wildai-server.onrender.com/push/like", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ post_owner_id: post.user_id, liker_username: user.username || user.firstName || "Someone" }) }).catch(() => {});
+        fetch("https://wildai-server.onrender.com/push/like", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ post_owner_id: post.user_id, liker_username: user.username || user.firstName || "Someone" }) }).catch(() => { });
       }
     }
   };
@@ -1841,7 +1848,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved }) {
                 <div style={{ width: 32, height: 32, borderRadius: 10, overflow: "hidden", background: "linear-gradient(135deg, #1e4010, #0f2408)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 0 0 2px #78b450, 0 0 10px rgba(120,180,80,0.25)" }}>
                   {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 14, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700 }}>{u.username?.[0]?.toUpperCase()}</span>}
                 </div>
-                {u.username}
+                {capName(u.username)}
               </div>
             ))}
           </div>
@@ -2123,7 +2130,7 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded })
       content: text.trim(),
     });
     if (postOwnerId && postOwnerId !== user.id) {
-      fetch("https://wildai-server.onrender.com/push/comment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ post_owner_id: postOwnerId, commenter_username: user.username || user.firstName || "Someone", comment: text.trim() }) }).catch(() => {});
+      fetch("https://wildai-server.onrender.com/push/comment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ post_owner_id: postOwnerId, commenter_username: user.username || user.firstName || "Someone", comment: text.trim() }) }).catch(() => { });
     }
     setText("");
     await loadComments();
@@ -2486,7 +2493,7 @@ function TrophyBoardTab({ user, openSignIn, selectedState }) {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
                 <div>
                   <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>{e.species}</span>
-                  <span style={{ color: "var(--text3)", fontSize: 12, marginLeft: 8 }}>{e.username}</span>
+                  <span style={{ color: "var(--text3)", fontSize: 12, marginLeft: 8 }}>{capName(e.username)}</span>
                   {e.state && <span style={{ color: "var(--text3)", fontSize: 12, marginLeft: 8 }}>· {e.state}</span>}
                 </div>
                 {isOwn && <button onClick={() => deleteEntry(e.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.5)", fontSize: 12, padding: 0, fontFamily: "var(--font-body)" }}>Delete</button>}
