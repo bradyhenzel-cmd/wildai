@@ -4269,6 +4269,40 @@ export default function App() {
     }, 60000);
     return () => clearInterval(interval);
   }, [isLoaded, user?.id]);
+
+  // ─── PUSH NOTIFICATIONS ───────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!user) return;
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+
+    const registerPush = async () => {
+      try {
+        const reg = await navigator.serviceWorker.register('/sw.js');
+        await navigator.serviceWorker.ready;
+        const existing = await reg.pushManager.getSubscription();
+        if (existing) return; // already subscribed
+
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') return;
+
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: VAPID_PUBLIC_KEY,
+        });
+
+        await supabase.from('push_subscriptions').upsert({
+          user_id: user.id,
+          subscription: sub.toJSON(),
+        }, { onConflict: 'user_id' });
+      } catch (e) {
+        console.error('Push registration failed:', e);
+      }
+    };
+
+    registerPush();
+  }, [user?.id]);
+
   const [prevPage, setPrevPage] = useState("landing");
   const [messageCount, setMessageCount] = useState(() => {
     const saved = localStorage.getItem("wildai_message_count");
