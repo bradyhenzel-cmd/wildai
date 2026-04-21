@@ -1370,11 +1370,6 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
 
   useEffect(() => {
     if (!user || !activeThread) return;
-    const setupChannel = async () => {
-      const token = await window.Clerk?.session?.getToken({ template: 'supabase' });
-      await supabase.realtime.setAuth(token);
-    };
-    setupChannel();
     const channel = supabase.channel("messages-" + activeThread.otherId)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `recipient_id=eq.${user.id}` }, payload => {
         if (payload.new.sender_id === activeThread.otherId) {
@@ -1458,7 +1453,7 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
         </div>
       )}
       {inbox.map(t => (
-        <div key={t.otherId} onClick={() => { openThread(t.otherId, t.username, t.avatar); setInbox(prev => { const updated = prev.map(i => i.otherId === t.otherId ? { ...i, unread: 0 } : i); onUnreadChange?.(updated.reduce((sum, i) => sum + (i.unread || 0), 0)); return updated; }); }} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "12px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "var(--card)"}>
+        <div key={t.otherId} onClick={() => { openThread(t.otherId, t.username, t.avatar); setInbox(prev => { const updated = prev.map(i => i.otherId === t.otherId ? { ...i, unread: 0 } : i); setTimeout(() => onUnreadChange?.(updated.reduce((sum, i) => sum + (i.unread || 0), 0)), 0); return updated; }); }} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "12px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "var(--card)"}>
           <div style={{ position: "relative", flexShrink: 0 }}>
             <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "var(--green)", overflow: "hidden" }}>
               {t.avatar ? <img src={t.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : t.username?.[0]?.toUpperCase()}
