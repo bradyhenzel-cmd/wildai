@@ -320,11 +320,16 @@ const css = `
   input, textarea, select { font-size: 16px !important; scroll-margin-bottom: 20px; }
   body.map-fullscreen header, body.map-fullscreen .bottom-nav { display: none !important; }
   @media (max-width: 480px) {
-    .card { padding: 10px !important; }
-    .btn-primary, .btn-ghost { padding: 7px 12px !important; font-size: 12px !important; }
-    h2 { font-size: 85% !important; }
-    .fade-in { gap: 10px !important; }
+    .hide-mobile { display: none !important; }
+    .card { padding: 8px !important; }
+    .btn-primary, .btn-ghost { padding: 6px 11px !important; font-size: 12px !important; }
+    h2 { font-size: 82% !important; }
+    .fade-in { gap: 8px !important; }
     input, textarea, select { font-size: 16px !important; }
+    .nav-tab { padding: 6px 13px !important; font-size: 12px !important; }
+    .checklist-item { padding: 8px 12px !important; font-size: 13px !important; }
+    .weather-stat { padding: 10px 8px !important; }
+    .msg-bubble { font-size: 13px !important; }
   }
   
   
@@ -383,6 +388,8 @@ const css = `
   .leaflet-container { background:#0d1a0d !important; }
   .leaflet-tile { filter:brightness(0.55) saturate(0.45) hue-rotate(55deg) !important; }
   .custom-marker { background:none !important; border:none !important; }
+  .mapboxgl-ctrl-top-right { display: none !important; }
+  .mapboxgl-ctrl-bottom-left { display: none !important; }
   
   @media (max-width: 640px) {
     .mobile-home-btn { padding:5px 10px !important; font-size:12px !important; }
@@ -840,32 +847,37 @@ function MapTab({ selectedState, user, onSharePin, isPro }) {
           onSharePin={(pin) => { setViewingPin(null); setShowPinsPage(false); onSharePin(pin); }}
         />
       )}
-      <div className="card" style={{ padding: "14px 18px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-          <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>🗺️ My Hunting Map</span>
-          <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
-            {[["satellite", "🛰️"], ["terrain", "🏔️"], ["street", "🌙"]].map(([s, icon]) => (
-              <button key={s} onClick={() => changeStyle(s)} style={{ padding: "5px 10px", borderRadius: "var(--radius-sm)", border: `1px solid ${mapStyle === s ? "var(--green)" : "var(--border)"}`, background: mapStyle === s ? "var(--green-dim)" : "var(--card)", color: mapStyle === s ? "var(--green)" : "var(--text3)", fontSize: 14, cursor: "pointer" }}>{icon}</button>
-            ))}
-          </div>
-        </div>
-        <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-
-          <span style={{ color: "var(--text3)", fontSize: 11, marginLeft: "auto" }}>{pins.filter(p => p.lat && p.lng).length} pins</span>
-        </div>
-      </div>
-
       <div style={{ position: "relative", borderRadius: isFullscreen ? 0 : "var(--radius)", overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)", borderTopColor: "rgba(255,255,255,0.14)", boxShadow: isFullscreen ? "none" : "0 8px 40px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07)" }}>
-        <div ref={mapRef} style={{ height: isFullscreen ? "100svh" : 380, width: "100%", position: isFullscreen ? "fixed" : "relative", top: isFullscreen ? 0 : "auto", left: isFullscreen ? 0 : "auto", right: isFullscreen ? 0 : "auto", bottom: isFullscreen ? 0 : "auto", zIndex: isFullscreen ? 998 : "auto" }} />
-        <button onClick={() => { setIsFullscreen(f => !f); setTimeout(() => mapInst.current?.resize(), 150); }} style={{ position: isFullscreen ? "fixed" : "absolute", top: isFullscreen ? 16 : 10, left: isFullscreen ? 16 : 10, zIndex: 1001, background: "rgba(8,15,8,0.95)", border: "1px solid var(--border-accent)", color: "var(--green)", borderRadius: "var(--radius-sm)", padding: "8px 14px", fontSize: 12, cursor: "pointer", backdropFilter: "blur(8px)", fontFamily: "var(--font-body)", fontWeight: 600 }}>
-          {isFullscreen ? "✕ Exit" : "⊞ Expand"}
-        </button>
+        <div ref={mapRef} style={{ height: isFullscreen ? "100svh" : 340, width: "100%", position: isFullscreen ? "fixed" : "relative", top: isFullscreen ? 0 : "auto", left: isFullscreen ? 0 : "auto", right: isFullscreen ? 0 : "auto", bottom: isFullscreen ? 0 : "auto", zIndex: isFullscreen ? 998 : "auto" }} />
+
+        {/* Expand button */}
+        <div style={{ position: isFullscreen ? "fixed" : "absolute", top: isFullscreen ? 16 : 10, left: isFullscreen ? 16 : 10, zIndex: 1001, display: "flex", gap: 6 }}>
+          <button onClick={() => { setIsFullscreen(f => !f); setTimeout(() => mapInst.current?.resize(), 150); }} style={{ background: "rgba(8,15,8,0.95)", border: "1px solid var(--border-accent)", color: "var(--green)", borderRadius: "var(--radius-sm)", padding: "8px 14px", fontSize: 12, cursor: "pointer", backdropFilter: "blur(8px)", fontFamily: "var(--font-body)", fontWeight: 600 }}>
+            {isFullscreen ? "✕ Exit" : "⊞ Expand"}
+          </button>
+          <button onClick={() => { const styles = ["satellite", "terrain", "street"]; const next = styles[(styles.indexOf(mapStyle) + 1) % styles.length]; changeStyle(next); }} style={{ background: "rgba(8,15,8,0.95)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "8px 10px", fontSize: 12, cursor: "pointer", backdropFilter: "blur(8px)", color: "rgba(255,255,255,0.7)", display: "flex", alignItems: "center" }}>
+            {mapStyle === "satellite"
+              ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
+              : mapStyle === "terrain"
+                ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 20 9 4 15 16 19 10 21 20 3 20" /></svg>
+                : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" /></svg>
+            }
+          </button>
+        </div>
+
+        {/* Map style buttons — top right, inside map */}
+
+
         {user && <div style={{ position: "absolute", bottom: 10, left: 10, zIndex: 10, background: "rgba(8,15,8,0.9)", border: "1px solid var(--border)", color: "var(--text3)", borderRadius: "var(--radius-sm)", padding: "5px 10px", fontSize: 10, backdropFilter: "blur(8px)" }}>Tap map to drop a pin</div>}
       </div>
 
+      <div style={{ display: "flex", alignItems: "center", padding: "6px 4px" }}>
+        <span style={{ color: "var(--text3)", fontSize: 12 }}>{pins.filter(p => p.lat && p.lng).length} pins</span>
+      </div>
+
       {dropForm && user && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 1002, display: "flex", alignItems: "flex-end" }} onClick={() => setDropForm(null)}>
-          <div onClick={e => e.stopPropagation()} className="fade-in" style={{ width: "100%", background: "#0d1a0d", borderRadius: "20px 20px 0 0", padding: "20px 20px 36px", border: "1px solid var(--border)", borderBottom: "none", boxShadow: "0 -8px 40px rgba(0,0,0,0.6)" }}>
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 1002, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={() => setDropForm(null)}>
+          <div onClick={e => e.stopPropagation()} className="fade-in" style={{ width: "100%", background: "#0d1a0d", borderRadius: "20px 20px 0 0", padding: "20px 20px 40px", border: "1px solid var(--border)", borderBottom: "none", boxShadow: "0 -8px 40px rgba(0,0,0,0.6)", marginBottom: 0 }}>
             <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.15)", margin: "0 auto 18px" }} />
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
               <span style={{ fontSize: 18 }}>📍</span>
@@ -4009,7 +4021,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                   </div>
                 </div>
               </div>
-              <div style={{ overflowY: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 16, minHeight: 400, maxHeight: "60vh" }}>
+              <div style={{ overflowY: "auto", padding: "16px 14px", display: "flex", flexDirection: "column", gap: 12, minHeight: 300, maxHeight: "55vh" }}>
                 {messages.map((m, i) => (
                   <div key={i} className="fade-in" style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start", gap: 10, alignItems: "flex-end" }}>
                     {m.role === "assistant" && <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,var(--green),var(--green2))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0, boxShadow: "0 4px 12px rgba(120,180,80,0.25)" }}><img src="/logo.png" style={{ width: 20, height: 20, objectFit: "contain" }} /></div>}
@@ -4033,7 +4045,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                 <div ref={bottomRef} />
               </div>
               {messages.length <= 2 && !hitLimit && (
-                <div style={{ padding: "0 20px 16px", display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <div style={{ padding: "0 20px 16px", display: "flex", gap: 8, flexWrap: "wrap" }} className="hide-mobile">
                   {["Best fishing spots near me right now", "What should I be hunting this week?", "How's the weather for hunting today?", `What license do I need in ${selectedState || "my state"}?`].map((s, i) => (
                     <button key={i} onClick={() => sendMessage(s)} className="btn-ghost" style={{ padding: "7px 14px", fontSize: 12, borderRadius: 20 }}>{s}</button>
                   ))}
