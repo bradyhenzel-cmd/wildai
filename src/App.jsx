@@ -2769,6 +2769,7 @@ function TrophyBoardTab({ user, openSignIn, selectedState }) {
 // ─── BALLISTICS TAB ───────────────────────────────────────────────────────────
 function BallisticsTab() {
   const [form, setForm] = useState({ label: "", weight: "", velocity: "", bc: "", zero: "100", scopeHeight: "1.5", wind: "" });
+  const resetResults = () => setResults(null);
   const [results, setResults] = useState(null);
 
   const calculate = () => {
@@ -2776,35 +2777,62 @@ function BallisticsTab() {
     const bc = parseFloat(form.bc);
     const weight = parseFloat(form.weight);
     const zero = parseInt(form.zero);
-    const sh = parseFloat(form.scopeHeight) / 12; // convert to feet
+    const sh = parseFloat(form.scopeHeight) / 12;
     const wind = parseFloat(form.wind) || 0;
     if (!mv || !bc || !weight) return;
 
-    const g = 32.174; // gravity ft/s²
-    const rows = [];
+    const g = 32.174, dt = 0.001;
 
+    // Ingalls ballistic table — standard G1 reference (Hatcher's Notebook)
+    const ingallsF = [
+      [800,1.679],[900,1.746],[1000,1.812],[1100,1.887],
+      [1200,2.388],[1300,2.945],[1400,3.175],[1500,3.284],
+      [1600,3.366],[1700,3.415],[1800,3.450],[1900,3.468],
+      [2000,3.478],[2100,3.486],[2200,3.493],[2300,3.489],
+      [2400,3.474],[2500,3.450],[2600,3.418],[2700,3.382],
+      [2800,3.341],[2900,3.298],[3000,3.254],[3100,3.213],
+      [3200,3.172],[3300,3.134],[3400,3.096],[3500,3.061],
+    ];
+    const getF = (v) => {
+      v = Math.max(800, Math.min(3500, v));
+      for (let i = 0; i < ingallsF.length - 1; i++) {
+        if (v >= ingallsF[i][0] && v <= ingallsF[i+1][0]) {
+          const t = (v - ingallsF[i][0]) / (ingallsF[i+1][0] - ingallsF[i][0]);
+          return ingallsF[i][1] + t * (ingallsF[i+1][1] - ingallsF[i][1]);
+        }
+      }
+      return ingallsF[ingallsF.length-1][1];
+    };
+
+    const solve = (targetYards) => {
+      const targetFt = targetYards * 3;
+      let vx = mv, vy = 0, x = 0, y = 0, t = 0;
+      while (x < targetFt && t < 10) {
+        const v = Math.sqrt(vx*vx + vy*vy);
+        const decel = (getF(v) * v * v) / (bc * 36000);
+        vx += -(decel * vx/v) * dt;
+        vy += (-g - (decel * vy/v)) * dt;
+        x += vx*dt; y += vy*dt; t += dt;
+      }
+      return { y, v: Math.sqrt(vx*vx + vy*vy), t };
+    };
+
+    const rawRows = [];
     for (let yd = 0; yd <= 500; yd += 100) {
-      const ft = yd * 3;
-      const t = ft / mv; // simplified time of flight
-      const drop_ft = 0.5 * g * t * t;
-      const drop_in_raw = drop_ft * 12;
-
-      // Velocity using G1 drag (simplified)
-      const vr = mv * Math.pow(Math.E, -0.00003 * ft / bc);
-
-      // Energy in ft-lbs
-      const energy = (weight * vr * vr) / 450400;
-
-      // Wind drift (simplified)
-      const drift = (wind * (t - ft / mv)) * 12 * 0.3;
-
-      rows.push({ yd, drop_in_raw, vr: Math.round(vr), energy: Math.round(energy), drift: Math.round(drift * 10) / 10 });
+      const { y, v, t } = solve(yd);
+      const energy = (weight * v * v) / 450400;
+      const wind_fps = wind * 1.467;
+      const tof_vac = (yd * 3) / mv;
+      const drift = Math.round(wind_fps * (t - tof_vac) * 12 * 10) / 10;
+      rawRows.push({ yd, drop_in_raw: -y * 12, vr: Math.round(v), energy: Math.round(energy), drift });
     }
 
-    // Zero correction
-    const zeroRow = rows.find(r => r.yd === zero) || rows[1];
-    const zeroOffset = zeroRow.drop_in_raw - (sh * 12);
-    const corrected = rows.map(r => ({ ...r, drop: Math.round((r.drop_in_raw - zeroOffset - (sh * 12)) * 10) / 10 }));
+    const zeroRow = rawRows.find(r => r.yd === zero) || rawRows[1];
+    const zeroDropIn = zeroRow.drop_in_raw - (sh * 12);
+    const corrected = rawRows.map(r => ({
+      ...r,
+      drop: Math.round((r.drop_in_raw - sh * 12 - zeroDropIn) * 10) / 10,
+    }));
     setResults(corrected);
   };
 
@@ -2821,31 +2849,32 @@ function BallisticsTab() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
           <div style={{ gridColumn: "1 / -1" }}>
             <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>LOAD NAME (optional)</div>
-            <input placeholder="e.g. .308 Win 168gr Federal" value={form.label} onChange={e => setForm(f => ({ ...f, label: e.target.value }))} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+            <input placeholder=".308 Win 168gr Federal" value={form.label} onChange={e => { setForm(f => ({ ...f, label: e.target.value })); resetResults(); }} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
           </div>
           <div>
             <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>BULLET WEIGHT (gr)</div>
-            <input type="number" placeholder="e.g. 168" value={form.weight} onChange={e => setForm(f => ({ ...f, weight: e.target.value }))} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+            <input type="number" placeholder="168" value={form.weight} onChange={e => { setForm(f => ({ ...f, weight: e.target.value })); resetResults(); }} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
           </div>
           <div>
             <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>MUZZLE VELOCITY (fps)</div>
-            <input type="number" placeholder="e.g. 2650" value={form.velocity} onChange={e => setForm(f => ({ ...f, velocity: e.target.value }))} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+            <input type="number" placeholder="2650" value={form.velocity} onChange={e => { setForm(f => ({ ...f, velocity: e.target.value })); resetResults(); }} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
           </div>
           <div>
             <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>BALLISTIC COEFF (G1)</div>
-            <input type="number" placeholder="e.g. 0.47" value={form.bc} onChange={e => setForm(f => ({ ...f, bc: e.target.value }))} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+            <input type="number" placeholder="0.47" value={form.bc} onChange={e => { setForm(f => ({ ...f, bc: e.target.value })); resetResults(); }} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
           </div>
           <div>
             <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>ZERO DISTANCE (yd)</div>
-            <select value={form.zero} onChange={e => setForm(f => ({ ...f, zero: e.target.value }))} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }}>
+            <select value={form.zero} onChange={e => { setForm(f => ({ ...f, zero: e.target.value })); resetResults(); }} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }}>
               <option value="50">50 yards</option>
               <option value="100">100 yards</option>
               <option value="200">200 yards</option>
+              <option value="300">300 yards</option>
             </select>
           </div>
           <div>
             <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>WIND SPEED (mph)</div>
-            <input type="number" placeholder="e.g. 10" value={form.wind} onChange={e => setForm(f => ({ ...f, wind: e.target.value }))} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+            <input type="number" placeholder="10" value={form.wind} onChange={e => { setForm(f => ({ ...f, wind: e.target.value })); resetResults(); }} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
           </div>
         </div>
         <button onClick={calculate} disabled={!form.weight || !form.velocity || !form.bc} className="btn-primary" style={{ width: "100%", padding: "11px", fontSize: 14, opacity: (!form.weight || !form.velocity || !form.bc) ? 0.5 : 1 }}>
@@ -2855,7 +2884,10 @@ function BallisticsTab() {
 
       {results && (
         <div className="card fade-in" style={{ padding: "20px 24px", overflowX: "auto" }}>
-          {form.label && <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15, marginBottom: 14, fontFamily: "var(--font-display)" }}>{form.label}</div>}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            {form.label ? <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15, fontFamily: "var(--font-display)" }}>{form.label}</div> : <div />}
+            <button onClick={() => setResults(null)} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 18, cursor: "pointer", padding: 0, lineHeight: 1 }}>✕</button>
+          </div>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
               <tr>
