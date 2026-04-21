@@ -176,7 +176,9 @@ async function sendPushToUser(userId, payload) {
     if (!data?.subscription) return;
     try {
         await webpush.sendNotification(data.subscription, JSON.stringify(payload));
+        console.log("Push sent to", userId);
     } catch (err) {
+        console.error("Push error:", err.statusCode, err.message);
         if (err.statusCode === 410) {
             await supabase.from("push_subscriptions").delete().eq("user_id", userId);
         }
