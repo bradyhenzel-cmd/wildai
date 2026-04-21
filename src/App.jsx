@@ -4292,10 +4292,18 @@ export default function App() {
           applicationServerKey: VAPID_PUBLIC_KEY,
         });
 
-        await supabase.from('push_subscriptions').upsert({
-          user_id: user.id,
-          subscription: sub.toJSON(),
-        }, { onConflict: 'user_id' });
+        const { data: { session } } = await supabase.auth.getSession();
+        const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/push_subscriptions?on_conflict=user_id`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': anonKey,
+            'Authorization': `Bearer ${session?.access_token || anonKey}`,
+            'Prefer': 'resolution=merge-duplicates',
+          },
+          body: JSON.stringify({ user_id: user.id, subscription: sub.toJSON() }),
+        });
       } catch (e) {
         console.error('Push registration failed:', e);
       }
