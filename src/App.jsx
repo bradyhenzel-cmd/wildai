@@ -1596,7 +1596,7 @@ function PinPicker({ user, onSelect }) {
 
   return (
     <>
-      <button onClick={() => setOpen(o => !o)} title="Attach a pin" style={{ background: "none", border: "1px solid var(--border)", borderRadius: "50%", color: "var(--text3)", fontSize: 18, width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <button onClick={() => setOpen(o => !o)} title="Attach a pin" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "50%", color: "var(--text3)", fontSize: 13, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         📍
       </button>
       {open && (
@@ -1836,7 +1836,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
           <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", color: "var(--green)", textTransform: "uppercase", marginBottom: 2 }}>Community</div>
           <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.3px" }}>Wild Feed</div>
         </div>
-        {user && <button onClick={() => { setCommunityTab("feed"); setShowForm(s => !s); }} style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, #2d5a1b, #1e4010)", border: "none", color: "white", fontSize: 22, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 20px rgba(45,90,27,0.4)", flexShrink: 0 }}>{showForm ? "✕" : "+"}</button>}
+        
       </div>
 
       {/* Search */}
@@ -1931,7 +1931,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
           </div>
         )}
         {/* Toggles */}
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <button onClick={() => { if (!user && feedFilter === "all") { openSignIn(); return; } setFeedFilter(feedFilter === "all" ? "following" : "all"); }}
             style={{
               padding: "8px 18px", borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: "pointer", border: "1px solid", transition: "all 0.2s",
@@ -1952,51 +1952,60 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
             }}>
             {sortBy === "top" ? "🔥 Trending" : "✦ New"}
           </button>
+          <div style={{ flex: 1 }} />
+          {user && <button onClick={() => setShowForm(s => !s)} style={{ width: 32, height: 32, borderRadius: "50%", background: showForm ? "rgba(255,100,100,0.15)" : "linear-gradient(135deg, #2d5a1b, #1e4010)", border: "none", color: "white", fontSize: showForm ? 16 : 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{showForm ? "✕" : "+"}</button>}
         </div>
       </>}
 
       {(communityTab === "feed" || communityTab === "profile") && !viewingProfile && showForm && (
-        <div className="card fade-in" style={{ padding: 20 }}>
-          <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 14 }}>NEW POST</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <div>
-              <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>PHOTO</div>
-              <input type="file" accept="image/*" onChange={async e => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
-                const { data, error } = await supabase.storage.from("post-photos").upload(fileName, file, { contentType: file.type });
-                if (error) { alert("Photo upload failed. Try again."); return; }
-                const { data: urlData } = supabase.storage.from("post-photos").getPublicUrl(fileName);
-                setForm(f => ({ ...f, photo: urlData.publicUrl }));
-              }} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text2)" }} />
-              {form.photo && <img src={form.photo} style={{ marginTop: 8, width: "100%", borderRadius: "var(--radius-sm)", maxHeight: 250, objectFit: "cover" }} />}
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              <div>
-                <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>SPECIES</div>
-                <input placeholder="e.g. Elk, Trout" value={form.species} onChange={e => setForm(f => ({ ...f, species: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+        <div className="fade-in" style={{ background: "#0e1510", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, overflow: "hidden", marginBottom: 4 }}>
+          {/* Photo area */}
+          <label style={{ display: "block", cursor: "pointer", position: "relative" }}>
+            <input type="file" accept="image/*" style={{ display: "none" }} onChange={async e => {
+              const file = e.target.files[0];
+              if (!file) return;
+              const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
+              const { data, error } = await supabase.storage.from("post-photos").upload(fileName, file, { contentType: file.type });
+              if (error) { alert("Photo upload failed. Try again."); return; }
+              const { data: urlData } = supabase.storage.from("post-photos").getPublicUrl(fileName);
+              setForm(f => ({ ...f, photo: urlData.publicUrl }));
+            }} />
+            {form.photo ? (
+              <div style={{ position: "relative" }}>
+                <img src={form.photo} style={{ width: "100%", maxHeight: 300, objectFit: "cover", display: "block" }} />
+                <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.6)", borderRadius: 20, padding: "4px 10px", fontSize: 12, color: "white", backdropFilter: "blur(8px)" }}>Change photo</div>
               </div>
-              <div>
-                <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>LOCATION</div>
-                <input placeholder="e.g. Flathead NF, Montana" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value, pinLat: null, pinLng: null }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
-                {form.pinLat && form.pinLng && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4, padding: "4px 8px", background: "var(--green-dim)", border: "1px solid var(--border-accent)", borderRadius: "var(--radius-sm)" }}>
-                    <span style={{ color: "var(--green)", fontSize: 11 }}>📍 Pin attached</span>
-                    <button onClick={() => setForm(f => ({ ...f, pinLat: null, pinLng: null }))} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 11, cursor: "pointer", marginLeft: "auto" }}>✕</button>
-                  </div>
-                )}
+            ) : (
+              <div style={{ height: 120, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 13 }}>Add a photo</span>
+              </div>
+            )}
+          </label>
+
+          {/* Fields */}
+          <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+            <textarea
+              placeholder="Share your experience..."
+              value={form.caption}
+              onChange={e => setForm(f => ({ ...f, caption: e.target.value }))}
+              style={{ width: "100%", padding: "0", borderRadius: 0, fontSize: 14, minHeight: 40, resize: "none", background: "transparent", border: "none", borderBottom: "1px solid rgba(255,255,255,0.06)", color: "var(--text)", fontFamily: "var(--font-body)", outline: "none", boxSizing: "border-box", paddingBottom: 10, lineHeight: 1.6 }}
+            />
+            <div style={{ display: "flex", gap: 6 }}>
+              <input placeholder="Species" value={form.species} onChange={e => setForm(f => ({ ...f, species: e.target.value }))} style={{ flex: 1, padding: "6px 10px", borderRadius: 20, fontSize: 12, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", minWidth: 0, boxSizing: "border-box" }} />
+              <div style={{ flex: 1, position: "relative", minWidth: 0, display: "flex", gap: 5, alignItems: "center" }}>
+                <input placeholder="Location" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value, pinLat: null, pinLng: null }))} style={{ flex: 1, padding: "6px 10px", borderRadius: 20, fontSize: 12, background: form.pinLat ? "var(--green-dim)" : "rgba(255,255,255,0.04)", border: form.pinLat ? "1px solid var(--border-accent)" : "1px solid rgba(255,255,255,0.08)", color: "var(--text)", boxSizing: "border-box", minWidth: 0 }} />
                 <PinPicker user={user} onSelect={(pin) => setForm(f => ({ ...f, location: pin.name || pin.location || f.location, pinLat: pin.lat, pinLng: pin.lng }))} />
+                {form.pinLat && <button onClick={() => setForm(f => ({ ...f, pinLat: null, pinLng: null, location: "" }))} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 13, cursor: "pointer", padding: 0, flexShrink: 0 }}>✕</button>}
               </div>
             </div>
-            <div>
-              <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>CAPTION *</div>
-              <textarea placeholder="Share your experience..." value={form.caption} onChange={e => setForm(f => ({ ...f, caption: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13, minHeight: 80, resize: "vertical", background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)" }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ flex: 1 }} />
+              {error && <span style={{ color: "var(--amber)", fontSize: 12 }}>{error}</span>}
+              <button onClick={submitPost} disabled={submitting || (!form.caption && !form.photo)} className="btn-primary" style={{ padding: "9px 20px", fontSize: 13, borderRadius: 20, opacity: (submitting || (!form.caption && !form.photo)) ? 0.5 : 1 }}>
+                {submitting ? "Posting..." : "Share"}
+              </button>
             </div>
-            {error && <div style={{ color: "var(--amber)", fontSize: 13 }}>{error}</div>}
-            <button onClick={submitPost} disabled={submitting || (!form.caption && !form.photo)} className="btn-primary" style={{ padding: "10px", fontSize: 14, opacity: (submitting || (!form.caption && !form.photo)) ? 0.5 : 1 }}>
-              {submitting ? "Posting..." : "Share Post"}
-            </button>
           </div>
         </div>
       )}
