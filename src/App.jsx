@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { supabase } from './supabase';
 import { useUser, SignIn, SignUp, UserButton, useClerk } from '@clerk/react';
 // mapbox css loaded dynamically in MapTab
@@ -321,6 +322,9 @@ const css = `
   
   input, textarea, select { font-size: 16px !important; scroll-margin-bottom: 20px; }
   body.map-fullscreen header, body.map-fullscreen .bottom-nav { display: none !important; }
+  body.dm-fullscreen header, body.dm-fullscreen .bottom-nav { display: none !important; }
+  body.dm-fullscreen { overflow: hidden; }
+  body.dm-fullscreen > div { transform: none !important; filter: none !important; will-change: auto !important; }
   @media (max-width: 480px) {
     .hide-mobile { display: none !important; }
     .card { padding: 8px !important; }
@@ -1335,6 +1339,7 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
   const openThread = async (otherId, username, avatar) => {
     setActiveThread({ otherId, username, avatar });
     setView("thread");
+    document.body.classList.add("dm-fullscreen");
     await loadConversation(otherId);
     if (user) fetch("https://wildai-server.onrender.com/messages/mark-read", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user.id, otherId }) });
   };
@@ -1409,10 +1414,11 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
     </div>
   );
 
-  if (view === "thread" && activeThread) return (
-    <div className="fade-in" style={{ display: "flex", flexDirection: "column", height: "70vh" }}>
-      <div style={{ borderBottom: "1px solid var(--border)", marginBottom: 8, padding: "10px 0", display: "flex", alignItems: "center", position: "relative" }}>
-        <button onClick={() => { setView("inbox"); loadInbox(); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text2)", fontSize: 14, padding: 0, flexShrink: 0 }}>← Back</button>
+  if (view === "thread" && activeThread) return createPortal(
+    <div className="fade-in" style={{ position: "fixed", inset: 0, zIndex: 99999, background: "var(--bg)", display: "flex", justifyContent: "center" }}>
+      <div style={{ width: "100%", maxWidth: 760, display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ borderBottom: "1px solid var(--border)", padding: "12px 16px", display: "flex", alignItems: "center", position: "relative", flexShrink: 0 }}>
+        <button onClick={() => { setView("inbox"); loadInbox(); document.body.classList.remove("dm-fullscreen"); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text2)", fontSize: 14, padding: 0, flexShrink: 0 }}>← Back</button>
         <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 32, height: 32, borderRadius: 10, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "var(--green)", flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 2px #78b450" }}>
             {activeThread.avatar ? <img src={activeThread.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : activeThread.username?.[0]?.toUpperCase()}
@@ -1420,7 +1426,8 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
           <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>{capName(activeThread.username)}</span>
         </div>
       </div>
-      <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8, paddingBottom: 8 }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: "12px 16px 8px" }}>
+        <div style={{ maxWidth: 680, margin: "0 auto", display: "flex", flexDirection: "column", gap: 8 }}>
         {messages.map(m => (
           <div key={m.id} style={{ display: "flex", justifyContent: m.sender_id === user.id ? "flex-end" : "flex-start" }}>
             {m.image_url ? (
@@ -1438,15 +1445,16 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
                 </div>
               </div>
             ) : (
-              <div style={{ background: m.sender_id === user.id ? "var(--green)" : "rgba(255,255,255,0.07)", borderRadius: m.sender_id === user.id ? "18px 18px 4px 18px" : "18px 18px 18px 4px", padding: "9px 13px", maxWidth: "70%", fontSize: 13, color: m.sender_id === user.id ? "#fff" : "var(--text)", lineHeight: 1.45 }}>
+              <div style={{ background: m.sender_id === user.id ? "var(--green)" : "rgba(255,255,255,0.07)", borderRadius: m.sender_id === user.id ? "18px 18px 4px 18px" : "18px 18px 18px 4px", padding: "10px 14px", maxWidth: "70%", fontSize: 14, color: m.sender_id === user.id ? "#fff" : "var(--text)", lineHeight: 1.5, wordBreak: "break-word", overflowWrap: "break-word" }}>
                 {m.content}
               </div>
             )}
           </div>
         ))}
         <div ref={bottomRef} />
+        </div>
       </div>
-      <div style={{ display: "flex", gap: 8, alignItems: "center", borderTop: "1px solid var(--border)", paddingTop: 10 }}>
+      <div style={{ display: "flex", gap: 8, alignItems: "center", borderTop: "1px solid var(--border)", padding: "10px 16px 24px", flexShrink: 0, marginTop: "auto" }}>
         <label style={{ cursor: "pointer", color: "var(--text3)", fontSize: 20, lineHeight: 1 }}>
           📎<input type="file" accept="image/*" style={{ display: "none" }} onChange={e => sendImage(e.target.files[0])} />
         </label>
@@ -1457,10 +1465,11 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
           });
           await loadConversation(activeThread.otherId);
         }} />
-        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Message..." style={{ flex: 1, padding: "9px 14px", borderRadius: 20, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)" }} />
+        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Message..." style={{ flex: 1, padding: "11px 16px", borderRadius: 24, fontSize: 15, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)" }} />
         <button onClick={send} disabled={!input.trim() || sending} className="btn-primary" style={{ padding: "9px 16px", fontSize: 13, borderRadius: 20, opacity: !input.trim() ? 0.5 : 1 }}>Send</button>
       </div>
     </div>
+    </div>, document.body
   );
 
   const totalUnread = inbox.reduce((sum, t) => sum + (t.unread || 0), 0);
@@ -4040,7 +4049,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 
 
 
-      <div style={{ flex: 1, padding: 20, paddingBottom: 80, maxWidth: 760, width: "100%", margin: "0 auto", display: "flex", flexDirection: "column", gap: 16, position: "relative", zIndex: 1 }}>
+      <div style={{ flex: 1, padding: 20, paddingBottom: 80, maxWidth: 760, width: "100%", margin: "0 auto", display: "flex", flexDirection: "column", gap: 16, position: "relative" }}>
 
         {showInstallBanner && !window.navigator.standalone && (
           <div style={{ background: "linear-gradient(135deg, rgba(120,180,80,0.12), rgba(80,140,50,0.08))", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
