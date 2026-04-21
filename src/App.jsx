@@ -2071,7 +2071,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
             {/* Caption */}
             {post.caption && (
               <div style={{ padding: "10px 16px 6px" }}>
-                <p style={{ color: "#b8ccb8", fontSize: 14, lineHeight: 1.6, margin: 0, textAlign: "left" }}>
+                <p style={{ color: "#b8ccb8", fontSize: 13, lineHeight: 1.55, margin: 0, textAlign: "left" }}>
                   <span style={{ fontWeight: 700, color: "white" }}>{capName(post.username)}</span> {post.caption}
                 </p>
               </div>
@@ -2219,14 +2219,14 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded })
             <span style={{ color: "white", fontWeight: 700, fontSize: 13 }}>{capName(c.username || "Hunter")}</span>
             <span style={{ color: "rgba(238,245,232,0.55)", fontSize: 13, lineHeight: 1.5 }}>&nbsp;&nbsp;{c.content}</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 3, paddingLeft: 2 }}>
-            <span style={{ color: "var(--text3)", fontSize: 11 }}>{timeAgo(c.created_at)}</span>
-            {!isReply && <button onClick={() => { setReplyTo({ id: c.id, username: c.username }); setText(`@${c.username} `); inputRef.current?.focus(); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>Reply</button>}
-            <button onClick={() => toggleCommentLike(c.id)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 3, color: liked ? "#f43f5e" : "var(--text3)", fontSize: 11, fontFamily: "var(--font-body)", padding: 0 }}>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill={liked ? "#f43f5e" : "none"} stroke={liked ? "#f43f5e" : "currentColor"} strokeWidth="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-              {likeCount > 0 && likeCount}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 4, paddingLeft: 2 }}>
+            <span style={{ color: "rgba(238,245,232,0.3)", fontSize: 10 }}>{timeAgo(c.created_at)}</span>
+            {!isReply && <button onClick={() => { setReplyTo({ id: c.id, username: c.username }); setText(`@${c.username} `); inputRef.current?.focus(); }} style={{ background: "none", border: "none", color: "rgba(238,245,232,0.5)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0, letterSpacing: "0.02em" }}>Reply</button>}
+            <button onClick={() => toggleCommentLike(c.id)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 3, color: liked ? "#f43f5e" : "rgba(238,245,232,0.3)", fontSize: 10, fontFamily: "var(--font-body)", padding: 0 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill={liked ? "#f43f5e" : "none"} stroke={liked ? "#f43f5e" : "currentColor"} strokeWidth="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+              {likeCount > 0 && <span style={{ fontWeight: 600 }}>{likeCount}</span>}
             </button>
-            {(user?.id === c.user_id || user?.id === postOwnerId) && <button onClick={() => deleteComment(c.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.4)", fontSize: 11, padding: 0, fontFamily: "var(--font-body)" }}>Delete</button>}
+            {(user?.id === c.user_id || user?.id === postOwnerId) && <button onClick={() => deleteComment(c.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.3)", fontSize: 10, padding: 0, fontFamily: "var(--font-body)" }}>Delete</button>}
           </div>
           {!isReply && replyList.length > 0 && (
             <button onClick={() => setExpandedReplies(prev => { const n = new Set(prev); n.has(c.id) ? n.delete(c.id) : n.add(c.id); return n; })} style={{ background: "none", border: "none", color: "var(--green)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", padding: "4px 0 2px 2px", display: "flex", alignItems: "center", gap: 4 }}>
