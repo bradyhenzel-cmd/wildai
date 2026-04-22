@@ -511,17 +511,20 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&format=json&limit=8&countrycodes=us&featuretype=city`);
       const data = await res.json();
+      const typeOrder = { city: 0, town: 1, village: 2, hamlet: 3, municipality: 1, suburb: 4, county: 5, administrative: 6 };
       const seen = new Set();
-      const unique = data.filter(s => {
-        const allowedTypes = ["city", "town", "village", "hamlet", "municipality", "suburb", "county", "administrative"];
-        const allowedClasses = ["place", "boundary"];
-        if (!allowedClasses.includes(s.class)) return false;
-        if (!allowedTypes.includes(s.type)) return false;
-        const label = s.display_name.split(",").slice(0, 3).join(",").trim();
-        if (seen.has(label)) return false;
-        seen.add(label);
-        return true;
-      });
+      const unique = data
+        .filter(s => {
+          const allowedTypes = ["city", "town", "village", "hamlet", "municipality", "suburb", "county", "administrative"];
+          if (!["place", "boundary"].includes(s.class)) return false;
+          if (!allowedTypes.includes(s.type)) return false;
+          const parts = s.display_name.split(",").map(p => p.trim());
+          const label = parts.slice(0, 2).join(", ");
+          if (seen.has(label)) return false;
+          seen.add(label);
+          return true;
+        })
+        .sort((a, b) => (typeOrder[a.type] ?? 9) - (typeOrder[b.type] ?? 9));
       setSuggestions(unique);
       setShowDropdown(true);
     } catch { setSuggestions([]); }
@@ -566,12 +569,12 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
         {showDropdown && suggestions.length > 0 && (
           <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#0d1a0d", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", zIndex: 100, maxHeight: 220, overflowY: "auto", marginTop: 4 }}>
             {suggestions.map((s, i) => (
-              <div key={i} onClick={() => { setQuery(s.display_name.split(",").slice(0, 2).join(",")); loadWeather(s.lat, s.lon, s.display_name.split(",").slice(0, 2).join(",")); }}
+              <div key={i} onClick={() => { const name = s.display_name.split(",").slice(0, 2).join(",").trim(); setQuery(name); loadWeather(s.lat, s.lon, name); }}
                 style={{ padding: "10px 14px", cursor: "pointer", fontSize: 13, color: "var(--text2)", borderBottom: "1px solid var(--border)" }}
                 onMouseEnter={e => e.target.style.background = "var(--card-hover)"}
                 onMouseLeave={e => e.target.style.background = "transparent"}
               >
-                {s.display_name.split(",").slice(0, 3).join(",")}
+                {s.display_name.split(",").slice(0, 2).join(",").trim()}
               </div>
             ))}
           </div>
