@@ -1826,7 +1826,7 @@ function PinPicker({ user, onSelect }) {
   );
 }
 
-function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSetUnread }) {
+function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSetUnread, externalSetNotifUnread }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -1843,6 +1843,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   const [communityTab, setCommunityTab] = useState("feed");
   const [notifs, setNotifs] = useState([]);
   const [notifUnread, setNotifUnread] = useState(0);
+  
   const [loadingNotifs, setLoadingNotifs] = useState(false);
 
   const loadNotifs = async () => {
@@ -1903,6 +1904,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
     return () => supabase.removeChannel(channel);
   }, [user]);
   useEffect(() => { externalSetUnread?.(messagesUnread); }, [messagesUnread]);
+  useEffect(() => { externalSetNotifUnread?.(notifUnread); }, [notifUnread]);
   const [feedFilter, setFeedFilter] = useState("all");
   const [followingIds, setFollowingIds] = useState(new Set());
   const [blockedIds, setBlockedIds] = useState(new Set());
@@ -4791,7 +4793,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         {tab === "harvest" && <HarvestLogTab user={user} openSignIn={openSignIn} isPro={isPro} />}
         {tab === "ballistics" && <BallisticsTab />}
         {tab === "trophy" && <TrophyBoardTab user={user} openSignIn={openSignIn} selectedState={selectedState} />}
-        {tab === "community" && <CommunityTab selectedState={selectedState} user={user} openSignIn={openSignIn} externalSetUnread={setMessagesUnread} />}
+        {tab === "community" && <CommunityTab selectedState={selectedState} user={user} openSignIn={openSignIn} externalSetUnread={setMessagesUnread} externalSetNotifUnread={setNotifUnread} />}
         {tab === "about" && (
           <div className="fade-in card" style={{ padding: 32 }}>
             <div style={{ textAlign: "center", marginBottom: 32 }}>
@@ -4885,7 +4887,8 @@ export default function App() {
   }, [user?.id]);
 
   const [prevPage, setPrevPage] = useState("landing");
-  const [messagesUnread, setMessagesUnread] = useState(0);
+  const [notifs, setNotifs] = useState([]);
+  const [notifUnread, setNotifUnread] = useState(0);
   const [messageCount, setMessageCount] = useState(() => {
     const saved = localStorage.getItem("wildai_message_count");
     return saved ? parseInt(saved) : 0;
