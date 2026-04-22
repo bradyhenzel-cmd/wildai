@@ -4212,7 +4212,7 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
       try {
         const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,precipitation&wind_speed_unit=mph&temperature_unit=fahrenheit&timezone=auto`);
         const d = await r.json();
-        if (d.current) setWeather({ ...d.current, lat: pos.coords.latitude, lng: pos.coords.longitude });
+        if (d.current) setWeather({ ...d.current, lat, lng: lon });
       } catch { }
     };
     if (navigator.geolocation) {
