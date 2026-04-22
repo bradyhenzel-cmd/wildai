@@ -4816,8 +4816,8 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                     {t.svg}
                   </div>
                   <div>
-                    <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 14 }}>{t.label}</div>
-                    <div style={{ color: "#4a6a4a", fontSize: 11, marginTop: 2 }}>{t.desc}</div>
+                    <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 13 }}>{t.label}</div>
+                    <div style={{ color: "#4a6a4a", fontSize: 10, marginTop: 2 }}>{t.desc}</div>
                   </div>
                 </button>
               ))}
