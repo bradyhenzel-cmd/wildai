@@ -583,24 +583,24 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
       )}
       {weather && !loading && (
         <>
-          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
-            <span style={{ fontSize: 56 }}>{wxIcon(weather.weather_code)}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+            <span style={{ fontSize: 42 }}>{wxIcon(weather.weather_code)}</span>
             <div>
-              <div style={{ fontFamily: "var(--font-display)", fontSize: 48, fontWeight: 700, color: "var(--text)", lineHeight: 1 }}>{Math.round(weather.temperature_2m)}°F</div>
-              <div style={{ color: "var(--text3)", fontSize: 13, marginTop: 4 }}>{locationName}</div>
+              <div style={{ fontFamily: "var(--font-display)", fontSize: 38, fontWeight: 700, color: "var(--text)", lineHeight: 1 }}>{Math.round(weather.temperature_2m)}°F</div>
+              <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 3 }}>{locationName}</div>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
             {[["💧", `${weather.relative_humidity_2m}%`, "Humidity"], ["💨", `${Math.round(weather.wind_speed_10m)} mph`, "Wind"], ["🌧️", `${weather.precipitation}"`, "Precip"]].map(([ic, val, lbl], i) => (
               <div key={i} className="weather-stat">
-                <span style={{ fontSize: 20 }}>{ic}</span>
-                <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 15 }}>{val}</span>
-                <span style={{ color: "var(--text3)", fontSize: 11 }}>{lbl}</span>
+                <span style={{ fontSize: 17 }}>{ic}</span>
+                <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 13 }}>{val}</span>
+                <span style={{ color: "var(--text3)", fontSize: 10 }}>{lbl}</span>
               </div>
             ))}
           </div>
-          {c2 && <div style={{ padding: "12px 16px", borderRadius: "var(--radius-sm)", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)" }}>
-            <span style={{ color: c2.color, fontSize: 13, fontWeight: 500 }}>🎯 {c2.label}</span>
+          {c2 && <div style={{ padding: "10px 14px", borderRadius: "var(--radius-sm)", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)" }}>
+            <span style={{ color: c2.color, fontSize: 12, fontWeight: 500 }}>🎯 {c2.label}</span>
           </div>}
 
           {/* Solunar Card */}
@@ -661,7 +661,7 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
             const moonIcon = phase < 1.85 ? "🌑" : phase < 5.53 ? "🌒" : phase < 9.22 ? "🌓" : phase < 12.91 ? "🌔" : phase < 16.61 ? "🌕" : phase < 20.30 ? "🌖" : phase < 23.99 ? "🌗" : "🌘";
 
             return (
-              <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "18px 20px", marginTop: 4 }}>
+              <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "14px 16px", marginTop: 4 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                   <div>
                     <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 4 }}>SOLUNAR FORECAST</div>
@@ -683,7 +683,7 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
                     { label: "Minor", time: fmt(minor1), active: isActive(minor1) },
                     { label: "Minor", time: fmt(minor2), active: isActive(minor2) },
                   ].map((p, i) => (
-                    <div key={i} style={{ padding: "10px 12px", borderRadius: 10, background: p.active ? "rgba(120,180,80,0.12)" : "rgba(255,255,255,0.03)", border: `1px solid ${p.active ? "rgba(120,180,80,0.3)" : "rgba(255,255,255,0.06)"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div key={i} style={{ padding: "8px 10px", borderRadius: 10, background: p.active ? "rgba(120,180,80,0.12)" : "rgba(255,255,255,0.03)", border: `1px solid ${p.active ? "rgba(120,180,80,0.3)" : "rgba(255,255,255,0.06)"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <div>
                         <div style={{ color: p.label === "Major" ? "var(--green)" : "var(--text3)", fontSize: 10, fontWeight: 700, letterSpacing: "0.06em" }}>{p.label.toUpperCase()}</div>
                         <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{p.time}</div>
