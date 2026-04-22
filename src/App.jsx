@@ -2204,7 +2204,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
               <UserProfilePage
                 userId={user.id}
                 currentUser={user}
-                onBack={null}
+                onBack={() => setCommunityTab("feed")}
                 openSignIn={openSignIn}
                 onViewUser={(id) => { setViewingProfile(id); }}
                 onPost={() => { setShowForm(true); setCommunityTab("feed"); }}
