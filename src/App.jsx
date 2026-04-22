@@ -4645,9 +4645,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         {tab === "weather" && (
           <div className="fade-in">
             <WeatherWidget selectedState={selectedState} weather={weather} setWeather={setWeather} locationName={locationName} setLocationName={setLocationName} />
-            <div style={{ marginTop: 14, padding: "16px 20px", background: "var(--green-dim)", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)", fontSize: 13, color: "var(--text2)", lineHeight: 1.65 }}>
-              🎯 <strong style={{ color: "var(--green)" }}>Pro tip:</strong> Best hunting follows a cold front — pressure rising, temps dropping, light winds. Fish activity peaks when pressure is stable or rising.
-            </div>
+            
           </div>
         )}
 
