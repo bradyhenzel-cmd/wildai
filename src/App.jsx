@@ -348,8 +348,8 @@ const css = `
   .grain { position:fixed; inset:0; pointer-events:none; z-index:100; opacity:0.045;
     background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size:160px; }
-  .fade-in { animation:fadeIn 0.4s ease forwards; }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation:fadeIn 0.25s ease forwards; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
   .slide-up { animation:slideUp 0.55s cubic-bezier(0.16,1,0.3,1) forwards; opacity:0; }
   @keyframes slideUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
   .pulse { animation:pulse 2.2s ease-in-out infinite; }
@@ -2109,7 +2109,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   });
 
   return (
-    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14, overflow: "visible" }}>
+    <div key={communityTab} className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14, overflow: "visible" }}>
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
