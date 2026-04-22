@@ -2013,11 +2013,11 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
       {/* Tab Nav */}
       <div style={{ display: "flex", borderRadius: 16, padding: 4, gap: 2, background: "#0e160e", border: "1px solid #192019" }}>
         {[
-          { id: "feed", label: "Feed", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg> },
-          { id: "hotspots", label: "Spots", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg> },
-          { id: "notifs", label: "Activity", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg> },
-          { id: "messages", label: "DMs", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> },
-          { id: "profile", label: "Profile", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg> },
+          { id: "feed", label: "Feed", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg> },
+          { id: "hotspots", label: "Spots", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg> },
+          { id: "notifs", label: "Activity", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg> },
+          { id: "messages", label: "DMs", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg> },
+          { id: "profile", label: "Profile", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg> },
         ].map(t => (
           <button key={t.id} onClick={() => { setCommunityTab(t.id); setViewingProfile(null); if (t.id === "notifs") { loadNotifs(); localStorage.setItem("wildai_notifs_seen", new Date().toISOString()); setNotifUnread(0); } }} style={{
             flex: 1, padding: "9px 0", fontSize: 10, fontWeight: 700, borderRadius: 12, border: "none", cursor: "pointer", transition: "all 0.2s",
@@ -2037,7 +2037,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                   {notifUnread > 9 ? "9+" : notifUnread}
                 </span>
               )}
-              {t.label}
+              {(communityTab === t.id || window.innerWidth > 600) && <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.03em" }}>{t.label}</span>}
             </span>
           </button>
         ))}
@@ -4252,7 +4252,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           <button key={t.id} onClick={() => { setTab(t.id); setShowMore(false); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, background: "none", border: "none", cursor: "pointer", color: tab === t.id ? "var(--green)" : "var(--text3)", transition: "color 0.2s", position: "relative" }}>
             {tab === t.id && <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 28, height: 2, borderRadius: "0 0 2px 2px", background: "var(--green)", boxShadow: "0 0 8px rgba(120,180,80,0.9)" }} />}
             {t.svg}
-            <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.04em" }}>{t.label}</span>
+            <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.04em" }}>width="18" height="18"</span>
           </button>
         ))}
       </div>
@@ -4543,7 +4543,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                     {t.svg}
                   </div>
                   <div>
-                    <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 14 }}>{t.label}</div>
+                    <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 14 }}>width="18" height="18"</div>
                     <div style={{ color: "#4a6a4a", fontSize: 11, marginTop: 2 }}>{t.desc}</div>
                   </div>
                 </button>
