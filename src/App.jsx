@@ -1113,6 +1113,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
   const [savedPinIds, setSavedPinIds] = useState(new Set());
   const [showFollowList, setShowFollowList] = useState(null); // 'followers' or 'following'
   const [isBlocked, setIsBlocked] = useState(false);
+  const [confirmBlock, setConfirmBlock] = useState(false);
   const [followList, setFollowList] = useState([]);
   const [loadingFollowList, setLoadingFollowList] = useState(false);
 
@@ -1339,21 +1340,35 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
               await supabase.from("reported_users").insert({ user_id: userId, reported_by: currentUser.id });
               toast("User reported. Thank you.", "success");
             }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 11, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>Report user</button>
+            {confirmBlock && createPortal(
+              <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 999999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }} onClick={() => setConfirmBlock(false)}>
+                <div onClick={e => e.stopPropagation()} style={{ background: "#0d1a0d", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 28, maxWidth: 320, width: "100%", textAlign: "center" }}>
+                  <div style={{ fontSize: 32, marginBottom: 12 }}>🚫</div>
+                  <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, fontFamily: "var(--font-display)", marginBottom: 8 }}>Block this user?</div>
+                  <div style={{ color: "var(--text3)", fontSize: 13, marginBottom: 24, lineHeight: 1.6 }}>You won't see their posts or messages and they won't be able to interact with you.</div>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <button onClick={() => setConfirmBlock(false)} className="btn-ghost" style={{ flex: 1, padding: "10px 0", fontSize: 14 }}>Cancel</button>
+                    <button onClick={async () => {
+                      await supabase.from("blocked_users").upsert({ blocker_id: currentUser.id, blocked_id: userId });
+                      setIsBlocked(true); setConfirmBlock(false);
+                      onBlock?.(userId, false);
+                      toast("User blocked.", "success");
+                      onBack?.();
+                    }} style={{ flex: 1, padding: "10px 0", fontSize: 14, background: "rgba(255,60,60,0.15)", border: "1px solid rgba(255,60,60,0.3)", borderRadius: "var(--radius-sm)", color: "rgba(255,100,100,0.9)", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Block</button>
+                  </div>
+                </div>
+              </div>,
+              document.body
+            )}
             <button onClick={async () => {
               if (!currentUser) { openSignIn(); return; }
               if (isBlocked) {
                 await supabase.from("blocked_users").delete().eq("blocker_id", currentUser.id).eq("blocked_id", userId);
                 setIsBlocked(false);
-                onBlock?.(userId, true); // true = unblock
+                onBlock?.(userId, true);
                 toast("User unblocked.", "success");
               } else {
-                if (!window.confirm("Block this user? You won't see their posts or messages.")) return;
-                await supabase.from("blocked_users").upsert({ blocker_id: currentUser.id, blocked_id: userId });
-                setIsBlocked(true);
-                onBlock?.(userId, false);
-                toast("User blocked.", "success");
-                toast("User blocked.", "success");
-                onBack?.();
+                setConfirmBlock(true);
               }
             }} style={{ background: "none", border: "none", color: isBlocked ? "var(--text3)" : "rgba(255,100,100,0.5)", fontSize: 11, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>{isBlocked ? "Unblock user" : "Block user"}</button>
           </div>
