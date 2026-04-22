@@ -2170,7 +2170,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
       )}
       {communityTab === "notifs" && !viewingProfile && !viewingPost && (
         <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {loadingNotifs && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)" }} className="pulse">Loading activity...</div>}
+          
           {!loadingNotifs && notifs.length === 0 && (
             <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>🔔</div>
