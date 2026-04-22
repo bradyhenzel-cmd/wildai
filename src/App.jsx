@@ -1757,7 +1757,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
 
   const loadNotifs = async () => {
     if (!user) return;
-    setLoadingNotifs(true);
+    if (notifs.length === 0) setLoadingNotifs(true);
     const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const myPostIds = (await supabase.from("posts").select("id").eq("user_id", user.id)).data?.map(p => p.id) || [];
     const [{ data: followData }, { data: realLikes }, { data: realComments }] = await Promise.all([
@@ -2032,7 +2032,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
           { id: "feed", label: "Feed", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg> },
           { id: "hotspots", label: "Spots", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg> },
           { id: "notifs", label: "Activity", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg> },
-          { id: "messages", label: "DMs", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg> },
+          { id: "messages", label: "DMs", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg> },
           { id: "profile", label: "Profile", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg> },
         ].map(t => (
           <button key={t.id} onClick={() => { setCommunityTab(t.id); setViewingProfile(null); if (t.id === "notifs") { loadNotifs(); localStorage.setItem("wildai_notifs_seen", new Date().toISOString()); setNotifUnread(0); } }} style={{
@@ -2120,16 +2120,21 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
           />
         )
       )}
-      {viewingProfile && (
-        <UserProfilePage
-          userId={viewingProfile}
-          currentUser={user}
-          onBack={() => setViewingProfile(null)}
-          openSignIn={openSignIn}
-          onViewUser={(id) => setViewingProfile(id)}
-          onMessage={(id) => { setViewingProfile(null); setCommunityTab("messages"); setTimeout(() => { window._openMessageThread = id; }, 100); }}
-          onBlock={(id, unblock) => { setBlockedIds(prev => { const n = new Set(prev); unblock ? n.delete(id) : n.add(id); return n; }); if (!unblock) setViewingProfile(null); }}
-        />
+      {viewingProfile && createPortal(
+        <div className="fade-in" style={{ position: "fixed", inset: 0, zIndex: 99998, background: "var(--bg)", overflowY: "auto", padding: "0 0 80px" }}>
+          <div style={{ maxWidth: 760, margin: "0 auto" }}>
+            <UserProfilePage
+              userId={viewingProfile}
+              currentUser={user}
+              onBack={() => setViewingProfile(null)}
+              openSignIn={openSignIn}
+              onViewUser={(id) => setViewingProfile(id)}
+              onMessage={(id) => { setViewingProfile(null); setCommunityTab("messages"); setTimeout(() => { window._openMessageThread = id; }, 100); }}
+              onBlock={(id, unblock) => { setBlockedIds(prev => { const n = new Set(prev); unblock ? n.delete(id) : n.add(id); return n; }); if (!unblock) setViewingProfile(null); }}
+            />
+          </div>
+        </div>,
+        document.body
       )}
       {communityTab === "feed" && !viewingProfile && <>
         {showWelcomeBanner && (
@@ -2386,49 +2391,49 @@ function PostDetailPage({ postId, user, openSignIn, onBack, onViewUser }) {
   return createPortal(
     <div className="fade-in" style={{ position: "fixed", inset: 0, zIndex: 99999, background: "var(--bg)", overflowY: "auto", padding: "0 0 80px" }}>
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "16px 16px 0" }}>
-      <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--green)", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 6, padding: "4px 0 16px" }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-        Back
-      </button>
-      <div style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)", background: "#0e1510" }}>
-        <div style={{ padding: "14px 16px 10px", display: "flex", alignItems: "center", gap: 12 }}>
-          <div onClick={() => onViewUser(post.user_id)} style={{ width: 44, height: 44, borderRadius: 14, background: "linear-gradient(135deg, #3d7a25, #1a3a0e)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", boxShadow: "0 0 0 2px #78b450" }}>
-            {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "white", fontWeight: 700, fontSize: 17 }}>{(post.username || "H")[0].toUpperCase()}</span>}
+        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--green)", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 6, padding: "4px 0 16px" }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5" /><path d="M12 19l-7-7 7-7" /></svg>
+          Back
+        </button>
+        <div style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)", background: "#0e1510" }}>
+          <div style={{ padding: "14px 16px 10px", display: "flex", alignItems: "center", gap: 12 }}>
+            <div onClick={() => onViewUser(post.user_id)} style={{ width: 44, height: 44, borderRadius: 14, background: "linear-gradient(135deg, #3d7a25, #1a3a0e)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", boxShadow: "0 0 0 2px #78b450" }}>
+              {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "white", fontWeight: 700, fontSize: 17 }}>{(post.username || "H")[0].toUpperCase()}</span>}
+            </div>
+            <div style={{ flex: 1 }}>
+              <span onClick={() => onViewUser(post.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", display: "block" }}>{capName(post.username)}</span>
+              <span style={{ color: "#4a6a4a", fontSize: 11 }}>{post.location || post.state}</span>
+            </div>
+            <span style={{ fontSize: 10, fontWeight: 600, color: "#3a5a3a", background: "#111a11", border: "1px solid #1c2c1c", padding: "3px 8px", borderRadius: 20 }}>{timeAgo(post.created_at)}</span>
           </div>
-          <div style={{ flex: 1 }}>
-            <span onClick={() => onViewUser(post.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", display: "block" }}>{capName(post.username)}</span>
-            <span style={{ color: "#4a6a4a", fontSize: 11 }}>{post.location || post.state}</span>
+          {post.photo && (
+            <div style={{ position: "relative" }}>
+              <img src={post.photo} style={{ width: "100%", maxHeight: 340, objectFit: "cover", display: "block" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(13,20,13,0.85) 0%, transparent 50%)" }} />
+              {post.species && <span style={{ position: "absolute", bottom: 10, left: 10, fontSize: 11, fontWeight: 700, padding: "5px 10px", borderRadius: 10, background: "rgba(45,90,27,0.85)", border: "1px solid rgba(61,122,37,0.6)", color: "white" }}>🐟 {post.species}</span>}
+            </div>
+          )}
+          {post.caption && (
+            <div style={{ padding: "10px 16px 6px" }}>
+              <p style={{ color: "#b8ccb8", fontSize: 13, lineHeight: 1.55, margin: 0 }}>
+                <span style={{ fontWeight: 700, color: "white" }}>{capName(post.username)}</span> {post.caption}
+              </p>
+            </div>
+          )}
+          <div style={{ padding: "8px 14px 14px", display: "flex", alignItems: "center", gap: 14 }}>
+            <button onClick={(e) => { toggleLike(); const svg = e.currentTarget.querySelector("svg"); svg.classList.remove("like-pop"); void svg.offsetWidth; svg.classList.add("like-pop"); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: isLiked ? "#f43f5e" : "#6a8a6a", padding: "4px 0", fontSize: 13, fontWeight: 600 }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+              {likeCount > 0 && likeCount}
+            </button>
+            <span style={{ color: "#6a8a6a", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+              {commentCount > 0 && commentCount}
+            </span>
           </div>
-          <span style={{ fontSize: 10, fontWeight: 600, color: "#3a5a3a", background: "#111a11", border: "1px solid #1c2c1c", padding: "3px 8px", borderRadius: 20 }}>{timeAgo(post.created_at)}</span>
         </div>
-        {post.photo && (
-          <div style={{ position: "relative" }}>
-            <img src={post.photo} style={{ width: "100%", maxHeight: 340, objectFit: "cover", display: "block" }} />
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(13,20,13,0.85) 0%, transparent 50%)" }} />
-            {post.species && <span style={{ position: "absolute", bottom: 10, left: 10, fontSize: 11, fontWeight: 700, padding: "5px 10px", borderRadius: 10, background: "rgba(45,90,27,0.85)", border: "1px solid rgba(61,122,37,0.6)", color: "white" }}>🐟 {post.species}</span>}
-          </div>
-        )}
-        {post.caption && (
-          <div style={{ padding: "10px 16px 6px" }}>
-            <p style={{ color: "#b8ccb8", fontSize: 13, lineHeight: 1.55, margin: 0 }}>
-              <span style={{ fontWeight: 700, color: "white" }}>{capName(post.username)}</span> {post.caption}
-            </p>
-          </div>
-        )}
-        <div style={{ padding: "8px 14px 14px", display: "flex", alignItems: "center", gap: 14 }}>
-          <button onClick={(e) => { toggleLike(); const svg = e.currentTarget.querySelector("svg"); svg.classList.remove("like-pop"); void svg.offsetWidth; svg.classList.add("like-pop"); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: isLiked ? "#f43f5e" : "#6a8a6a", padding: "4px 0", fontSize: 13, fontWeight: 600 }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-            {likeCount > 0 && likeCount}
-          </button>
-          <span style={{ color: "#6a8a6a", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-            {commentCount > 0 && commentCount}
-          </span>
+        <div style={{ marginTop: 12, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)", background: "#0e1510" }}>
+          <PostComments postId={postId} postOwnerId={post.user_id} user={user} openSignIn={openSignIn} onCommentAdded={(delta = 1) => setCommentCount(c => c + delta)} />
         </div>
-      </div>
-      <div style={{ marginTop: 12, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)", background: "#0e1510" }}>
-        <PostComments postId={postId} postOwnerId={post.user_id} user={user} openSignIn={openSignIn} onCommentAdded={(delta = 1) => setCommentCount(c => c + delta)} />
-      </div>
       </div>
     </div>,
     document.body
@@ -2975,36 +2980,36 @@ function BallisticsTab() {
 
     // Ingalls ballistic table — standard G1 reference (Hatcher's Notebook)
     const ingallsF = [
-      [800,1.679],[900,1.746],[1000,1.812],[1100,1.887],
-      [1200,2.388],[1300,2.945],[1400,3.175],[1500,3.284],
-      [1600,3.366],[1700,3.415],[1800,3.450],[1900,3.468],
-      [2000,3.478],[2100,3.486],[2200,3.493],[2300,3.489],
-      [2400,3.474],[2500,3.450],[2600,3.418],[2700,3.382],
-      [2800,3.341],[2900,3.298],[3000,3.254],[3100,3.213],
-      [3200,3.172],[3300,3.134],[3400,3.096],[3500,3.061],
+      [800, 1.679], [900, 1.746], [1000, 1.812], [1100, 1.887],
+      [1200, 2.388], [1300, 2.945], [1400, 3.175], [1500, 3.284],
+      [1600, 3.366], [1700, 3.415], [1800, 3.450], [1900, 3.468],
+      [2000, 3.478], [2100, 3.486], [2200, 3.493], [2300, 3.489],
+      [2400, 3.474], [2500, 3.450], [2600, 3.418], [2700, 3.382],
+      [2800, 3.341], [2900, 3.298], [3000, 3.254], [3100, 3.213],
+      [3200, 3.172], [3300, 3.134], [3400, 3.096], [3500, 3.061],
     ];
     const getF = (v) => {
       v = Math.max(800, Math.min(3500, v));
       for (let i = 0; i < ingallsF.length - 1; i++) {
-        if (v >= ingallsF[i][0] && v <= ingallsF[i+1][0]) {
-          const t = (v - ingallsF[i][0]) / (ingallsF[i+1][0] - ingallsF[i][0]);
-          return ingallsF[i][1] + t * (ingallsF[i+1][1] - ingallsF[i][1]);
+        if (v >= ingallsF[i][0] && v <= ingallsF[i + 1][0]) {
+          const t = (v - ingallsF[i][0]) / (ingallsF[i + 1][0] - ingallsF[i][0]);
+          return ingallsF[i][1] + t * (ingallsF[i + 1][1] - ingallsF[i][1]);
         }
       }
-      return ingallsF[ingallsF.length-1][1];
+      return ingallsF[ingallsF.length - 1][1];
     };
 
     const solve = (targetYards) => {
       const targetFt = targetYards * 3;
       let vx = mv, vy = 0, x = 0, y = 0, t = 0;
       while (x < targetFt && t < 10) {
-        const v = Math.sqrt(vx*vx + vy*vy);
+        const v = Math.sqrt(vx * vx + vy * vy);
         const decel = (getF(v) * v * v) / (bc * 36000);
-        vx += -(decel * vx/v) * dt;
-        vy += (-g - (decel * vy/v)) * dt;
-        x += vx*dt; y += vy*dt; t += dt;
+        vx += -(decel * vx / v) * dt;
+        vy += (-g - (decel * vy / v)) * dt;
+        x += vx * dt; y += vy * dt; t += dt;
       }
-      return { y, v: Math.sqrt(vx*vx + vy*vy), t };
+      return { y, v: Math.sqrt(vx * vx + vy * vy), t };
     };
 
     const rawRows = [];
@@ -4663,8 +4668,8 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                 { id: "harvest", label: "Harvest Log", desc: "Track your catches", accent: "#1a3a10", color: "#a3e635", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg> },
                 { id: "trophy", label: "Trophy Board", desc: "Community verified harvests", accent: "#4a2a00", color: "#fbbf24", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2z" /></svg> },
                 { id: "ballistics", label: "Ballistics", desc: "Bullet drop calculator", accent: "#3a0a2a", color: "#f472b6", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2c-2 0-4 1.5-4 4v8h8V6c0-2.5-2-4-4-4z" /><rect x="8" y="14" width="8" height="4" rx="1" /><line x1="10" y1="18" x2="10" y2="21" /><line x1="14" y1="18" x2="14" y2="21" /></svg> },
-                { id: "weather", label: "Weather", desc: "Live conditions", accent: "#0a2a5c", color: "#38bdf8", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M20 12h2"/><path d="m19.07 4.93-1.41 1.41"/><path d="M15.947 12.650a4 4 0 0 0-5.925-4.128"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6z"/></svg> },
-                { id: "about", label: "About", desc: "App info & account", accent: "#2a2a3a", color: "#94a3b8", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> },
+                { id: "weather", label: "Weather", desc: "Live conditions", accent: "#0a2a5c", color: "#38bdf8", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="M20 12h2" /><path d="m19.07 4.93-1.41 1.41" /><path d="M15.947 12.650a4 4 0 0 0-5.925-4.128" /><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6z" /></svg> },
+                { id: "about", label: "About", desc: "App info & account", accent: "#2a2a3a", color: "#94a3b8", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> },
                 ...(user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a" ? [{ id: "admin", label: "Admin", desc: "Manage reports", accent: "#3a1a1a", color: "#d44a4a", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg> }] : []),
               ].map(t => (
                 <button key={t.id} onClick={() => setTab(t.id)} className="more-btn" style={{ padding: "16px", textAlign: "left", cursor: "pointer", border: "1px solid #1a2a1a", borderRadius: 16, background: "linear-gradient(135deg, #0d140d, #101810)", display: "flex", alignItems: "center", gap: 14, minHeight: 80 }}>
