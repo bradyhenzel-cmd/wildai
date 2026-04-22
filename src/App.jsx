@@ -1851,16 +1851,22 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
     if (notifs.length === 0) setLoadingNotifs(true);
     const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const myPostIds = (await supabase.from("posts").select("id").eq("user_id", user.id)).data?.map(p => p.id) || [];
-    const [{ data: followData }, { data: realLikes }, { data: realComments }] = await Promise.all([
+    // Get my comment IDs so we can find replies and likes on them
+    const myCommentIds = (await supabase.from("comments").select("id").eq("user_id", user.id)).data?.map(c => c.id) || [];
+    const [{ data: followData }, { data: realLikes }, { data: realComments }, { data: commentLikesData }, { data: commentRepliesData }] = await Promise.all([
       supabase.from("follows").select("follower_id, created_at").eq("following_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(30),
       myPostIds.length ? supabase.from("likes").select("post_id, user_id, created_at").in("post_id", myPostIds).neq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(30) : { data: [] },
-      myPostIds.length ? supabase.from("comments").select("post_id, user_id, username, content, created_at").in("post_id", myPostIds).neq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(30) : { data: [] },
+      myPostIds.length ? supabase.from("comments").select("post_id, user_id, username, content, created_at").in("post_id", myPostIds).neq("user_id", user.id).is("parent_id", null).gte("created_at", since).order("created_at", { ascending: false }).limit(30) : { data: [] },
+      myCommentIds.length ? supabase.from("comment_likes").select("comment_id, user_id, created_at").in("comment_id", myCommentIds).neq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(20) : { data: [] },
+      myCommentIds.length ? supabase.from("comments").select("id, post_id, user_id, username, content, created_at, parent_id").in("parent_id", myCommentIds).neq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(20) : { data: [] },
     ]);
     // Fetch profiles for all unique user ids
     const userIds = [...new Set([
       ...(followData || []).map(f => f.follower_id),
       ...(realLikes || []).map(l => l.user_id),
       ...(realComments || []).map(c => c.user_id),
+      ...(commentLikesData || []).map(l => l.user_id),
+      ...(commentRepliesData || []).map(r => r.user_id),
     ])].filter(Boolean);
     const { data: profilesData } = userIds.length ? await supabase.from("profiles").select("user_id, username, avatar_url").in("user_id", userIds) : { data: [] };
     const profileMap = {};
@@ -1869,6 +1875,8 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
       ...(realLikes || []).map(l => ({ type: "like", username: profileMap[l.user_id]?.username || "Someone", avatar: profileMap[l.user_id]?.avatar_url, created_at: l.created_at, post_id: l.post_id })),
       ...(realComments || []).map(c => ({ type: "comment", username: c.username || profileMap[c.user_id]?.username || "Someone", avatar: profileMap[c.user_id]?.avatar_url, created_at: c.created_at, post_id: c.post_id, content: c.content })),
       ...(followData || []).map(f => ({ type: "follow", username: profileMap[f.follower_id]?.username || "Someone", avatar: profileMap[f.follower_id]?.avatar_url, created_at: f.created_at, follower_id: f.follower_id })),
+      ...(commentLikesData || []).map(l => ({ type: "comment_like", username: profileMap[l.user_id]?.username || "Someone", avatar: profileMap[l.user_id]?.avatar_url, created_at: l.created_at })),
+      ...(commentRepliesData || []).map(r => ({ type: "reply", username: r.username || profileMap[r.user_id]?.username || "Someone", avatar: profileMap[r.user_id]?.avatar_url, created_at: r.created_at, post_id: r.post_id, content: r.content })),
     ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     setNotifs(all);
     const lastSeen = localStorage.getItem("wildai_notifs_seen") || "0";
@@ -1884,6 +1892,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'likes' }, () => loadNotifs())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comments' }, () => loadNotifs())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'follows' }, () => loadNotifs())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comment_likes' }, () => loadNotifs())
       .subscribe();
     return () => { clearInterval(interval); supabase.removeChannel(channel); };
   }, [user]);
@@ -2182,12 +2191,12 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
               <div style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 13 }}>{capName(n.username)}</span>
                 <span style={{ color: "var(--text2)", fontSize: 13 }}>
-                  {n.type === "like" ? " liked your post" : n.type === "comment" ? ` commented: "${n.content?.slice(0, 40)}${n.content?.length > 40 ? "..." : ""}"` : " followed you"}
+                  {n.type === "like" ? " liked your post" : n.type === "comment" ? ` commented: "${n.content?.slice(0, 40)}${n.content?.length > 40 ? "..." : ""}"` : n.type === "comment_like" ? " liked your comment" : n.type === "reply" ? ` replied: "${n.content?.slice(0, 40)}${n.content?.length > 40 ? "..." : ""}"` : " followed you"}
                 </span>
                 <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 3 }}>{(() => { const diff = (Date.now() - new Date(n.created_at)) / 1000; if (diff < 60) return "just now"; if (diff < 3600) return `${Math.floor(diff / 60)}m ago`; if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`; return `${Math.floor(diff / 86400)}d ago`; })()}</div>
               </div>
               <div style={{ width: 32, height: 32, borderRadius: 10, background: n.type === "like" ? "rgba(244,63,94,0.15)" : n.type === "comment" ? "rgba(120,180,80,0.15)" : "rgba(80,140,220,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>
-                {n.type === "like" ? "❤️" : n.type === "comment" ? "💬" : "➕"}
+                {n.type === "like" ? "❤️" : n.type === "comment" ? "💬" : n.type === "comment_like" ? "❤️" : n.type === "reply" ? "↩️" : "➕"}
               </div>
             </div>
           ))}
