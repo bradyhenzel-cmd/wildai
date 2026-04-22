@@ -1294,10 +1294,10 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
         </div>
 
         {/* Bio */}
-        <div style={{ marginBottom: 10 }}>
+        <div style={{ marginBottom: 10, contain: "layout" }}>
           {!editingBio && (
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <div style={{ color: profile?.bio ? "var(--text2)" : "var(--text3)", fontSize: 13, fontStyle: profile?.bio ? "normal" : "italic", lineHeight: 1.5 }}>
+              <div style={{ color: profile?.bio ? "var(--text2)" : "var(--text3)", fontSize: 13, fontStyle: profile?.bio ? "normal" : "italic", lineHeight: 1.5, width: "100%", overflowWrap: "break-word" }}>
                 {profile?.bio || (isOwnProfile ? "Add a bio..." : "")}
               </div>
               {isOwnProfile && <button onClick={() => { setEditingBio(true); setBioInput(profile?.bio || ""); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 11, cursor: "pointer", padding: 0, flexShrink: 0 }}>✏️</button>}
