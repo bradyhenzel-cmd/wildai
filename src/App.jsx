@@ -3539,7 +3539,7 @@ function RegulationsTab({ selectedState, currentUser }) {
         const d = await res.json();
         if (d.success) {
           await supabase.from("regulations_cache").upsert({ state, hunting: d.data.hunting, fishing: d.data.fishing, general: d.data.general, updated_at: new Date().toISOString() });
-          setScrapeStatus(prev => ({ ...prev, [state]: "done" }));
+          setScrapeStatus(prev => ({ ...prev, [state]: d.data.scraped ? "scraped" : "ai" }));
         } else {
           setScrapeStatus(prev => ({ ...prev, [state]: "error" }));
         }
@@ -3587,7 +3587,7 @@ function RegulationsTab({ selectedState, currentUser }) {
       )}
 
       <div style={{ padding: "16px 20px", background: "var(--amber-dim)", border: "1px solid rgba(212,147,10,0.2)", borderRadius: "var(--radius)" }}>
-        <p style={{ color: "rgba(212,147,10,0.9)", fontSize: 13, lineHeight: 1.7 }}>⚠️ <strong>Info is generally accurate but dates and limits may vary.</strong> Always click the official links below for exact current regulations before heading out.</p>
+        <p style={{ color: "rgba(212,147,10,0.9)", fontSize: 13, lineHeight: 1.7 }}>⚠️ <strong>Regulations are AI-generated and may not be fully up to date for all states.</strong> No service currently has 100% accurate real-time regulations for all 50 states — this is an ongoing project we're actively improving with community support. Always verify with your state's official wildlife agency before heading out.</p>
         {STATE_WILDLIFE_AGENCIES[selectedState] && (
           <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
             <a href={STATE_WILDLIFE_AGENCIES[selectedState].hunting} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "11px 16px", background: "linear-gradient(135deg, rgba(212,147,10,0.3), rgba(180,120,5,0.2))", border: "1px solid rgba(212,147,10,0.5)", borderRadius: "var(--radius-sm)", color: "#e8b020", fontSize: 13, fontWeight: 700, textDecoration: "none", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 4px 16px rgba(212,147,10,0.2)", transition: "all 0.2s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(212,147,10,0.4)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(212,147,10,0.2)"; }}>🎯 Hunting Regs →</a>
@@ -3623,10 +3623,15 @@ function RegulationsTab({ selectedState, currentUser }) {
             </button>
           </div>
           <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 12 }}>Fetches each state's official site and generates structured regulations. Takes ~5 minutes.</div>
+          <div style={{ display: "flex", gap: 16, marginBottom: 12, fontSize: 11, color: "var(--text3)" }}>
+            <span>✅ Scraped from official site</span>
+            <span>🟡 AI knowledge fallback</span>
+            <span>❌ Failed</span>
+          </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 6 }}>
             {STATES.map(s => (
-              <div key={s} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 8px", borderRadius: "var(--radius-sm)", background: scrapeStatus[s] === "done" ? "var(--green-dim)" : scrapeStatus[s] === "error" ? "rgba(255,100,100,0.1)" : scrapeStatus[s] === "loading" ? "rgba(212,147,10,0.1)" : "rgba(255,255,255,0.03)", border: "1px solid var(--border)" }}>
-                <span style={{ fontSize: 10 }}>{scrapeStatus[s] === "done" ? "✅" : scrapeStatus[s] === "error" ? "❌" : scrapeStatus[s] === "loading" ? "⏳" : "⬜"}</span>
+              <div key={s} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 8px", borderRadius: "var(--radius-sm)", background: scrapeStatus[s] === "scraped" ? "var(--green-dim)" : scrapeStatus[s] === "ai" ? "rgba(212,147,10,0.1)" : scrapeStatus[s] === "error" ? "rgba(255,100,100,0.1)" : scrapeStatus[s] === "loading" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.03)", border: "1px solid var(--border)" }}>
+                <span style={{ fontSize: 10 }}>{scrapeStatus[s] === "scraped" ? "✅" : scrapeStatus[s] === "ai" ? "🟡" : scrapeStatus[s] === "error" ? "❌" : scrapeStatus[s] === "loading" ? "⏳" : "⬜"}</span>
                 <span style={{ fontSize: 11, color: "var(--text2)" }}>{s}</span>
               </div>
             ))}
