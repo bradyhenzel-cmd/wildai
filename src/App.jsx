@@ -661,18 +661,18 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
             const moonIcon = phase < 1.85 ? "🌑" : phase < 5.53 ? "🌒" : phase < 9.22 ? "🌓" : phase < 12.91 ? "🌔" : phase < 16.61 ? "🌕" : phase < 20.30 ? "🌖" : phase < 23.99 ? "🌗" : "🌘";
 
             return (
-              <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "14px 16px", marginTop: 4 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "11px 13px", marginTop: 4 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                   <div>
                     <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 4 }}>SOLUNAR FORECAST</div>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: 22 }}>{moonIcon}</span>
-                      <span style={{ color: ratingColor, fontWeight: 700, fontSize: 18, fontFamily: "var(--font-display)" }}>{ratingLabel}</span>
+                      <span style={{ fontSize: 18 }}>{moonIcon}</span>
+                      <span style={{ color: ratingColor, fontWeight: 700, fontSize: 15, fontFamily: "var(--font-display)" }}>{ratingLabel}</span>
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
                     {[1, 2, 3, 4].map(i => (
-                      <div key={i} style={{ width: 8, height: 28, borderRadius: 4, background: i <= bars ? ratingColor : "rgba(255,255,255,0.08)", transition: "all 0.3s" }} />
+                      <div key={i} style={{ width: 6, height: 20, borderRadius: 3, background: i <= bars ? ratingColor : "rgba(255,255,255,0.08)", transition: "all 0.3s" }} />
                     ))}
                   </div>
                 </div>
@@ -683,16 +683,16 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
                     { label: "Minor", time: fmt(minor1), active: isActive(minor1) },
                     { label: "Minor", time: fmt(minor2), active: isActive(minor2) },
                   ].map((p, i) => (
-                    <div key={i} style={{ padding: "8px 10px", borderRadius: 10, background: p.active ? "rgba(120,180,80,0.12)" : "rgba(255,255,255,0.03)", border: `1px solid ${p.active ? "rgba(120,180,80,0.3)" : "rgba(255,255,255,0.06)"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div key={i} style={{ padding: "6px 9px", borderRadius: 8, background: p.active ? "rgba(120,180,80,0.12)" : "rgba(255,255,255,0.03)", border: `1px solid ${p.active ? "rgba(120,180,80,0.3)" : "rgba(255,255,255,0.06)"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <div>
-                        <div style={{ color: p.label === "Major" ? "var(--green)" : "var(--text3)", fontSize: 10, fontWeight: 700, letterSpacing: "0.06em" }}>{p.label.toUpperCase()}</div>
-                        <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{p.time}</div>
+                        <div style={{ color: p.label === "Major" ? "var(--green)" : "var(--text3)", fontSize: 9, fontWeight: 700, letterSpacing: "0.06em" }}>{p.label.toUpperCase()}</div>
+                        <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 12 }}>{p.time}</div>
                       </div>
-                      {p.active && <span style={{ fontSize: 10, fontWeight: 700, color: "var(--green)", background: "rgba(120,180,80,0.2)", padding: "2px 7px", borderRadius: 10 }}>NOW</span>}
+                      {p.active && <span style={{ fontSize: 9, fontWeight: 700, color: "var(--green)", background: "rgba(120,180,80,0.2)", padding: "2px 6px", borderRadius: 8 }}>NOW</span>}
                     </div>
                   ))}
                 </div>
-                <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 12, textAlign: "center" }}>Peak activity windows for hunting & fishing</div>
+                <div style={{ color: "var(--text3)", fontSize: 10, marginTop: 8, textAlign: "center" }}>Peak activity windows for hunting & fishing</div>
               </div>
             );
           })()}
