@@ -2343,7 +2343,11 @@ function PostDetailPage({ postId, user, openSignIn, onBack, onViewUser }) {
     const load = async () => {
       setLoading(true);
       const { data } = await supabase.from("posts").select("*").eq("id", postId).single();
-      if (data) setPost(data);
+      if (data) {
+        // Fetch latest avatar from profiles in case post has stale avatar
+        const { data: profile } = await supabase.from("profiles").select("avatar_url, username").eq("user_id", data.user_id).single();
+        setPost({ ...data, avatar_url: profile?.avatar_url || data.avatar_url, username: profile?.username || data.username });
+      }
       const { count } = await supabase.from("likes").select("*", { count: "exact", head: true }).eq("post_id", postId);
       setLikeCount(count || 0);
       if (user) {
@@ -2379,8 +2383,9 @@ function PostDetailPage({ postId, user, openSignIn, onBack, onViewUser }) {
     return `${Math.floor(diff / 86400)}d ago`;
   };
 
-  return (
-    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+  return createPortal(
+    <div className="fade-in" style={{ position: "fixed", inset: 0, zIndex: 99999, background: "var(--bg)", overflowY: "auto", padding: "0 0 80px" }}>
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "16px 16px 0" }}>
       <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--green)", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 6, padding: "4px 0 16px" }}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
         Back
@@ -2424,7 +2429,9 @@ function PostDetailPage({ postId, user, openSignIn, onBack, onViewUser }) {
       <div style={{ marginTop: 12, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)", background: "#0e1510" }}>
         <PostComments postId={postId} postOwnerId={post.user_id} user={user} openSignIn={openSignIn} onCommentAdded={(delta = 1) => setCommentCount(c => c + delta)} />
       </div>
-    </div>
+      </div>
+    </div>,
+    document.body
   );
 }
 
