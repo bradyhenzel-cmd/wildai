@@ -507,24 +507,16 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
   const [error, setError] = useState(null);
 
   const searchLocations = async (val) => {
-    if (val.length < 3) { setSuggestions([]); return; }
+    if (val.length < 2) { setSuggestions([]); return; }
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&format=json&limit=8&countrycodes=us&featuretype=city`);
+      const token = import.meta.env.VITE_MAPBOX_TOKEN;
+      const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(val)}.json?access_token=${token}&country=us&types=place,locality,district&limit=8&language=en`);
       const data = await res.json();
-      const typeOrder = { city: 0, town: 1, village: 2, hamlet: 3, municipality: 1, suburb: 4, county: 5, administrative: 6 };
-      const seen = new Set();
-      const unique = data
-        .filter(s => {
-          const allowedTypes = ["city", "town", "village", "hamlet", "municipality", "suburb", "county", "administrative"];
-          if (!["place", "boundary"].includes(s.class)) return false;
-          if (!allowedTypes.includes(s.type)) return false;
-          const parts = s.display_name.split(",").map(p => p.trim());
-          const label = parts.slice(0, 2).join(", ");
-          if (seen.has(label)) return false;
-          seen.add(label);
-          return true;
-        })
-        .sort((a, b) => (typeOrder[a.type] ?? 9) - (typeOrder[b.type] ?? 9));
+      const unique = (data.features || []).map(f => ({
+        display_name: f.place_name,
+        lat: f.center[1],
+        lon: f.center[0],
+      }));
       setSuggestions(unique);
       setShowDropdown(true);
     } catch { setSuggestions([]); }
