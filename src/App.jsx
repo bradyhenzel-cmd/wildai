@@ -1857,7 +1857,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
       supabase.from("follows").select("follower_id, created_at").eq("following_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(30),
       myPostIds.length ? supabase.from("likes").select("post_id, user_id, created_at").in("post_id", myPostIds).neq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(30) : { data: [] },
       myPostIds.length ? supabase.from("comments").select("post_id, user_id, username, content, created_at").in("post_id", myPostIds).neq("user_id", user.id).is("parent_id", null).gte("created_at", since).order("created_at", { ascending: false }).limit(30) : { data: [] },
-      myCommentIds.length ? supabase.from("comment_likes").select("comment_id, user_id, created_at").in("comment_id", myCommentIds).neq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(20) : { data: [] },
+      myCommentIds.length ? supabase.from("comment_likes").select("comment_id, user_id, created_at, comments(post_id)").in("comment_id", myCommentIds).neq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(20) : { data: [] },
       myCommentIds.length ? supabase.from("comments").select("id, post_id, user_id, username, content, created_at, parent_id").in("parent_id", myCommentIds).neq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(20) : { data: [] },
     ]);
     // Fetch profiles for all unique user ids
@@ -1875,7 +1875,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
       ...(realLikes || []).map(l => ({ type: "like", username: profileMap[l.user_id]?.username || "Someone", avatar: profileMap[l.user_id]?.avatar_url, created_at: l.created_at, post_id: l.post_id })),
       ...(realComments || []).map(c => ({ type: "comment", username: c.username || profileMap[c.user_id]?.username || "Someone", avatar: profileMap[c.user_id]?.avatar_url, created_at: c.created_at, post_id: c.post_id, content: c.content })),
       ...(followData || []).map(f => ({ type: "follow", username: profileMap[f.follower_id]?.username || "Someone", avatar: profileMap[f.follower_id]?.avatar_url, created_at: f.created_at, follower_id: f.follower_id })),
-      ...(commentLikesData || []).map(l => ({ type: "comment_like", username: profileMap[l.user_id]?.username || "Someone", avatar: profileMap[l.user_id]?.avatar_url, created_at: l.created_at })),
+      ...(commentLikesData || []).map(l => ({ type: "comment_like", username: profileMap[l.user_id]?.username || "Someone", avatar: profileMap[l.user_id]?.avatar_url, created_at: l.created_at, post_id: l.comments?.post_id })),
       ...(commentRepliesData || []).map(r => ({ type: "reply", username: r.username || profileMap[r.user_id]?.username || "Someone", avatar: profileMap[r.user_id]?.avatar_url, created_at: r.created_at, post_id: r.post_id, content: r.content })),
     ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     setNotifs(all);
