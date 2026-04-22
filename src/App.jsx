@@ -4889,6 +4889,7 @@ export default function App() {
   const [prevPage, setPrevPage] = useState("landing");
   const [notifs, setNotifs] = useState([]);
   const [notifUnread, setNotifUnread] = useState(0);
+  const [messagesUnread, setMessagesUnread] = useState(0);
   const [messageCount, setMessageCount] = useState(() => {
     const saved = localStorage.getItem("wildai_message_count");
     return saved ? parseInt(saved) : 0;
