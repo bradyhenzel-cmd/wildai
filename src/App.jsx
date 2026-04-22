@@ -4252,7 +4252,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           <button key={t.id} onClick={() => { setTab(t.id); setShowMore(false); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, background: "none", border: "none", cursor: "pointer", color: tab === t.id ? "var(--green)" : "var(--text3)", transition: "color 0.2s", position: "relative" }}>
             {tab === t.id && <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 28, height: 2, borderRadius: "0 0 2px 2px", background: "var(--green)", boxShadow: "0 0 8px rgba(120,180,80,0.9)" }} />}
             {t.svg}
-            <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.04em" }}>width="18" height="18"</span>
+            <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.04em" }}>{t.label}</span>
           </button>
         ))}
       </div>
@@ -4543,7 +4543,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                     {t.svg}
                   </div>
                   <div>
-                    <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 14 }}>width="18" height="18"</div>
+                    <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 14 }}>{t.label}</div>
                     <div style={{ color: "#4a6a4a", fontSize: 11, marginTop: 2 }}>{t.desc}</div>
                   </div>
                 </button>
