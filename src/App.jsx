@@ -1475,6 +1475,7 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
   const [activeThread, setActiveThread] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [drafts, setDrafts] = useState({});
   const [sending, setSending] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -1513,7 +1514,10 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
   };
 
   const openThread = async (otherId, username, avatar) => {
+    setDrafts(d => ({ ...d, [activeThread?.otherId]: input }));
+    setInput("");
     setActiveThread({ otherId, username, avatar });
+    setTimeout(() => setInput(drafts[otherId] || ""), 0);
     setView("thread");
     document.body.classList.add("dm-fullscreen");
     await loadConversation(otherId);
