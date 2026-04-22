@@ -2326,7 +2326,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
 
             {expandedComments.has(post.id) && (
               <div style={{ borderTop: "1px solid #192019" }}>
-                <PostComments postId={post.id} postOwnerId={post.user_id} user={user} openSignIn={openSignIn} onCommentAdded={(delta = 1) => setCommentCounts(prev => ({ ...prev, [post.id]: Math.max(0, (prev[post.id] || 0) + delta) }))} />
+                <PostComments postId={post.id} postOwnerId={post.user_id} user={user} openSignIn={openSignIn} onCommentAdded={(delta = 1) => setCommentCounts(prev => ({ ...prev, [post.id]: Math.max(0, (prev[post.id] || 0) + delta) }))} onViewUser={(id) => setViewingProfile(id)} />
               </div>
             )}
           </div>
@@ -2432,7 +2432,7 @@ function PostDetailPage({ postId, user, openSignIn, onBack, onViewUser }) {
           </div>
         </div>
         <div style={{ marginTop: 12, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)", background: "#0e1510" }}>
-          <PostComments postId={postId} postOwnerId={post.user_id} user={user} openSignIn={openSignIn} onCommentAdded={(delta = 1) => setCommentCount(c => c + delta)} />
+          <PostComments postId={postId} postOwnerId={post.user_id} user={user} openSignIn={openSignIn} onCommentAdded={(delta = 1) => setCommentCount(c => c + delta)} onViewUser={onViewUser} />
         </div>
       </div>
     </div>,
@@ -2440,7 +2440,7 @@ function PostDetailPage({ postId, user, openSignIn, onBack, onViewUser }) {
   );
 }
 
-function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded }) {
+function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded, onViewUser }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState("");
@@ -2545,7 +2545,7 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded })
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ padding: "2px 0", textAlign: "left" }}>
-            <span style={{ color: "white", fontWeight: 700, fontSize: 13 }}>{capName(c.username || "Hunter")}</span>
+            <span onClick={() => onViewUser?.(c.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 13, cursor: onViewUser ? "pointer" : "default" }}>{capName(c.username || "Hunter")}</span>
             <span style={{ color: "rgba(238,245,232,0.55)", fontSize: 13, lineHeight: 1.5 }}>&nbsp;&nbsp;{c.content}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 4, paddingLeft: 2 }}>
