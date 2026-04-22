@@ -1784,6 +1784,12 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
     setNotifUnread(all.filter(n => new Date(n.created_at) > new Date(lastSeen)).length);
     setLoadingNotifs(false);
   };
+  useEffect(() => {
+    if (!user) return;
+    loadNotifs();
+    const interval = setInterval(loadNotifs, 60000);
+    return () => clearInterval(interval);
+  }, [user]);
   const [messagesUnread, setMessagesUnread] = useState(0);
   useEffect(() => {
     if (!user) return;
@@ -1813,6 +1819,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   }, [user]);
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(() => !localStorage.getItem("wildai_community_welcomed"));
   const [viewingProfile, setViewingProfile] = useState(null);
+  const [viewingPost, setViewingPost] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -2051,7 +2058,10 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
           </button>
         ))}
       </div>
-      {communityTab === "notifs" && !viewingProfile && (
+      {communityTab === "notifs" && !viewingProfile && viewingPost && (
+        <PostDetailPage postId={viewingPost} user={user} openSignIn={openSignIn} onBack={() => setViewingPost(null)} onViewUser={(id) => { setViewingProfile(id); setViewingPost(null); }} />
+      )}
+      {communityTab === "notifs" && !viewingProfile && !viewingPost && (
         <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {loadingNotifs && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)" }} className="pulse">Loading activity...</div>}
           {!loadingNotifs && notifs.length === 0 && (
@@ -2062,18 +2072,25 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
             </div>
           )}
           {notifs.map((n, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 4px", borderBottom: "1px solid var(--border)" }}>
-              <div style={{ width: 38, height: 38, borderRadius: 12, background: "linear-gradient(135deg, #1e4010, #0f2408)", overflow: "hidden", flexShrink: 0, boxShadow: "0 0 0 2px #78b450" }}>
-                {n.avatar ? <img src={n.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", fontWeight: 700, fontSize: 14 }}>{n.username[0].toUpperCase()}</div>}
+            <div key={i} onClick={() => {
+              if (n.type === "follow" && n.follower_id) { setViewingProfile(n.follower_id); }
+              else if (n.post_id) { setViewingPost(n.post_id); }
+            }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 4px", borderBottom: "1px solid var(--border)", cursor: "pointer", borderRadius: 8, transition: "background 0.15s" }}
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: "linear-gradient(135deg, #1e4010, #0f2408)", overflow: "hidden", flexShrink: 0, boxShadow: "0 0 0 2px #78b450" }}>
+                {n.avatar ? <img src={n.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", fontWeight: 700, fontSize: 15 }}>{n.username[0].toUpperCase()}</div>}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 13 }}>{capName(n.username)}</span>
                 <span style={{ color: "var(--text2)", fontSize: 13 }}>
                   {n.type === "like" ? " liked your post" : n.type === "comment" ? ` commented: "${n.content?.slice(0, 40)}${n.content?.length > 40 ? "..." : ""}"` : " followed you"}
                 </span>
-                <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>{(() => { const diff = (Date.now() - new Date(n.created_at)) / 1000; if (diff < 60) return "just now"; if (diff < 3600) return `${Math.floor(diff / 60)}m ago`; if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`; return `${Math.floor(diff / 86400)}d ago`; })()}</div>
+                <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 3 }}>{(() => { const diff = (Date.now() - new Date(n.created_at)) / 1000; if (diff < 60) return "just now"; if (diff < 3600) return `${Math.floor(diff / 60)}m ago`; if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`; return `${Math.floor(diff / 86400)}d ago`; })()}</div>
               </div>
-              <span style={{ fontSize: 18, flexShrink: 0 }}>{n.type === "like" ? "❤️" : n.type === "comment" ? "💬" : "➕"}</span>
+              <div style={{ width: 32, height: 32, borderRadius: 10, background: n.type === "like" ? "rgba(244,63,94,0.15)" : n.type === "comment" ? "rgba(120,180,80,0.15)" : "rgba(80,140,220,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>
+                {n.type === "like" ? "❤️" : n.type === "comment" ? "💬" : "➕"}
+              </div>
             </div>
           ))}
         </div>
@@ -2315,6 +2332,102 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
 }
 
 // ─── POST COMMENTS ────────────────────────────────────────────────────────────
+function PostDetailPage({ postId, user, openSignIn, onBack, onViewUser }) {
+  const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [likeCount, setLikeCount] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [commentCount, setCommentCount] = useState(0);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      const { data } = await supabase.from("posts").select("*").eq("id", postId).single();
+      if (data) setPost(data);
+      const { count } = await supabase.from("likes").select("*", { count: "exact", head: true }).eq("post_id", postId);
+      setLikeCount(count || 0);
+      if (user) {
+        const { data: liked } = await supabase.from("likes").select("id").eq("post_id", postId).eq("user_id", user.id).single();
+        setIsLiked(!!liked);
+      }
+      const { count: cc } = await supabase.from("comments").select("*", { count: "exact", head: true }).eq("post_id", postId);
+      setCommentCount(cc || 0);
+      setLoading(false);
+    };
+    load();
+  }, [postId]);
+
+  const toggleLike = async () => {
+    if (!user) { openSignIn(); return; }
+    if (isLiked) {
+      await supabase.from("likes").delete().eq("post_id", postId).eq("user_id", user.id);
+      setIsLiked(false); setLikeCount(c => c - 1);
+    } else {
+      await supabase.from("likes").insert({ post_id: postId, user_id: user.id });
+      setIsLiked(true); setLikeCount(c => c + 1);
+    }
+  };
+
+  if (loading) return <div style={{ textAlign: "center", padding: 60, color: "var(--text3)" }} className="pulse">Loading...</div>;
+  if (!post) return <div style={{ textAlign: "center", padding: 60, color: "var(--text3)" }}>Post not found.</div>;
+
+  const timeAgo = (date) => {
+    const diff = (Date.now() - new Date(date)) / 1000;
+    if (diff < 60) return "just now";
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+  };
+
+  return (
+    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+      <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--green)", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 6, padding: "4px 0 16px" }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        Back
+      </button>
+      <div style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)", background: "#0e1510" }}>
+        <div style={{ padding: "14px 16px 10px", display: "flex", alignItems: "center", gap: 12 }}>
+          <div onClick={() => onViewUser(post.user_id)} style={{ width: 44, height: 44, borderRadius: 14, background: "linear-gradient(135deg, #3d7a25, #1a3a0e)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", boxShadow: "0 0 0 2px #78b450" }}>
+            {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "white", fontWeight: 700, fontSize: 17 }}>{(post.username || "H")[0].toUpperCase()}</span>}
+          </div>
+          <div style={{ flex: 1 }}>
+            <span onClick={() => onViewUser(post.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", display: "block" }}>{capName(post.username)}</span>
+            <span style={{ color: "#4a6a4a", fontSize: 11 }}>{post.location || post.state}</span>
+          </div>
+          <span style={{ fontSize: 10, fontWeight: 600, color: "#3a5a3a", background: "#111a11", border: "1px solid #1c2c1c", padding: "3px 8px", borderRadius: 20 }}>{timeAgo(post.created_at)}</span>
+        </div>
+        {post.photo && (
+          <div style={{ position: "relative" }}>
+            <img src={post.photo} style={{ width: "100%", maxHeight: 340, objectFit: "cover", display: "block" }} />
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(13,20,13,0.85) 0%, transparent 50%)" }} />
+            {post.species && <span style={{ position: "absolute", bottom: 10, left: 10, fontSize: 11, fontWeight: 700, padding: "5px 10px", borderRadius: 10, background: "rgba(45,90,27,0.85)", border: "1px solid rgba(61,122,37,0.6)", color: "white" }}>🐟 {post.species}</span>}
+          </div>
+        )}
+        {post.caption && (
+          <div style={{ padding: "10px 16px 6px" }}>
+            <p style={{ color: "#b8ccb8", fontSize: 13, lineHeight: 1.55, margin: 0 }}>
+              <span style={{ fontWeight: 700, color: "white" }}>{capName(post.username)}</span> {post.caption}
+            </p>
+          </div>
+        )}
+        <div style={{ padding: "8px 14px 14px", display: "flex", alignItems: "center", gap: 14 }}>
+          <button onClick={(e) => { toggleLike(); const svg = e.currentTarget.querySelector("svg"); svg.classList.remove("like-pop"); void svg.offsetWidth; svg.classList.add("like-pop"); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: isLiked ? "#f43f5e" : "#6a8a6a", padding: "4px 0", fontSize: 13, fontWeight: 600 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+            {likeCount > 0 && likeCount}
+          </button>
+          <span style={{ color: "#6a8a6a", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+            {commentCount > 0 && commentCount}
+          </span>
+        </div>
+      </div>
+      <div style={{ marginTop: 12, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)", background: "#0e1510" }}>
+        <PostComments postId={postId} postOwnerId={post.user_id} user={user} openSignIn={openSignIn} onCommentAdded={(delta = 1) => setCommentCount(c => c + delta)} />
+      </div>
+    </div>
+  );
+}
+
 function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
