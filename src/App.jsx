@@ -351,6 +351,7 @@ const css = `
     background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size:160px; }
   .fade-in { animation:none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
   .btn-primary, .btn-ghost, .btn-gold { transition: transform 0.1s ease, box-shadow 0.1s ease; }
   .btn-primary:active, .btn-ghost:active, .btn-gold:active { transform: scale(0.96); }
   .slide-up { animation:slideUp 0.55s cubic-bezier(0.16,1,0.3,1) forwards; opacity:0; }
@@ -1874,6 +1875,10 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [confirmDeletePost, setConfirmDeletePost] = useState(null);
+  const [pullY, setPullY] = useState(0);
+  const [isPulling, setIsPulling] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const pullStartY = useRef(0);
   const [stateFilter, setStateFilter] = useState(selectedState || "all");
   const [sortBy, setSortBy] = useState("newest");
   const [form, setForm] = useState({ species: "", location: "", caption: "", photo: "", pinLat: null, pinLng: null });
@@ -2153,7 +2158,28 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   });
 
   return (
-    <div key={communityTab} className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14, overflow: "visible" }}>
+    <div key={communityTab} className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14, overflow: "visible" }}
+        onTouchStart={e => { pullStartY.current = e.touches[0].clientY; setIsPulling(true); }}
+        onTouchMove={e => {
+          if (!isPulling) return;
+          const dy = e.touches[0].clientY - pullStartY.current;
+          if (dy > 0 && window.scrollY === 0 && communityTab === "feed") setPullY(Math.min(dy * 0.4, 80));
+        }}
+        onTouchEnd={() => {
+          setIsPulling(false);
+          if (pullY > 50 && !refreshing) {
+            setRefreshing(true);
+            loadPosts().finally(() => { setRefreshing(false); setPullY(0); });
+          } else {
+            setPullY(0);
+          }
+        }}
+      >
+        {communityTab === "feed" && pullY > 0 && (
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: pullY, overflow: "hidden", transition: pullY < 50 ? "none" : "height 0.3s", color: "var(--text3)", fontSize: 12 }}>
+            {pullY > 50 || refreshing ? <div style={{ width: 20, height: 20, border: "2px solid var(--green)", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> : <span style={{ opacity: pullY/50 }}>↓ Pull to refresh</span>}
+          </div>
+        )}
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -4703,7 +4729,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                   </div>
                   <div style={{ margin: "0 24px 16px", height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)" }} />
                   <div style={{ padding: "0 20px 16px" }}>
-                    {["Unlimited AI chat — no message limits", "Unlimited saved map pins", "AI trip planner", "Harvest log & season tracking", "State regulations & official season dates", "Live weather with real conditions"].map((f, i) => (
+                    {["Unlimited AI chat — no message limits", "Unlimited saved map pins", "AI trip planner", "Harvest log & season tracking", "State regulations & official season dates", ].map((f, i) => (
                       <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, background: i % 2 === 0 ? "rgba(255,255,255,0.02)" : "transparent" }}>
                         <div style={{ width: 20, height: 20, borderRadius: "50%", background: "rgba(232,176,32,0.15)", border: "1px solid rgba(232,176,32,0.4)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           <span style={{ color: "#e8b020", fontSize: 10, fontWeight: 700 }}>✓</span>
