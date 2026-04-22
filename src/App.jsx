@@ -635,8 +635,8 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
             if (RA < 0) RA += 360;
             const GST = (280.46061837 + 360.98564736629*(JD-2451545.0)) % 360;
             // Use weather location lng if available, otherwise default to -98 (center US)
-            const userLng = weather?.lng || -98;
-            const LST = (GST + userLng) % 360;
+            const userLng = typeof weather?.lng === 'number' ? weather.lng : -98;
+            const LST = ((GST + userLng) % 360 + 360) % 360;
             let HA = LST - RA;
             if (HA > 180) HA -= 360;
             if (HA < -180) HA += 360;
@@ -658,7 +658,7 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
             const bars = Math.round(rating * 4);
 
             const hour = now.getHours() + now.getMinutes()/60;
-            const fmt = (h) => { const hh=Math.floor(h),mm=Math.round((h-hh)*60),ap=hh>=12?"PM":"AM"; return `${hh%12||12}:${mm.toString().padStart(2,'0')} ${ap}`; };
+            const fmt = (h) => { if (isNaN(h) || !isFinite(h)) return "--:--"; const hh=Math.floor(h),mm=Math.round((h-hh)*60),ap=hh>=12?"PM":"AM"; return `${hh%12||12}:${mm.toString().padStart(2,'0')} ${ap}`; };
             const isActive = (h) => { const diff = Math.abs(hour - h); return diff <= 1 || diff >= 23; };
             const moonIcon = phase < 1.85 ? "🌑" : phase < 5.53 ? "🌒" : phase < 9.22 ? "🌓" : phase < 12.91 ? "🌔" : phase < 16.61 ? "🌕" : phase < 20.30 ? "🌖" : phase < 23.99 ? "🌗" : "🌘";
 
