@@ -2148,18 +2148,20 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
             color: communityTab === t.id ? "white" : "#4a6a4a",
             boxShadow: communityTab === t.id ? "0 4px 16px rgba(45,90,27,0.4)" : "none"
           }}>
-            <span style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, position: "relative" }}>
-              {t.icon}
-              {t.id === "messages" && messagesUnread > 0 && (
-                <span style={{ position: "absolute", top: -3, left: -3, background: "#f43f5e", borderRadius: "50%", width: 13, height: 13, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: "white" }}>
-                  {messagesUnread > 9 ? "9+" : messagesUnread}
-                </span>
-              )}
-              {t.id === "notifs" && notifUnread > 0 && (
-                <span style={{ position: "absolute", top: -3, left: -3, background: "#f43f5e", borderRadius: "50%", width: 13, height: 13, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: "white" }}>
-                  {notifUnread > 9 ? "9+" : notifUnread}
-                </span>
-              )}
+            <span style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+              <span style={{ position: "relative", width: 18, height: 18, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                {t.icon}
+                {t.id === "messages" && messagesUnread > 0 && (
+                  <span style={{ position: "absolute", top: -3, right: -3, background: "#f43f5e", borderRadius: "50%", width: 11, height: 11, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 7, fontWeight: 800, color: "white" }}>
+                    {messagesUnread > 9 ? "9+" : messagesUnread}
+                  </span>
+                )}
+                {t.id === "notifs" && notifUnread > 0 && (
+                  <span style={{ position: "absolute", top: -3, right: -3, background: "#f43f5e", borderRadius: "50%", width: 11, height: 11, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 7, fontWeight: 800, color: "white" }}>
+                    {notifUnread > 9 ? "9+" : notifUnread}
+                  </span>
+                )}
+              </span>
               {(communityTab === t.id || window.innerWidth > 600) && <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.03em" }}>{t.label}</span>}
             </span>
           </button>
@@ -4496,7 +4498,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
             <div style={{ position: "relative" }}>
               {t.svg}
               {t.id === "community" && (messagesUnread + notifUnread) > 0 && (
-                <div style={{ position: "absolute", top: -3, left: -3, background: "#f43f5e", borderRadius: "50%", minWidth: 13, height: 13, fontSize: 8, fontWeight: 700, color: "white", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 2px" }}>
+                <div style={{ position: "absolute", top: -3, right: -3, background: "#f43f5e", borderRadius: "50%", minWidth: 13, height: 13, fontSize: 8, fontWeight: 700, color: "white", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 2px" }}>
                   {(messagesUnread + notifUnread) > 9 ? "9+" : messagesUnread + notifUnread}
                 </div>
               )}
