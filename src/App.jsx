@@ -336,6 +336,8 @@ const css = `
     --green-glow:rgba(139,195,74,0.15);
   }
   body { background:var(--bg); color:var(--text); font-family:var(--font-body); }
+  button { transition: transform 0.1s ease; }
+  button:active { transform: scale(0.96); }
   body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
     background:
       radial-gradient(ellipse 90% 50% at 50% -10%, rgba(0,0,0,0) 0%, transparent 65%),
@@ -349,6 +351,8 @@ const css = `
     background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size:160px; }
   .fade-in { animation:none; }
+  .btn-primary, .btn-ghost, .btn-gold { transition: transform 0.1s ease, box-shadow 0.1s ease; }
+  .btn-primary:active, .btn-ghost:active, .btn-gold:active { transform: scale(0.96); }
   .slide-up { animation:slideUp 0.55s cubic-bezier(0.16,1,0.3,1) forwards; opacity:0; }
   @keyframes slideUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
   .pulse { animation:pulse 2.2s ease-in-out infinite; }
@@ -1346,6 +1350,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
                 await supabase.from("blocked_users").upsert({ blocker_id: currentUser.id, blocked_id: userId });
                 setIsBlocked(true);
                 onBlock?.(userId, false);
+                toast("User blocked.", "success");
                 onBack?.();
               }
             }} style={{ background: "none", border: "none", color: isBlocked ? "var(--text3)" : "rgba(255,100,100,0.5)", fontSize: 11, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>{isBlocked ? "Unblock user" : "Block user"}</button>
