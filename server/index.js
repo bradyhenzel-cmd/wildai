@@ -148,21 +148,59 @@ app.post("/scrape-regulations", async (req, res) => {
     const { state, huntingUrl, fishingUrl } = req.body;
     try {
         let rawText = "";
-        try {
-            const r = await fetch(huntingUrl, { headers: { "User-Agent": "Mozilla/5.0" }, signal: AbortSignal.timeout(8000) });
-            const html = await r.text();
-            rawText += html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").slice(0, 8000);
-        } catch { rawText += `Could not fetch ${huntingUrl}. `; }
+
+        // Fetch both hunting and fishing URLs
+        for (const url of [huntingUrl, fishingUrl]) {
+            if (!url) continue;
+            try {
+                const r = await fetch(url, {
+                    headers: {
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                        "Accept-Language": "en-US,en;q=0.5",
+                    },
+                    signal: AbortSignal.timeout(10000)
+                });
+                const html = await r.text();
+                // Strip scripts, styles, nav, header, footer first
+                const cleaned = html
+                    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+                    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+                    .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, "")
+                    .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, "")
+                    .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, "")
+                    .replace(/<[^>]*>/g, " ")
+                    .replace(/\s+/g, " ")
+                    .trim();
+                // Look for regulation-relevant content
+                const regsMatch = cleaned.match(/.{0,500}(season|limit|bag|license|permit|regulation|deer|turkey|bass|trout|salmon|elk|fishing|hunting).{0,500}/gi);
+                if (regsMatch && regsMatch.length > 0) {
+                    rawText += regsMatch.slice(0, 20).join(" ").slice(0, 6000) + " ";
+                } else {
+                    rawText += cleaned.slice(0, 3000) + " ";
+                }
+            } catch (e) {
+                rawText += `Could not fetch ${url}. `;
+            }
+        }
+
+        const hasUsefulContent = rawText.length > 200 && /season|limit|license|regulation/i.test(rawText);
+
         const response = await callAnthropicWithRetry({
             model: "claude-sonnet-4-20250514",
             max_tokens: 1000,
             messages: [{
                 role: "user",
-                content: `Based on this official ${state} wildlife agency content, extract the key hunting and fishing regulations. Return ONLY a JSON object with three keys: "hunting" (key species, season dates, bag limits - max 300 chars), "fishing" (key species, seasons, size/bag limits - max 300 chars), "general" (license costs, hunter ed requirements, key notes - max 300 chars). If content is insufficient, use your best knowledge of ${state} regulations for ${new Date().getFullYear()}. No markdown, just JSON.\n\nContent: ${rawText}`
+                content: hasUsefulContent
+                    ? `Extract the key hunting and fishing regulations for ${state} from this official agency content. Return ONLY a JSON object with three keys: "hunting" (key species, season dates, bag limits - max 300 chars), "fishing" (key species, seasons, size/bag limits - max 300 chars), "general" (license costs, hunter ed requirements - max 300 chars). No markdown, just JSON.\n\nContent: ${rawText}`
+                    : `Provide accurate ${new Date().getFullYear()} hunting and fishing regulations for ${state} based on your knowledge. Return ONLY a JSON object with three keys: "hunting" (key species, season dates, bag limits - max 300 chars), "fishing" (key species, seasons, size/bag limits - max 300 chars), "general" (license costs, hunter ed requirements - max 300 chars). No markdown, just JSON.`
             }]
         });
+
         const text = response.content[0].text.replace(/```json|```/g, "").trim();
         const parsed = JSON.parse(text);
+        // Flag whether this came from real scraped data or AI knowledge
+        parsed.scraped = hasUsefulContent;
         res.json({ success: true, data: parsed });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
