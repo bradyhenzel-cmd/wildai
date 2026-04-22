@@ -1875,13 +1875,22 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
     const { data: profilesData } = userIds.length ? await supabase.from("profiles").select("user_id, username, avatar_url").in("user_id", userIds) : { data: [] };
     const profileMap = {};
     (profilesData || []).forEach(p => { profileMap[p.user_id] = p; });
-    const all = [
+    const rawAll = [
       ...(realLikes || []).map(l => ({ type: "like", username: profileMap[l.user_id]?.username || "Someone", avatar: profileMap[l.user_id]?.avatar_url, created_at: l.created_at, post_id: l.post_id })),
       ...(realComments || []).map(c => ({ type: "comment", username: c.username || profileMap[c.user_id]?.username || "Someone", avatar: profileMap[c.user_id]?.avatar_url, created_at: c.created_at, post_id: c.post_id, content: c.content })),
       ...(followData || []).map(f => ({ type: "follow", username: profileMap[f.follower_id]?.username || "Someone", avatar: profileMap[f.follower_id]?.avatar_url, created_at: f.created_at, follower_id: f.follower_id })),
       ...(commentLikesData || []).map(l => ({ type: "comment_like", username: profileMap[l.user_id]?.username || "Someone", avatar: profileMap[l.user_id]?.avatar_url, created_at: l.created_at, post_id: l.comments?.post_id })),
       ...(commentRepliesData || []).map(r => ({ type: "reply", username: r.username || profileMap[r.user_id]?.username || "Someone", avatar: profileMap[r.user_id]?.avatar_url, created_at: r.created_at, post_id: r.post_id, content: r.content })),
-    ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    ];
+    // Group notifications by type+post_id
+    const groupKey = n => `${n.type}__${n.post_id || n.follower_id || ""}`;
+    const groups = {};
+    rawAll.forEach(n => {
+      const key = groupKey(n);
+      if (!groups[key]) groups[key] = { ...n, count: 1, others: [] };
+      else { groups[key].count++; groups[key].others.push(n.username); }
+    });
+    const all = Object.values(groups).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     setNotifs(all);
     const lastSeen = localStorage.getItem("wildai_notifs_seen") || "0";
     setNotifUnread(all.filter(n => new Date(n.created_at) > new Date(lastSeen)).length);
@@ -2197,7 +2206,14 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
               <div style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 13 }}>{capName(n.username)}</span>
                 <span style={{ color: "var(--text2)", fontSize: 13 }}>
-                  {n.type === "like" ? " liked your post" : n.type === "comment" ? ` commented: "${n.content?.slice(0, 40)}${n.content?.length > 40 ? "..." : ""}"` : n.type === "comment_like" ? " liked your comment" : n.type === "reply" ? ` replied: "${n.content?.slice(0, 40)}${n.content?.length > 40 ? "..." : ""}"` : " followed you"}
+                  {(() => {
+                    const others = n.count > 1 ? ` and ${n.count - 1} other${n.count > 2 ? "s" : ""}` : "";
+                    if (n.type === "like") return `${others} liked your post`;
+                    if (n.type === "comment") return n.count > 1 ? `${others} commented on your post` : ` commented: "${n.content?.slice(0, 40)}${n.content?.length > 40 ? "..." : ""}"`;
+                    if (n.type === "comment_like") return `${others} liked your comment`;
+                    if (n.type === "reply") return n.count > 1 ? `${others} replied to your comment` : ` replied: "${n.content?.slice(0, 40)}${n.content?.length > 40 ? "..." : ""}"`;
+                    return " followed you";
+                  })()}
                 </span>
                 <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 3 }}>{(() => { const diff = (Date.now() - new Date(n.created_at)) / 1000; if (diff < 60) return "just now"; if (diff < 3600) return `${Math.floor(diff / 60)}m ago`; if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`; return `${Math.floor(diff / 86400)}d ago`; })()}</div>
               </div>
