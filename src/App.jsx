@@ -1345,11 +1345,13 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
                 await supabase.from("blocked_users").delete().eq("blocker_id", currentUser.id).eq("blocked_id", userId);
                 setIsBlocked(false);
                 onBlock?.(userId, true); // true = unblock
+                toast("User unblocked.", "success");
               } else {
                 if (!window.confirm("Block this user? You won't see their posts or messages.")) return;
                 await supabase.from("blocked_users").upsert({ blocker_id: currentUser.id, blocked_id: userId });
                 setIsBlocked(true);
                 onBlock?.(userId, false);
+                toast("User blocked.", "success");
                 toast("User blocked.", "success");
                 onBack?.();
               }
