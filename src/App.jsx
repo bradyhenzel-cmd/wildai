@@ -513,7 +513,10 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
       const data = await res.json();
       const seen = new Set();
       const unique = data.filter(s => {
-        if (s.type === "house" || s.type === "building" || s.class === "building" || s.class === "highway") return false;
+        const allowedTypes = ["city", "town", "village", "hamlet", "municipality", "suburb", "county", "administrative"];
+        const allowedClasses = ["place", "boundary"];
+        if (!allowedClasses.includes(s.class)) return false;
+        if (!allowedTypes.includes(s.type)) return false;
         const label = s.display_name.split(",").slice(0, 3).join(",").trim();
         if (seen.has(label)) return false;
         seen.add(label);
