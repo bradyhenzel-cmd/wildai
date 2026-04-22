@@ -599,9 +599,7 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
               </div>
             ))}
           </div>
-          {c2 && <div style={{ padding: "10px 14px", borderRadius: "var(--radius-sm)", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)" }}>
-            <span style={{ color: c2.color, fontSize: 12, fontWeight: 500 }}>🎯 {c2.label}</span>
-          </div>}
+          
 
           {/* Solunar Card */}
           {(() => {
