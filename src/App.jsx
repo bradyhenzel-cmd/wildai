@@ -529,7 +529,7 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
     try {
       const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,precipitation&wind_speed_unit=mph&temperature_unit=fahrenheit&timezone=auto`);
       const d = await r.json();
-      if (d.current) setWeather(d.current);
+      if (d.current) setWeather({ ...d.current, lat, lng: lon });
     } catch { setError("Unable to load weather."); }
     setLoading(false);
   };
@@ -604,6 +604,100 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
           {c2 && <div style={{ padding: "12px 16px", borderRadius: "var(--radius-sm)", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)" }}>
             <span style={{ color: c2.color, fontSize: 13, fontWeight: 500 }}>🎯 {c2.label}</span>
           </div>}
+
+          {/* Solunar Card */}
+          {(() => {
+            const now = new Date();
+            const rad = Math.PI / 180, deg = 180 / Math.PI;
+
+            // Moon phase
+            const synodicMonth = 29.53058867;
+            const known = new Date(2000, 0, 6, 18, 14, 0);
+            const diff = (now - known) / (1000 * 60 * 60 * 24);
+            const phase = ((diff % synodicMonth) + synodicMonth) % synodicMonth;
+
+            // Meeus algorithm for accurate moon transit time
+            const JD = (now.getTime() / 86400000) + 2440587.5;
+            const T = (JD - 2451545.0) / 36525;
+            const L0 = (218.3164477 + 481267.88123421 * T) % 360;
+            const M = (357.5291092 + 35999.0502909 * T) % 360;
+            const Mprime = (134.9633964 + 477198.8675055 * T) % 360;
+            const D = (297.8501921 + 445267.1114034 * T) % 360;
+            const F = (93.2720950 + 483202.0175233 * T) % 360;
+            const sinTerms = [[6288774,0,1,0,0],[1274027,2,-1,0,0],[658314,2,0,0,0],[213618,0,2,0,0],[-185116,1,0,0,0],[-114332,0,0,0,2],[58793,2,-2,0,0],[57066,2,-1,1,0],[53322,2,0,1,0]];
+            let sigmaL = 0;
+            for (const [coef,d,mp,m,f] of sinTerms) sigmaL += coef * Math.sin(rad*(d*D+mp*Mprime+m*M+f*F));
+            const moonLng = (L0 + sigmaL/1000000) % 360;
+            const moonLat = 5.128 * Math.sin(rad*F);
+            const obliquity = 23.439291 - 0.013004*T;
+            const sinRA = Math.sin(rad*moonLng)*Math.cos(rad*obliquity) - Math.tan(rad*moonLat)*Math.sin(rad*obliquity);
+            let RA = deg * Math.atan2(sinRA, Math.cos(rad*moonLng));
+            if (RA < 0) RA += 360;
+            const GST = (280.46061837 + 360.98564736629*(JD-2451545.0)) % 360;
+            // Use weather location lng if available, otherwise default to -98 (center US)
+            const userLng = weather?.lng || -98;
+            const LST = (GST + userLng) % 360;
+            let HA = LST - RA;
+            if (HA > 180) HA -= 360;
+            if (HA < -180) HA += 360;
+            const currentUTCHour = now.getUTCHours() + now.getUTCMinutes()/60;
+            let transitUTC = currentUTCHour - HA/15;
+            transitUTC = ((transitUTC % 24) + 24) % 24;
+            const tzOffset = Math.round(userLng/15);
+            const major1 = (transitUTC + tzOffset + 24) % 24;
+            const major2 = (major1 + 12) % 24;
+            const minor1 = (major1 + 6) % 24;
+            const minor2 = (major1 + 18) % 24;
+
+            // Rating based on moon phase
+            const distFromNew = Math.min(phase, synodicMonth - phase) / (synodicMonth / 2);
+            const distFromFull = Math.abs(phase - synodicMonth / 2) / (synodicMonth / 2);
+            const rating = Math.max(0, 1 - Math.min(distFromNew, distFromFull) * 2);
+            const ratingLabel = rating > 0.75 ? "Excellent" : rating > 0.5 ? "Good" : rating > 0.25 ? "Fair" : "Poor";
+            const ratingColor = rating > 0.75 ? "#4ade80" : rating > 0.5 ? "#a3e635" : rating > 0.25 ? "#fbbf24" : "#f87171";
+            const bars = Math.round(rating * 4);
+
+            const hour = now.getHours() + now.getMinutes()/60;
+            const fmt = (h) => { const hh=Math.floor(h),mm=Math.round((h-hh)*60),ap=hh>=12?"PM":"AM"; return `${hh%12||12}:${mm.toString().padStart(2,'0')} ${ap}`; };
+            const isActive = (h) => { const diff = Math.abs(hour - h); return diff <= 1 || diff >= 23; };
+            const moonIcon = phase < 1.85 ? "🌑" : phase < 5.53 ? "🌒" : phase < 9.22 ? "🌓" : phase < 12.91 ? "🌔" : phase < 16.61 ? "🌕" : phase < 20.30 ? "🌖" : phase < 23.99 ? "🌗" : "🌘";
+
+            return (
+              <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "18px 20px", marginTop: 4 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                  <div>
+                    <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 4 }}>SOLUNAR FORECAST</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 22 }}>{moonIcon}</span>
+                      <span style={{ color: ratingColor, fontWeight: 700, fontSize: 18, fontFamily: "var(--font-display)" }}>{ratingLabel}</span>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                    {[1, 2, 3, 4].map(i => (
+                      <div key={i} style={{ width: 8, height: 28, borderRadius: 4, background: i <= bars ? ratingColor : "rgba(255,255,255,0.08)", transition: "all 0.3s" }} />
+                    ))}
+                  </div>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  {[
+                    { label: "Major", time: fmt(major1), active: isActive(major1) },
+                    { label: "Major", time: fmt(major2), active: isActive(major2) },
+                    { label: "Minor", time: fmt(minor1), active: isActive(minor1) },
+                    { label: "Minor", time: fmt(minor2), active: isActive(minor2) },
+                  ].map((p, i) => (
+                    <div key={i} style={{ padding: "10px 12px", borderRadius: 10, background: p.active ? "rgba(120,180,80,0.12)" : "rgba(255,255,255,0.03)", border: `1px solid ${p.active ? "rgba(120,180,80,0.3)" : "rgba(255,255,255,0.06)"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div>
+                        <div style={{ color: p.label === "Major" ? "var(--green)" : "var(--text3)", fontSize: 10, fontWeight: 700, letterSpacing: "0.06em" }}>{p.label.toUpperCase()}</div>
+                        <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{p.time}</div>
+                      </div>
+                      {p.active && <span style={{ fontSize: 10, fontWeight: 700, color: "var(--green)", background: "rgba(120,180,80,0.2)", padding: "2px 7px", borderRadius: 10 }}>NOW</span>}
+                    </div>
+                  ))}
+                </div>
+                <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 12, textAlign: "center" }}>Peak activity windows for hunting & fishing</div>
+              </div>
+            );
+          })()}
         </>
       )}
     </div>
@@ -4118,7 +4212,7 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
       try {
         const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,precipitation&wind_speed_unit=mph&temperature_unit=fahrenheit&timezone=auto`);
         const d = await r.json();
-        if (d.current) setWeather(d.current);
+        if (d.current) setWeather({ ...d.current, lat: pos.coords.latitude, lng: pos.coords.longitude });
       } catch { }
     };
     if (navigator.geolocation) {
