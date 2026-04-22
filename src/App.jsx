@@ -741,6 +741,7 @@ function PinDetailPage({ pin, onBack, onDelete, onSharePin, onSave }) {
   const [notes, setNotes] = useState(pin.notes || "");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [confirmDeletePin, setConfirmDeletePin] = useState(false);
 
   const handleSave = async () => {
     setSaving(true);
@@ -749,8 +750,11 @@ function PinDetailPage({ pin, onBack, onDelete, onSharePin, onSave }) {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Delete this pin?")) return;
+    setConfirmDeletePin(true);
+  };
+  const doDeletePin = async () => {
     setDeleting(true);
+    setConfirmDeletePin(false);
     await onDelete(pin.id);
   };
 
@@ -758,6 +762,20 @@ function PinDetailPage({ pin, onBack, onDelete, onSharePin, onSave }) {
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 1020, background: "#070e07", display: "flex", flexDirection: "column", fontFamily: "var(--font-body)" }}>
+      {confirmDeletePin && createPortal(
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 999999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }} onClick={() => setConfirmDeletePin(false)}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#0d1a0d", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 28, maxWidth: 320, width: "100%", textAlign: "center" }}>
+            <div style={{ fontSize: 32, marginBottom: 12 }}>📍</div>
+            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, fontFamily: "var(--font-display)", marginBottom: 8 }}>Delete this pin?</div>
+            <div style={{ color: "var(--text3)", fontSize: 13, marginBottom: 24, lineHeight: 1.6 }}>This can't be undone.</div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setConfirmDeletePin(false)} className="btn-ghost" style={{ flex: 1, padding: "10px 0", fontSize: 14 }}>Cancel</button>
+              <button onClick={doDeletePin} style={{ flex: 1, padding: "10px 0", fontSize: 14, background: "rgba(255,60,60,0.15)", border: "1px solid rgba(255,60,60,0.3)", borderRadius: "var(--radius-sm)", color: "rgba(255,100,100,0.9)", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Delete</button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", borderBottom: "1px solid var(--border)", background: "rgba(8,15,8,0.98)" }}>
         <button onClick={onBack} className="btn-ghost" style={{ padding: "6px 12px", fontSize: 13 }}>← Back</button>
         <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 16 }}>Pin Detail</span>
@@ -1660,7 +1678,7 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
                         if (m.sender_id !== user.id) return;
                         const ageMinutes = (Date.now() - new Date(m.created_at)) / 60000;
                         if (ageMinutes > 5) { toast("You can only delete messages within 5 minutes of sending.", "error"); return; }
-                        if (window.confirm("Delete this message?")) { supabase.from("messages").delete().eq("id", m.id).then(() => setMessages(prev => prev.filter(msg => msg.id !== m.id))); }
+                        supabase.from("messages").delete().eq("id", m.id).then(() => { setMessages(prev => prev.filter(msg => msg.id !== m.id)); toast("Message deleted.", "success"); });
                       }}>
                       {m.content}
                     </div>
@@ -1855,6 +1873,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [confirmDeletePost, setConfirmDeletePost] = useState(null);
   const [stateFilter, setStateFilter] = useState(selectedState || "all");
   const [sortBy, setSortBy] = useState("newest");
   const [form, setForm] = useState({ species: "", location: "", caption: "", photo: "", pinLat: null, pinLng: null });
@@ -2116,9 +2135,13 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   };
 
   const deletePost = async (postId) => {
-    if (!window.confirm("Delete this post?")) return;
+    setConfirmDeletePost(postId);
+  };
+  const doDeletePost = async (postId) => {
     setPosts(prev => prev.filter(p => p.id !== postId));
     await supabase.from("posts").delete().eq("id", postId);
+    setConfirmDeletePost(null);
+    toast("Post deleted.", "success");
   };
 
   const filteredByFollow = feedFilter === "following"
@@ -2201,6 +2224,20 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
           </button>
         ))}
       </div>
+      {confirmDeletePost && createPortal(
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 999999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }} onClick={() => setConfirmDeletePost(null)}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#0d1a0d", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 28, maxWidth: 320, width: "100%", textAlign: "center" }}>
+            <div style={{ fontSize: 32, marginBottom: 12 }}>🗑️</div>
+            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, fontFamily: "var(--font-display)", marginBottom: 8 }}>Delete this post?</div>
+            <div style={{ color: "var(--text3)", fontSize: 13, marginBottom: 24, lineHeight: 1.6 }}>This can't be undone.</div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setConfirmDeletePost(null)} className="btn-ghost" style={{ flex: 1, padding: "10px 0", fontSize: 14 }}>Cancel</button>
+              <button onClick={() => doDeletePost(confirmDeletePost)} style={{ flex: 1, padding: "10px 0", fontSize: 14, background: "rgba(255,60,60,0.15)", border: "1px solid rgba(255,60,60,0.3)", borderRadius: "var(--radius-sm)", color: "rgba(255,100,100,0.9)", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Delete</button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
       {communityTab === "notifs" && !viewingProfile && viewingPost && (
         <PostDetailPage postId={viewingPost} user={user} openSignIn={openSignIn} onBack={() => setViewingPost(null)} onViewUser={(id) => { setViewingProfile(id); setViewingPost(null); }} />
       )}
