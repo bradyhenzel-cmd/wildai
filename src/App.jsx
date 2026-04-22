@@ -1386,7 +1386,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
 
       {profileTab === "posts" && (
         posts.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14 }}>
+          <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14, minHeight: 200 }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>🌲</div>
             <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{isOwnProfile ? "You haven't posted yet" : `${displayName} hasn't posted yet`}</div>
             {isOwnProfile && <div style={{ color: "var(--text3)", fontSize: 13 }}>Share your first hunt or catch in the community feed!</div>}
@@ -1416,7 +1416,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
       {profileTab === "spots" && (() => {
         const spots = posts.filter(p => p.lat && p.lng);
         if (spots.length === 0) return (
-          <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14 }}>
+          <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14, minHeight: 200 }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>📍</div>
             <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{isOwnProfile ? "No public spots yet" : `${displayName} hasn't shared any spots`}</div>
             {isOwnProfile && <div style={{ color: "var(--text3)", fontSize: 13 }}>Share a post with a location to add it here!</div>}
