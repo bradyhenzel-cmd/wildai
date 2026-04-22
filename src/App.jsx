@@ -1878,7 +1878,13 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
     if (!user) return;
     loadNotifs();
     const interval = setInterval(loadNotifs, 60000);
-    return () => clearInterval(interval);
+    // Realtime subscription for instant badge updates
+    const channel = supabase.channel('notifs-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'likes' }, () => loadNotifs())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comments' }, () => loadNotifs())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'follows' }, () => loadNotifs())
+      .subscribe();
+    return () => { clearInterval(interval); supabase.removeChannel(channel); };
   }, [user]);
   const [messagesUnread, setMessagesUnread] = useState(0);
   useEffect(() => {
@@ -2134,12 +2140,12 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
             <span style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, position: "relative" }}>
               {t.icon}
               {t.id === "messages" && messagesUnread > 0 && (
-                <span style={{ position: "absolute", top: -4, right: -6, background: "#f43f5e", borderRadius: 20, minWidth: 14, height: 14, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: "white", padding: "0 3px" }}>
+                <span style={{ position: "absolute", top: -3, left: -3, background: "#f43f5e", borderRadius: "50%", width: 13, height: 13, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: "white" }}>
                   {messagesUnread > 9 ? "9+" : messagesUnread}
                 </span>
               )}
               {t.id === "notifs" && notifUnread > 0 && (
-                <span style={{ position: "absolute", top: -4, right: -6, background: "#f43f5e", borderRadius: 20, minWidth: 14, height: 14, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: "white", padding: "0 3px" }}>
+                <span style={{ position: "absolute", top: -3, left: -3, background: "#f43f5e", borderRadius: "50%", width: 13, height: 13, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: "white" }}>
                   {notifUnread > 9 ? "9+" : notifUnread}
                 </span>
               )}
@@ -4434,11 +4440,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {messagesUnread > 0 && (
-              <div onClick={() => { setTab("community"); }} style={{ padding: "6px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, background: "#f43f5e22", border: "1px solid rgba(244,63,94,0.3)", color: "#f43f5e", cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
-                💬 {messagesUnread}
-              </div>
-            )}
+            
             {isPro ? (
               <div className="mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)" }}>Pro ✓</div>
             ) : (
@@ -4480,7 +4482,14 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         ].map(t => (
           <button key={t.id} onClick={() => { setTab(t.id); setShowMore(false); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, background: "none", border: "none", cursor: "pointer", color: tab === t.id ? "var(--green)" : "var(--text3)", transition: "color 0.2s", position: "relative" }}>
             {tab === t.id && <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 28, height: 2, borderRadius: "0 0 2px 2px", background: "var(--green)", boxShadow: "0 0 8px rgba(120,180,80,0.9)" }} />}
-            {t.svg}
+            <div style={{ position: "relative" }}>
+              {t.svg}
+              {t.id === "community" && (messagesUnread + notifUnread) > 0 && (
+                <div style={{ position: "absolute", top: -3, left: -3, background: "#f43f5e", borderRadius: "50%", minWidth: 13, height: 13, fontSize: 8, fontWeight: 700, color: "white", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 2px" }}>
+                  {(messagesUnread + notifUnread) > 9 ? "9+" : messagesUnread + notifUnread}
+                </div>
+              )}
+            </div>
             <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.04em" }}>{t.label}</span>
           </button>
         ))}
