@@ -1759,16 +1759,25 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
     if (!user) return;
     setLoadingNotifs(true);
     const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    const { data: followData } = await supabase.from("follows").select("*, profiles(username, avatar_url)").eq("following_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(30);
     const myPostIds = (await supabase.from("posts").select("id").eq("user_id", user.id)).data?.map(p => p.id) || [];
-    const [{ data: realLikes }, { data: realComments }] = await Promise.all([
-      myPostIds.length ? supabase.from("likes").select("post_id, user_id, created_at, profiles(username, avatar_url)").in("post_id", myPostIds).neq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(30) : { data: [] },
-      myPostIds.length ? supabase.from("comments").select("post_id, user_id, username, content, created_at, profiles(avatar_url)").in("post_id", myPostIds).neq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(30) : { data: [] },
+    const [{ data: followData }, { data: realLikes }, { data: realComments }] = await Promise.all([
+      supabase.from("follows").select("follower_id, created_at").eq("following_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(30),
+      myPostIds.length ? supabase.from("likes").select("post_id, user_id, created_at").in("post_id", myPostIds).neq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(30) : { data: [] },
+      myPostIds.length ? supabase.from("comments").select("post_id, user_id, username, content, created_at").in("post_id", myPostIds).neq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(30) : { data: [] },
     ]);
+    // Fetch profiles for all unique user ids
+    const userIds = [...new Set([
+      ...(followData || []).map(f => f.follower_id),
+      ...(realLikes || []).map(l => l.user_id),
+      ...(realComments || []).map(c => c.user_id),
+    ])].filter(Boolean);
+    const { data: profilesData } = userIds.length ? await supabase.from("profiles").select("user_id, username, avatar_url").in("user_id", userIds) : { data: [] };
+    const profileMap = {};
+    (profilesData || []).forEach(p => { profileMap[p.user_id] = p; });
     const all = [
-      ...(realLikes || []).map(l => ({ type: "like", username: l.profiles?.username || "Someone", avatar: l.profiles?.avatar_url, created_at: l.created_at, post_id: l.post_id })),
-      ...(realComments || []).map(c => ({ type: "comment", username: c.username || c.profiles?.username || "Someone", avatar: c.profiles?.avatar_url, created_at: c.created_at, post_id: c.post_id, content: c.content })),
-      ...(followData || []).map(f => ({ type: "follow", username: f.profiles?.username || "Someone", avatar: f.profiles?.avatar_url, created_at: f.created_at, follower_id: f.follower_id })),
+      ...(realLikes || []).map(l => ({ type: "like", username: profileMap[l.user_id]?.username || "Someone", avatar: profileMap[l.user_id]?.avatar_url, created_at: l.created_at, post_id: l.post_id })),
+      ...(realComments || []).map(c => ({ type: "comment", username: c.username || profileMap[c.user_id]?.username || "Someone", avatar: profileMap[c.user_id]?.avatar_url, created_at: c.created_at, post_id: c.post_id, content: c.content })),
+      ...(followData || []).map(f => ({ type: "follow", username: profileMap[f.follower_id]?.username || "Someone", avatar: profileMap[f.follower_id]?.avatar_url, created_at: f.created_at, follower_id: f.follower_id })),
     ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     setNotifs(all);
     const lastSeen = localStorage.getItem("wildai_notifs_seen") || "0";
