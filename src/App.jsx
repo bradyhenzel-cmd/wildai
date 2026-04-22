@@ -509,7 +509,7 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
   const searchLocations = async (val) => {
     if (val.length < 3) { setSuggestions([]); return; }
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&format=json&limit=6&countrycodes=us&class=place&type=city,town,village,hamlet`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&format=json&limit=8&countrycodes=us&featuretype=city`);
       const data = await res.json();
       const seen = new Set();
       const unique = data.filter(s => {
