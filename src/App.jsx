@@ -1255,9 +1255,9 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
 
       {/* Banner */}
       <div style={{ height: 110, position: "relative", overflow: "hidden", background: "#0a0f0a" }}>
-        <img src="/banner.png" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%", opacity: 0.7 }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(8,13,8,0.3) 60%, rgba(8,13,8,1) 100%)" }} />
-        {onBack && <button onClick={onBack} style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 20, color: "var(--text2)", fontSize: 13, padding: "5px 14px", cursor: "pointer", fontFamily: "var(--font-body)", backdropFilter: "blur(8px)" }}>← Back</button>}
+        <img src="/banner.png" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%", opacity: 0.7 }} crossOrigin="anonymous" />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 0%, rgba(8,13,8,0.4) 50%, rgba(8,13,8,1) 100%)" }} />
+        {onBack && <button onClick={onBack} style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 20, color: "white", fontSize: 13, padding: "5px 14px", cursor: "pointer", fontFamily: "var(--font-body)", WebkitBackdropFilter: "blur(8px)", backdropFilter: "blur(8px)" }}>← Back</button>}
       </div>
 
       {/* Profile card */}
