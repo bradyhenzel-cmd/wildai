@@ -77,15 +77,54 @@ const STATE_COORDS = {
 };
 
 const SPECIES_ICONS = {
-  "Elk": "🦌", "Whitetail Deer": "🦌", "Mule Deer": "🦌", "Moose": "🦌", "Antelope": "🦌", "Bison": "🦬",
-  "Turkey": "🦃", "Pheasant": "🐦", "Quail": "🐦", "Dove": "🕊️", "Duck": "🦆", "Goose": "🪿",
-  "Bear": "🐻", "Hog": "🐗", "Javelina": "🐗", "Coyote": "🐺", "Fox": "🦊", "Rabbit": "🐇", "Squirrel": "🐿️",
-  "Largemouth Bass": "🐟", "Smallmouth Bass": "🐟", "Striped Bass": "🐟", "Bass": "🐟",
-  "Trout": "🐟", "Walleye": "🐟", "Pike": "🐟", "Muskie": "🐟", "Catfish": "🐟",
-  "Crappie": "🐟", "Bluegill": "🐟", "Perch": "🐟", "Salmon": "🐟", "Steelhead": "🐟",
-  "Redfish": "🐠", "Snook": "🐠", "Tarpon": "🐠", "Flounder": "🐠", "Grouper": "🐠",
-  "Snapper": "🐠", "Cobia": "🐠", "Mahi-Mahi": "🐠", "Tuna": "🐠", "Marlin": "🐠",
-  "Striped Marlin": "🐠", "Shark": "🦈", "Swordfish": "🐟", "Wahoo": "🐠", "Amberjack": "🐠",
+  // Deer family
+  "Elk": "🦌", "Whitetail Deer": "🦌", "Mule Deer": "🦌", "Moose": "🦌", "Antelope": "🦌",
+  "Pronghorn": "🦌", "Pronghorn Antelope": "🦌", "Caribou": "🦌", "Bison": "🦬", "Buffalo": "🦬",
+  // Bears
+  "Bear": "🐻", "Black Bear": "🐻", "Brown Bear": "🐻", "Grizzly Bear": "🐻", "Grizzly": "🐻",
+  // Birds
+  "Turkey": "🦃", "Wild Turkey": "🦃", "Pheasant": "🐦", "Ring-necked Pheasant": "🐦",
+  "Quail": "🐦", "Bobwhite Quail": "🐦", "California Quail": "🐦", "Gambel's Quail": "🐦",
+  "Dove": "🕊️", "Mourning Dove": "🕊️", "Duck": "🦆", "Mallard": "🦆", "Teal": "🦆",
+  "Goose": "🪿", "Canada Goose": "🪿", "Snow Goose": "🪿", "Grouse": "🐦",
+  "Ruffed Grouse": "🐦", "Sage Grouse": "🐦", "Blue Grouse": "🐦", "Sharp-tailed Grouse": "🐦",
+  "Ptarmigan": "🐦", "Chukar": "🐦", "Hungarian Partridge": "🐦", "Woodcock": "🐦",
+  "Waterfowl": "🦆", "Prairie Chicken": "🐦",
+  // Predators / small game
+  "Hog": "🐗", "Wild Hog": "🐗", "Feral Hog": "🐗", "Wild Boar": "🐗", "Javelina": "🐗",
+  "Coyote": "🐺", "Fox": "🦊", "Red Fox": "🦊", "Gray Fox": "🦊",
+  "Rabbit": "🐇", "Cottontail": "🐇", "Jackrabbit": "🐇", "Snowshoe Hare": "🐇",
+  "Squirrel": "🐿️", "Fox Squirrel": "🐿️", "Gray Squirrel": "🐿️",
+  "Mountain Lion": "🐆", "Cougar": "🐆", "Puma": "🐆", "Bobcat": "🐆",
+  "Wolf": "🐺", "Gray Wolf": "🐺",
+  "Mountain Goat": "🐐", "Bighorn Sheep": "🐏", "Dall Sheep": "🐏",
+  "Raccoon": "🦝", "Opossum": "🐾", "Beaver": "🦫",
+  // Freshwater fish
+  "Bass": "🐟", "Largemouth Bass": "🐟", "Smallmouth Bass": "🐟", "Spotted Bass": "🐟",
+  "Striped Bass": "🐟", "White Bass": "🐟", "Hybrid Striped Bass": "🐟",
+  "Trout": "🐟", "Rainbow Trout": "🐟", "Brown Trout": "🐟", "Brook Trout": "🐟",
+  "Cutthroat Trout": "🐟", "Lake Trout": "🐟", "Bull Trout": "🐟", "Tiger Trout": "🐟",
+  "Walleye": "🐟", "Sauger": "🐟", "Pike": "🐟", "Northern Pike": "🐟",
+  "Muskie": "🐟", "Muskellunge": "🐟", "Tiger Muskie": "🐟",
+  "Catfish": "🐟", "Channel Catfish": "🐟", "Blue Catfish": "🐟", "Flathead Catfish": "🐟",
+  "Crappie": "🐟", "Black Crappie": "🐟", "White Crappie": "🐟",
+  "Bluegill": "🐟", "Sunfish": "🐟", "Pumpkinseed": "🐟", "Perch": "🐟", "Yellow Perch": "🐟",
+  "Salmon": "🐟", "Chinook Salmon": "🐟", "Coho Salmon": "🐟", "Sockeye Salmon": "🐟",
+  "King Salmon": "🐟", "Pink Salmon": "🐟", "Chum Salmon": "🐟",
+  "Steelhead": "🐟", "Carp": "🐟", "Common Carp": "🐟", "Drum": "🐟",
+  "Freshwater Drum": "🐟", "Bowfin": "🐟", "Gar": "🐟", "Burbot": "🐟",
+  "Kokanee": "🐟", "Cisco": "🐟", "Whitefish": "🐟", "Grayling": "🐟",
+  // Saltwater fish
+  "Redfish": "🐠", "Red Drum": "🐠", "Snook": "🐠", "Tarpon": "🐠",
+  "Flounder": "🐠", "Grouper": "🐠", "Snapper": "🐠", "Red Snapper": "🐠",
+  "Cobia": "🐠", "Mahi-Mahi": "🐠", "Mahi": "🐠", "Dorado": "🐠",
+  "Tuna": "🐠", "Yellowfin Tuna": "🐠", "Bluefin Tuna": "🐠", "Albacore": "🐠",
+  "Marlin": "🐠", "Striped Marlin": "🐠", "Blue Marlin": "🐠",
+  "Shark": "🦈", "Bull Shark": "🦈", "Hammerhead": "🦈",
+  "Swordfish": "🐠", "Wahoo": "🐠", "Amberjack": "🐠", "Pompano": "🐠",
+  "Sheepshead": "🐠", "Speckled Trout": "🐠", "Spotted Sea Trout": "🐠",
+  "Halibut": "🐠", "Lingcod": "🐠", "Rockfish": "🐠", "Striped Bass (Salt)": "🐠",
+  "Bluefish": "🐠", "Weakfish": "🐠", "Striped Marlin": "🐠",
 };
 const SPECIES = [
   { name: "Elk", icon: "🦌", type: "hunting", desc: "Rocky Mountain & Roosevelt" },
@@ -4126,7 +4165,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         // Not cached — call API
         const res = await fetch("https://wildai-server.onrender.com/chat", {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: [{ role: "user", content: `Return ONLY a JSON array of objects for the 30 most commonly hunted and fished species in ${selectedState}. Each object must have: name (string), type ("hunting" or "fishing"), desc (string, max 5 words). No markdown, no explanation, just the JSON array.` }], system: "Return only a valid JSON array. No markdown. No explanation." })
+          body: JSON.stringify({ messages: [{ role: "user", content: `Return ONLY a JSON array of objects for the 30 most commonly hunted and fished species in ${selectedState}. Each object must have: name (string), type ("hunting" or "fishing"), desc (string, max 5 words). Do NOT include any emoji characters. No markdown, no explanation, just the JSON array.` }], system: "Return only a valid JSON array. No emoji. No markdown. No explanation." })
         });
         const d = await res.json();
         const text = d.reply.replace(/```json|```/g, "").trim();
@@ -4423,7 +4462,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                       .filter(s => speciesFilter === "all" || s.type === speciesFilter)
                       .map(s => (
                         <button key={s.name} onClick={() => { sendMessage(`Give me a complete guide for ${s.name} — best tactics, gear, timing, and ${selectedState ? selectedState + " specific " : ""}tips.`); setTab("chat"); }} className="card" style={{ padding: "20px 16px", textAlign: "center", cursor: "pointer", border: "1px solid var(--border)" }}>
-                          <div style={{ fontSize: 32, marginBottom: 10 }}>{SPECIES_ICONS[s.name] || (s.type === "hunting" ? "🎯" : "🎣")}</div>
+                          <div style={{ fontSize: 32, marginBottom: 10 }}>{SPECIES_ICONS[s.name] || (s.type === "hunting" ? "🦌" : "🐟")}</div>
                           <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{s.name}</div>
                           <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 10 }}>{s.desc}</div>
                           <span className={`tag tag-${s.type === "hunting" ? "hunt" : "fish"}`}>{s.type}</span>
