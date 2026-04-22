@@ -2198,16 +2198,21 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
             <div style={{ color: "var(--text)", fontWeight: 600, marginBottom: 6 }}>Sign in to view your profile</div>
             <button onClick={openSignIn} className="btn-primary" style={{ padding: "8px 20px", fontSize: 13 }}>Sign In</button>
           </div>
-        ) : (
-          <UserProfilePage
-            userId={user.id}
-            currentUser={user}
-            onBack={null}
-            openSignIn={openSignIn}
-            onViewUser={(id) => { setViewingProfile(id); setCommunityTab("feed"); }}
-            onPost={() => { setShowForm(true); setCommunityTab("feed"); }}
-            onBlock={(id, unblock) => { setBlockedIds(prev => { const n = new Set(prev); unblock ? n.delete(id) : n.add(id); return n; }); }}
-          />
+        ) : createPortal(
+          <div className="fade-in" style={{ position: "fixed", inset: 0, zIndex: 99998, background: "var(--bg)", overflowY: "auto", padding: "0 0 80px" }}>
+            <div style={{ maxWidth: 760, margin: "0 auto" }}>
+              <UserProfilePage
+                userId={user.id}
+                currentUser={user}
+                onBack={null}
+                openSignIn={openSignIn}
+                onViewUser={(id) => { setViewingProfile(id); }}
+                onPost={() => { setShowForm(true); setCommunityTab("feed"); }}
+                onBlock={(id, unblock) => { setBlockedIds(prev => { const n = new Set(prev); unblock ? n.delete(id) : n.add(id); return n; }); }}
+              />
+            </div>
+          </div>,
+          document.body
         )
       )}
       {viewingProfile && createPortal(
