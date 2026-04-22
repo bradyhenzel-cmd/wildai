@@ -3590,35 +3590,27 @@ function RegulationsTab({ selectedState, currentUser }) {
         <p style={{ color: "rgba(212,147,10,0.9)", fontSize: 13, lineHeight: 1.7 }}>⚠️ <strong>Info is generally accurate but dates and limits may vary.</strong> Always click the official links below for exact current regulations before heading out.</p>
         {STATE_WILDLIFE_AGENCIES[selectedState] && (
           <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-            <a href={STATE_WILDLIFE_AGENCIES[selectedState].hunting} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "8px 16px", background: "rgba(212,147,10,0.15)", border: "1px solid rgba(212,147,10,0.3)", borderRadius: "var(--radius-sm)", color: "rgba(212,147,10,0.9)", fontSize: 12, fontWeight: 600, textDecoration: "none", textAlign: "center", transition: "transform 0.15s" }} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"} onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>🎯 Official Hunting Regs →</a>
-            <a href={STATE_WILDLIFE_AGENCIES[selectedState].fishing} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "8px 16px", background: "rgba(212,147,10,0.15)", border: "1px solid rgba(212,147,10,0.3)", borderRadius: "var(--radius-sm)", color: "rgba(212,147,10,0.9)", fontSize: 12, fontWeight: 600, textDecoration: "none", textAlign: "center", transition: "transform 0.15s" }} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"} onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>🎣 Official Fishing Regs →</a>
+            <a href={STATE_WILDLIFE_AGENCIES[selectedState].hunting} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "11px 16px", background: "linear-gradient(135deg, rgba(212,147,10,0.3), rgba(180,120,5,0.2))", border: "1px solid rgba(212,147,10,0.5)", borderRadius: "var(--radius-sm)", color: "#e8b020", fontSize: 13, fontWeight: 700, textDecoration: "none", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 4px 16px rgba(212,147,10,0.2)", transition: "all 0.2s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(212,147,10,0.4)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(212,147,10,0.2)"; }}>🎯 Hunting Regs →</a>
+            <a href={STATE_WILDLIFE_AGENCIES[selectedState].fishing} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "11px 16px", background: "linear-gradient(135deg, rgba(80,140,220,0.25), rgba(50,100,180,0.15))", border: "1px solid rgba(80,140,220,0.45)", borderRadius: "var(--radius-sm)", color: "#7ab0e0", fontSize: 13, fontWeight: 700, textDecoration: "none", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 4px 16px rgba(80,140,220,0.2)", transition: "all 0.2s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(80,140,220,0.4)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(80,140,220,0.2)"; }}>🎣 Fishing Regs →</a>
           </div>
         )}
       </div>
 
       {regs && !loading && !generating && (
         <>
-          <div className="card" style={{ padding: 24 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-              <span style={{ fontSize: 24 }}>🎯</span>
-              <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>Hunting</span>
+          {[
+            { emoji: "🎯", label: "Hunting", text: regs.hunting, accent: "rgba(212,147,10,0.12)", border: "rgba(212,147,10,0.25)", color: "var(--amber)" },
+            { emoji: "🎣", label: "Fishing", text: regs.fishing, accent: "rgba(80,140,220,0.1)", border: "rgba(80,140,220,0.25)", color: "#7ab0e0" },
+            { emoji: "📋", label: "Licenses & General Info", text: regs.general, accent: "rgba(120,180,80,0.08)", border: "var(--border-accent)", color: "var(--green)" },
+          ].map(({ emoji, label, text, accent, border, color }) => (
+            <div key={label} style={{ background: accent, border: `1px solid ${border}`, borderRadius: "var(--radius)", padding: "20px 24px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: accent, border: `1px solid ${border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: `0 0 20px ${border}` }}>{emoji}</div>
+                <span style={{ color, fontWeight: 700, fontSize: 15, fontFamily: "var(--font-display)" }}>{label}</span>
+              </div>
+              <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.85, margin: 0 }}>{text}</p>
             </div>
-            <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.8 }}>{regs.hunting}</p>
-          </div>
-          <div className="card" style={{ padding: 24 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-              <span style={{ fontSize: 24 }}>🎣</span>
-              <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>Fishing</span>
-            </div>
-            <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.8 }}>{regs.fishing}</p>
-          </div>
-          <div className="card" style={{ padding: 24 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-              <span style={{ fontSize: 24 }}>📋</span>
-              <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>Licenses & General Info</span>
-            </div>
-            <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.8 }}>{regs.general}</p>
-          </div>
+          ))}
         </>
       )}
 
