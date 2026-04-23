@@ -4543,8 +4543,9 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
   const [suggestedUsers, setSuggestedUsers] = useState([]);
 
   useEffect(() => {
-    supabase.from("profiles").select("user_id, username, avatar_url, bio").neq("user_id", user.id).limit(6).then(({ data }) => {
-      setSuggestedUsers((data || []).filter(u => u.username));
+    supabase.from("profiles").select("user_id, username, avatar_url, bio").neq("user_id", user.id).limit(12).then(({ data }) => {
+      const blocked = ["example", "test", "user_342", "admin", "user"];
+      setSuggestedUsers((data || []).filter(u => u.username && !blocked.includes(u.username.toLowerCase()) && !u.username.toLowerCase().startsWith("user_")).slice(0, 6));
     });
   }, []);
 
@@ -4552,28 +4553,32 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
     await supabase.from("profiles").update({ onboarding_complete: true, interests, selected_state: state || null }).eq("user_id", user.id);
     if (state) setSelectedState(state);
     for (const uid of following) {
-      await supabase.from("follows").insert({ follower_id: user.id, following_id: uid }).catch(() => {});
+      await supabase.from("follows").insert({ follower_id: user.id, following_id: uid }).catch(() => { });
     }
     onComplete();
   };
 
-  const US_STATES = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
+  const US_STATES = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
 
   return (
     <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 20px" }}>
       <div style={{ width: "100%", maxWidth: 420 }}>
         <div style={{ display: "flex", gap: 6, marginBottom: 32 }}>
-          {[1,2,3].map(s => <div key={s} style={{ flex: 1, height: 3, borderRadius: 4, background: step >= s ? "var(--green)" : "var(--border)", transition: "background 0.3s" }} />)}
+          {[1, 2, 3].map(s => <div key={s} style={{ flex: 1, height: 3, borderRadius: 4, background: step >= s ? "var(--green)" : "var(--border)", transition: "background 0.3s" }} />)}
         </div>
 
         {step === 1 && (
           <div className="fade-in">
-            <div style={{ fontSize: 32, marginBottom: 8 }}>🦌</div>
+            <div style={{ marginBottom: 16 }}><img src="/logo.png" style={{ width: 56, height: 56, objectFit: "contain" }} /></div>
             <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Welcome to WildAI</div>
             <div style={{ color: "var(--text2)", fontSize: 15, marginBottom: 32, lineHeight: 1.5 }}>Let's personalize your experience. What do you primarily do?</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {[["hunting", "🦌 Hunting"], ["fishing", "🎣 Fishing"], ["both", "🦌🎣 Both"]].map(([val, label]) => (
-                <button key={val} onClick={() => setInterests(val)} style={{ padding: "16px 20px", borderRadius: 14, border: `2px solid ${interests === val ? "var(--green)" : "var(--border)"}`, background: interests === val ? "rgba(120,180,80,0.1)" : "var(--card)", color: interests === val ? "var(--green)" : "var(--text)", fontSize: 16, fontWeight: 700, cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", transition: "all 0.2s" }}>{label}</button>
+              {[
+                ["hunting", "Hunting", <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" /><path d="M8 12l2 2 4-4" /></svg>],
+                ["fishing", "Fishing", <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 5.5C18 4.12 16.88 3 15.5 3S13 4.12 13 5.5c0 1.74 2.5 4.5 2.5 4.5S18 7.24 18 5.5z" /><path d="M3 18c0 0 3-3 6-3s4 2 7 2 5-2 5-2" /><path d="M3 18v2" /></svg>],
+                ["both", "Both", <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>],
+              ].map(([val, label, icon]) => (
+                <button key={val} onClick={() => setInterests(val)} style={{ padding: "16px 20px", borderRadius: 14, border: `2px solid ${interests === val ? "var(--green)" : "var(--border)"}`, background: interests === val ? "rgba(120,180,80,0.1)" : "var(--card)", color: interests === val ? "var(--green)" : "var(--text)", fontSize: 16, fontWeight: 700, cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", transition: "all 0.2s", display: "flex", alignItems: "center", gap: 12 }}>{icon}{label}</button>
               ))}
             </div>
             <button onClick={() => setStep(2)} className="btn-primary" style={{ width: "100%", padding: 16, marginTop: 24, fontSize: 15, borderRadius: 14 }}>Continue →</button>
@@ -4582,10 +4587,10 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
 
         {step === 2 && (
           <div className="fade-in">
-            <div style={{ fontSize: 32, marginBottom: 8 }}>📍</div>
+            <div style={{ marginBottom: 8 }}><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg></div>
             <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Where do you hunt or fish?</div>
             <div style={{ color: "var(--text2)", fontSize: 15, marginBottom: 24, lineHeight: 1.5 }}>We'll use this for regulations, weather and local content.</div>
-            <select value={state} onChange={e => setState(e.target.value)} style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: "2px solid var(--border)", background: "var(--card)", color: state ? "var(--text)" : "var(--text3)", fontSize: 15, fontFamily: "var(--font-body)", marginBottom: 24, outline: "none" }}>
+            <select value={state} onChange={e => setState(e.target.value)} style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: `2px solid ${state ? "var(--border-accent)" : "var(--border)"}`, background: "var(--card)", color: state ? "var(--text)" : "var(--text3)", fontSize: 15, fontFamily: "var(--font-body)", marginBottom: 24, outline: "none", appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236a8a6a' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 16px center" }}>
               <option value="">Select your state...</option>
               {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
@@ -4598,7 +4603,7 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
 
         {step === 3 && (
           <div className="fade-in">
-            <div style={{ fontSize: 32, marginBottom: 8 }}>👥</div>
+            <div style={{ marginBottom: 8 }}><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg></div>
             <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Follow some hunters</div>
             <div style={{ color: "var(--text2)", fontSize: 15, marginBottom: 24, lineHeight: 1.5 }}>Follow a few people to fill your feed with posts.</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
@@ -4609,7 +4614,7 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 14 }}>{u.username}</div>
-                    {u.bio && <div style={{ color: "var(--text3)", fontSize: 12, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{u.bio}</div>}
+
                   </div>
                   <button onClick={() => setFollowing(prev => { const n = new Set(prev); n.has(u.user_id) ? n.delete(u.user_id) : n.add(u.user_id); return n; })} style={{ padding: "7px 14px", borderRadius: 20, border: `1px solid ${following.has(u.user_id) ? "var(--border-accent)" : "var(--border)"}`, background: following.has(u.user_id) ? "rgba(120,180,80,0.12)" : "var(--card)", color: following.has(u.user_id) ? "var(--green)" : "var(--text2)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", flexShrink: 0 }}>{following.has(u.user_id) ? "Following" : "Follow"}</button>
                 </div>
