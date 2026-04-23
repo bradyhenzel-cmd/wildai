@@ -1,8 +1,24 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from './supabase';
 import { useUser, SignIn, SignUp, UserButton, useClerk } from '@clerk/react';
 // mapbox css loaded dynamically in MapTab
+
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error, info) { console.error("ErrorBoundary:", error, info); }
+  render() {
+    if (this.state.hasError) return (
+      <div style={{ padding: 40, textAlign: "center", color: "var(--text2)" }}>
+        <div style={{ fontSize: 32, marginBottom: 8 }}>⚠️</div>
+        <div style={{ color: "var(--text)", fontWeight: 600, marginBottom: 4 }}>Something went wrong</div>
+        <div style={{ fontSize: 13 }}>Try refreshing the page</div>
+      </div>
+    );
+    return this.props.children;
+  }
+}
 
 
 const STATES = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
@@ -5206,9 +5222,11 @@ export default function App() {
         </div>
       )}
 
-      {page === "terms" && <TermsPage onBack={() => setPage(prevPage === "chat" ? "chat" : "landing")} />}
-      {page === "landing" && <LandingPage onStart={() => goTo("chat")} onSignIn={() => { window._triggerSignIn?.(); }} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} />}
-      {page === "chat" && <ChatPage onBack={() => { localStorage.removeItem("wildai_selected_state"); setSelectedState(""); goTo("landing"); }} messageCount={messageCount} setMessageCount={setMessageCount} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} messagesUnread={messagesUnread} setMessagesUnread={setMessagesUnread} notifUnread={notifUnread} setNotifUnread={setNotifUnread} />}
+      <ErrorBoundary>
+        {page === "terms" && <TermsPage onBack={() => setPage(prevPage === "chat" ? "chat" : "landing")} />}
+        {page === "landing" && <LandingPage onStart={() => goTo("chat")} onSignIn={() => { window._triggerSignIn?.(); }} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} />}
+        {page === "chat" && <ChatPage onBack={() => { localStorage.removeItem("wildai_selected_state"); setSelectedState(""); goTo("landing"); }} messageCount={messageCount} setMessageCount={setMessageCount} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} messagesUnread={messagesUnread} setMessagesUnread={setMessagesUnread} notifUnread={notifUnread} setNotifUnread={setNotifUnread} />}
+      </ErrorBoundary>
     </>
   );
 }
