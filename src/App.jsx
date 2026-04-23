@@ -4538,6 +4538,8 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
 function OnboardingPage({ user, onComplete, setSelectedState }) {
   const [step, setStep] = useState(1);
   const [state, setState] = useState("");
+  
+  const [stateOpen, setStateOpen] = useState(false);
   const [interests, setInterests] = useState("both");
   const [following, setFollowing] = useState(new Set());
   const [suggestedUsers, setSuggestedUsers] = useState([]);
@@ -4593,10 +4595,19 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
             <div style={{ marginBottom: 8 }}><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg></div>
             <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Where do you hunt or fish?</div>
             <div style={{ color: "var(--text2)", fontSize: 15, marginBottom: 24, lineHeight: 1.5 }}>We'll use this for regulations, weather and local content.</div>
-            <select value={state} onChange={e => setState(e.target.value)} style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: `2px solid ${state ? "var(--border-accent)" : "var(--border)"}`, background: "var(--card)", color: state ? "var(--text)" : "var(--text3)", fontSize: 15, fontFamily: "var(--font-body)", marginBottom: 24, outline: "none", appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236a8a6a' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 16px center" }}>
-              <option value="">Select your state...</option>
-              {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
+            <div style={{ position: "relative", marginBottom: 24 }}>
+              <div onClick={() => setStateOpen(o => !o)} style={{ width: "100%", padding: "14px 16px", borderRadius: stateOpen ? "14px 14px 0 0" : 14, border: `2px solid ${state ? "var(--border-accent)" : "var(--border)"}`, background: "#0d1a0d", color: state ? "var(--text)" : "var(--text3)", fontSize: 15, fontFamily: "var(--font-body)", boxSizing: "border-box", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                {state || "Select your state..."}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points={stateOpen ? "18 15 12 9 6 15" : "6 9 12 15 18 9"}/></svg>
+              </div>
+              {stateOpen && (
+                <div style={{ background: "#0d1a0d", border: "2px solid var(--border)", borderTop: "1px solid rgba(255,255,255,0.06)", borderRadius: "0 0 14px 14px", maxHeight: 220, overflowY: "auto", position: "absolute", width: "100%", zIndex: 10 }}>
+                  {US_STATES.map(s => (
+                    <div key={s} onClick={() => { setState(s); setStateOpen(false); }} style={{ padding: "12px 16px", cursor: "pointer", color: "var(--text)", fontSize: 15, borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.08)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>{s}</div>
+                  ))}
+                </div>
+              )}
+            </div>
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => setStep(1)} style={{ flex: 1, padding: 16, borderRadius: 14, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text2)", fontSize: 15, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Back</button>
               <button onClick={() => setStep(3)} className="btn-primary" style={{ flex: 2, padding: 16, fontSize: 15, borderRadius: 14 }}>Continue →</button>
