@@ -3559,7 +3559,7 @@ Use **bold** for key terms. Be specific and practical.`;
             <div style={{ fontSize: 28, marginBottom: 8 }}>🔒</div>
             <div style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "var(--text)", marginBottom: 6 }}>Upgrade to WildAI Pro</div>
             <div style={{ color: "var(--text2)", fontSize: 13, marginBottom: 14, lineHeight: 1.6 }}>You've used your free interactions. Upgrade for unlimited trip plans and more.</div>
-            <button className="btn-primary" style={{ padding: "12px 28px", fontSize: 14 }} onClick={onUpgrade}>Upgrade for $2.99/month →</button>
+            <button className="btn-primary" style={{ padding: "12px 28px", fontSize: 14 }} onClick={onUpgrade}>Upgrade to Pro →</button>
           </div>
         ) : (
           <button onClick={generate} disabled={!description.trim() || loading} className="btn-primary" style={{ width: "100%", padding: "12px", fontSize: 14, opacity: (!description.trim() || loading) ? 0.5 : 1 }}>
@@ -4511,6 +4511,7 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
   const bottomRef = useRef(null);
   const { user, isLoaded } = useUser();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+const [billingPlan, setBillingPlan] = useState("monthly");
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
@@ -4688,7 +4689,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
             {isPro ? (
               <div className="mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)" }}>Pro ✓</div>
             ) : (
-              <button onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }} className="btn-gold mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12 }}>
+              <button onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id, plan: billingPlan }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }} className="btn-gold mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12 }}>
                 {checkoutLoading ? "..." : "Go Pro"}
               </button>
             )}
@@ -4866,12 +4867,16 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                     ))}
                   </div>
                   <div style={{ padding: "8px 20px 28px", textAlign: "center" }}>
-                    <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 6, marginBottom: 4 }}>
-                      <span style={{ color: "white", fontSize: 52, fontWeight: 900, fontFamily: "var(--font-display)", letterSpacing: "-2px", lineHeight: 1 }}>$2.99</span>
-                      <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 14, paddingBottom: 8 }}>/ month</span>
+                    <div style={{ display: "flex", background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: 4, marginBottom: 20, border: "1px solid rgba(255,255,255,0.08)" }}>
+                      <button onClick={() => setBillingPlan("monthly")} style={{ flex: 1, padding: "8px 0", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: "pointer", border: "none", transition: "all 0.2s", background: billingPlan === "monthly" ? "rgba(232,176,32,0.2)" : "transparent", color: billingPlan === "monthly" ? "#e8b020" : "rgba(255,255,255,0.35)" }}>Monthly</button>
+                      <button onClick={() => setBillingPlan("annual")} style={{ flex: 1, padding: "8px 0", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: "pointer", border: "none", transition: "all 0.2s", background: billingPlan === "annual" ? "rgba(232,176,32,0.2)" : "transparent", color: billingPlan === "annual" ? "#e8b020" : "rgba(255,255,255,0.35)", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>Annual <span style={{ background: "rgba(120,180,80,0.25)", color: "#78b450", fontSize: 10, fontWeight: 700, padding: "2px 6px", borderRadius: 6 }}>Save 44%</span></button>
                     </div>
-                    <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 11, marginBottom: 16 }}>Less than a cup of coffee · Resets monthly</div>
-                    <button className="btn-gold" style={{ width: "100%", padding: "16px", borderRadius: 14, fontSize: 15, fontWeight: 700, opacity: checkoutLoading ? 0.6 : 1, boxShadow: "0 8px 32px rgba(232,176,32,0.35)" }} disabled={checkoutLoading} onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }}>
+                    <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 6, marginBottom: 4 }}>
+                      <span style={{ color: "white", fontSize: 52, fontWeight: 900, fontFamily: "var(--font-display)", letterSpacing: "-2px", lineHeight: 1 }}>{billingPlan === "annual" ? "$19.99" : "$2.99"}</span>
+                      <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 14, paddingBottom: 8 }}>/ {billingPlan === "annual" ? "year" : "month"}</span>
+                    </div>
+                    <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 11, marginBottom: 16 }}>{billingPlan === "annual" ? "Just $1.67/mo · Best value" : "Less than a cup of coffee · Resets monthly"}</div>
+                    <button className="btn-gold" style={{ width: "100%", padding: "16px", borderRadius: 14, fontSize: 15, fontWeight: 700, opacity: checkoutLoading ? 0.6 : 1, boxShadow: "0 8px 32px rgba(232,176,32,0.35)" }} disabled={checkoutLoading} onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id, plan: billingPlan }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }}>
                       {checkoutLoading ? "Loading..." : "Upgrade to Pro →"}
                     </button>
                     <div style={{ marginTop: 10, fontSize: 11, color: "rgba(255,255,255,0.18)" }}>Cancel anytime · Secure payment via Stripe</div>
@@ -4911,7 +4916,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 
         {tab === "regs" && <RegulationsTab selectedState={selectedState} currentUser={user} />}
         {tab === "licenses" && <LicensesTab selectedState={selectedState} />}
-        {tab === "trip" && <TripPlannerTab selectedState={selectedState} user={user} isPro={isPro} hitLimit={hitLimit} messageCount={messageCount} setMessageCount={setMessageCount} onUpgrade={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }} />}
+        {tab === "trip" && <TripPlannerTab selectedState={selectedState} user={user} isPro={isPro} hitLimit={hitLimit} messageCount={messageCount} setMessageCount={setMessageCount} onUpgrade={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id, plan: billingPlan }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }} />}
         {tab === "species" && (
           <div className="fade-in">
             {!selectedState ? (

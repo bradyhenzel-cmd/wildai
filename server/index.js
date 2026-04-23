@@ -80,12 +80,12 @@ app.post("/regulations", async (req, res) => {
 });
 
 app.post("/create-checkout", async (req, res) => {
-    const { userId } = req.body;
+    const { userId, plan } = req.body;
     try {
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ["card"],
             line_items: [{
-                price: process.env.STRIPE_PRICE_ID,
+                price: plan === "annual" ? process.env.STRIPE_ANNUAL_PRICE_ID : process.env.STRIPE_PRICE_ID,
                 quantity: 1,
             }],
             mode: "subscription",
