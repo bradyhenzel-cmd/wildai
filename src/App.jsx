@@ -1127,6 +1127,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
   const [savingBio, setSavingBio] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [profileTab, setProfileTab] = useState("posts");
+  const [viewingProfilePost, setViewingProfilePost] = useState(null);
   const [spotRatings, setSpotRatings] = useState({});
   const [userRatings, setUserRatings] = useState({});
   const [savedPinIds, setSavedPinIds] = useState(new Set());
@@ -1427,6 +1428,14 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
         <button onClick={() => setProfileTab("spots")} style={{ flex: 1, background: "none", border: "none", borderBottom: profileTab === "spots" ? "2px solid var(--green)" : "2px solid transparent", color: profileTab === "spots" ? "var(--text)" : "var(--text3)", padding: "10px 0", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", transition: "all 0.2s" }}>📍 Spots</button>
       </div>
 
+      {viewingProfilePost && createPortal(
+        <div className="fade-in" style={{ position: "fixed", inset: 0, zIndex: 99999, background: "var(--bg)", overflowY: "auto", padding: "0 0 80px" }}>
+          <div style={{ maxWidth: 760, margin: "0 auto", padding: "16px 16px 0" }}>
+            <PostDetailPage postId={viewingProfilePost} user={currentUser} openSignIn={openSignIn} onBack={() => setViewingProfilePost(null)} onViewUser={onViewUser} />
+          </div>
+        </div>,
+        document.body
+      )}
       {profileTab === "posts" && (
         posts.length === 0 ? (
           <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14, minHeight: 200 }}>
@@ -1436,7 +1445,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
           </div>
         ) : (
           posts.map(post => (
-            <div key={post.id} className="card fade-in" style={{ padding: 0, overflow: "hidden" }}>
+            <div key={post.id} className="card fade-in" onClick={() => setViewingProfilePost(post.id)} style={{ padding: 0, overflow: "hidden", cursor: "pointer" }}>
               {post.photo && <img src={post.photo} style={{ width: "100%", maxHeight: 280, objectFit: "cover" }} />}
               <div style={{ padding: "14px 16px" }}>
                 {(post.species || post.location) && (
