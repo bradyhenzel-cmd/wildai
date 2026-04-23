@@ -5260,10 +5260,7 @@ export default function App() {
   const { openUserProfile } = useClerk();
   useEffect(() => { window._clerkOpenProfile = openUserProfile; }, [openUserProfile]);
   const { toasts } = useToast();
-  const [page, setPage] = useState(() => {
-    const savedState = localStorage.getItem("wildai_selected_state");
-    return savedState ? "chat" : "landing";
-  });
+  const [page, setPage] = useState("landing");
 
   useEffect(() => {
     if (!isLoaded) return;
