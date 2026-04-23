@@ -1307,7 +1307,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
               <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 17, fontFamily: "var(--font-display)" }}>{capName(displayName)}</div>
               {isOwnProfile && (
-                <a href="https://accounts.clerk.dev/user" target="_blank" rel="noopener noreferrer" style={{ color: "var(--text3)", fontSize: 11, textDecoration: "none", opacity: 0.6 }}>✏️</a>
+                <span onClick={() => window._clerkOpenProfile?.()} style={{ color: "var(--text3)", fontSize: 11, textDecoration: "none", opacity: 0.6, cursor: "pointer" }}>✏️</span>
               )}
             </div>
             <div style={{ display: "flex", gap: 16 }}>
@@ -5014,6 +5014,8 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 // ─── ROOT ─────────────────────────────────────────────────────────────────────
 export default function App() {
   const { user, isLoaded } = useUser();
+  const { openUserProfile } = useClerk();
+  useEffect(() => { window._clerkOpenProfile = openUserProfile; }, [openUserProfile]);
   const { toasts } = useToast();
   const [page, setPage] = useState(() => {
     const savedState = localStorage.getItem("wildai_selected_state");
