@@ -333,4 +333,16 @@ app.post("/clerk-webhook", async (req, res) => {
     }
 });
 
+app.get("/admin/stats", async (req, res) => {
+    if (req.headers["x-admin-key"] !== process.env.ADMIN_SECRET) return res.status(401).json({ error: "Unauthorized" });
+    try {
+        const subscriptions = await stripe.subscriptions.list({ status: "active", limit: 100 });
+        const proCount = subscriptions.data.length;
+        const mrr = subscriptions.data.reduce((sum, sub) => sum + sub.items.data[0].price.unit_amount, 0);
+        res.json({ proCount, mrr });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.listen(3001, () => console.log("Server running on port 3001"));

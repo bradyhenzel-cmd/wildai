@@ -4079,10 +4079,30 @@ function AdminTab({ user }) {
   const [banning, setBanning] = useState(null);
   const [reportedUsers, setReportedUsers] = useState([]);
   const [adminTab, setAdminTab] = useState("posts");
+  const [stats, setStats] = useState(null);
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
+      // Load stats
+      const [
+        { count: userCount },
+        { count: postCount },
+        { count: commentCount },
+        { count: likeCount },
+      ] = await Promise.all([
+        supabase.from("profiles").select("*", { count: "exact", head: true }),
+        supabase.from("posts").select("*", { count: "exact", head: true }),
+        supabase.from("comments").select("*", { count: "exact", head: true }),
+        supabase.from("likes").select("*", { count: "exact", head: true }),
+      ]);
+      // Get Stripe stats from backend
+      let stripeStats = null;
+      try {
+        const res = await fetch("https://wildai-server.onrender.com/admin/stats", { headers: { "x-admin-key": "somethinglong123" } });
+        if (res.ok) stripeStats = await res.json();
+      } catch {}
+      setStats({ userCount, postCount, commentCount, likeCount, ...stripeStats });
       const { data: reportData } = await supabase.from("reports").select("*").order("created_at", { ascending: false }).limit(50);
       if (reportData?.length) {
         const postIds = [...new Set(reportData.map(r => r.post_id))];
@@ -4125,6 +4145,7 @@ function AdminTab({ user }) {
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, fontFamily: "var(--font-display)" }}>⚙️ Admin</div>
       <div style={{ display: "flex", gap: 8 }}>
+        <button onClick={() => setAdminTab("stats")} className={`nav-tab ${adminTab === "stats" ? "active" : "inactive"}`} style={{ padding: "7px 18px", fontSize: 13 }}>📊 Stats</button>
         <button onClick={() => setAdminTab("posts")} className={`nav-tab ${adminTab === "posts" ? "active" : "inactive"}`} style={{ padding: "7px 18px", fontSize: 13 }}>Reported Posts ({uniquePostIds.length})</button>
         <button onClick={() => setAdminTab("users")} className={`nav-tab ${adminTab === "users" ? "active" : "inactive"}`} style={{ padding: "7px 18px", fontSize: 13 }}>Reported Users ({reportedUsers.length})</button>
       </div>
@@ -4155,6 +4176,24 @@ function AdminTab({ user }) {
           </div>
         </div>
       ))}
+      {adminTab === "stats" && stats && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          {[
+            { label: "Total Users", value: stats.userCount, icon: "👤", color: "#38bdf8" },
+            { label: "Total Posts", value: stats.postCount, icon: "📸", color: "var(--green)" },
+            { label: "Total Comments", value: stats.commentCount, icon: "💬", color: "#a78bfa" },
+            { label: "Total Likes", value: stats.likeCount, icon: "❤️", color: "#f43f5e" },
+            { label: "Pro Subscribers", value: stats.proCount ?? "—", icon: "⚡", color: "#fbbf24" },
+            { label: "MRR", value: stats.mrr ? `$${(stats.mrr / 100).toFixed(2)}` : "—", icon: "💰", color: "#4ade80" },
+          ].map(({ label, value, icon, color }) => (
+            <div key={label} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "16px 20px" }}>
+              <div style={{ fontSize: 24, marginBottom: 8 }}>{icon}</div>
+              <div style={{ color, fontWeight: 700, fontSize: 22, fontFamily: "var(--font-display)" }}>{value}</div>
+              <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 4 }}>{label}</div>
+            </div>
+          ))}
+        </div>
+      )}
       {!loading && adminTab === "posts" && uniquePostIds.length === 0 && (
         <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>No reported posts</div>
       )}
