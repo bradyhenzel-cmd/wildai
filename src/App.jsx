@@ -1327,7 +1327,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
           <div style={{ flex: 1, paddingBottom: 4 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
               <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 17, fontFamily: "var(--font-display)" }}>{capName(displayName)}</div>
-              
+
             </div>
             <div style={{ display: "flex", gap: 16 }}>
               {[["Posts", posts.length, null], ["Followers", followerCount, "followers"], ["Following", followingCount, "following"]].map(([label, val, type], i) => (
@@ -1546,11 +1546,13 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
   const [loadingInbox, setLoadingInbox] = useState(true);
   const [deletingThread, setDeletingThread] = useState(null);
 
-  const deleteThread = async (otherId) => {
-    await supabase.from("messages").delete().or(`and(sender_id.eq.${user.id},recipient_id.eq.${otherId}),and(sender_id.eq.${otherId},recipient_id.eq.${user.id})`);
+  const deleteThread = (otherId) => {
+    const key = `hidden_threads_${user.id}`;
+    const existing = JSON.parse(localStorage.getItem(key) || "[]");
+    localStorage.setItem(key, JSON.stringify([...existing, otherId]));
     setInbox(prev => prev.filter(t => t.otherId !== otherId));
     setDeletingThread(null);
-    toast("Conversation deleted.", "dark");
+    toast("Conversation removed.", "dark");
   };
   const [activeThread, setActiveThread] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -1562,6 +1564,8 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
   const bottomRef = useRef(null);
 
   const loadInbox = async () => {
+    const hiddenKey = `hidden_threads_${user?.id}`;
+    const hidden = new Set(JSON.parse(localStorage.getItem(hiddenKey) || "[]"));
     if (!user) return;
     setLoadingInbox(true);
     const res = await fetch(`https://wildai-server.onrender.com/messages/inbox?userId=${user.id}`);
@@ -1569,7 +1573,7 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
     if (Array.isArray(data)) {
       const { data: blocks } = await supabase.from("blocked_users").select("blocked_id").eq("blocker_id", user.id);
       const blockedSet = new Set((blocks || []).map(b => b.blocked_id));
-      const enriched = await Promise.all(data.filter(t => !blockedSet.has(t.otherId)).map(async t => {
+      const enriched = await Promise.all(data.filter(t => !blockedSet.has(t.otherId) && !hidden.has(t.otherId)).map(async t => {
         const { data: profile } = await supabase.from("profiles").select("username, avatar_url, last_seen").eq("user_id", t.otherId).single();
         return { ...t, username: profile?.username || "Hunter", avatar: profile?.avatar_url, last_seen: profile?.last_seen };
       }));
@@ -1594,6 +1598,9 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
   };
 
   const openThread = async (otherId, username, avatar) => {
+    const key = `hidden_threads_${user?.id}`;
+    const existing = JSON.parse(localStorage.getItem(key) || "[]");
+    localStorage.setItem(key, JSON.stringify(existing.filter(id => id !== otherId)));
     setDrafts(d => ({ ...d, [activeThread?.otherId]: input }));
     setInput("");
     setActiveThread({ otherId, username, avatar });
@@ -1636,13 +1643,18 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
   useEffect(() => { if (user) loadInbox(); }, [user]);
 
   useEffect(() => {
-    if (window._openMessageThread && user) {
-      const id = window._openMessageThread;
-      window._openMessageThread = null;
-      supabase.from("profiles").select("username, avatar_url").eq("user_id", id).single().then(({ data }) => {
-        openThread(id, data?.username || "Hunter", data?.avatar_url);
-      });
-    }
+    const check = () => {
+      if (window._openMessageThread && user) {
+        const id = window._openMessageThread;
+        window._openMessageThread = null;
+        supabase.from("profiles").select("username, avatar_url").eq("user_id", id).single().then(({ data }) => {
+          openThread(id, data?.username || "Hunter", data?.avatar_url);
+        });
+      }
+    };
+    check();
+    const t = setTimeout(check, 300);
+    return () => clearTimeout(t);
   }, [user]);
 
   useEffect(() => {
@@ -1767,16 +1779,13 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
         </div>
       )}
       {inbox.map(t => (
-        <div key={t.otherId} style={{ position: "relative", overflow: "hidden", borderRadius: "var(--radius)", marginBottom: 0 }}
-          onTouchStart={e => { e.currentTarget._startX = e.touches[0].clientX; e.currentTarget._swiped = false; }}
-          onTouchMove={e => { const dx = e.touches[0].clientX - e.currentTarget._startX; if (dx < -30) { e.currentTarget._swiped = true; e.currentTarget.querySelector(".swipe-delete-btn").style.transform = `translateX(${Math.max(-80, dx)}px)`; e.currentTarget.querySelector(".swipe-row").style.transform = `translateX(${Math.max(-80, dx)}px)`; } }}
-          onTouchEnd={e => { const row = e.currentTarget.querySelector(".swipe-row"); const btn = e.currentTarget.querySelector(".swipe-delete-btn"); const dx = e.changedTouches[0].clientX - e.currentTarget._startX; if (dx < -50) { row.style.transform = "translateX(-80px)"; row.style.transition = "transform 0.2s"; btn.style.transform = "translateX(-80px)"; btn.style.transition = "transform 0.2s"; } else { row.style.transform = "translateX(0)"; row.style.transition = "transform 0.2s"; btn.style.transform = "translateX(0)"; btn.style.transition = "transform 0.2s"; } }}>
+        <div key={t.otherId} style={{ borderRadius: "var(--radius)", overflow: "hidden" }}>
           {deletingThread === t.otherId && createPortal(
             <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center" }} onClick={() => setDeletingThread(null)}>
               <div onClick={e => e.stopPropagation()} style={{ background: "#0d1a0d", border: "1px solid var(--border)", borderRadius: 16, padding: 24, maxWidth: 300, width: "90%", textAlign: "center" }}>
                 <div style={{ fontSize: 32, marginBottom: 8 }}>🗑️</div>
                 <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>Delete conversation?</div>
-                <div style={{ color: "var(--text2)", fontSize: 13, marginBottom: 20 }}>This will delete all messages with {capName(t.username)} for both of you.</div>
+                <div style={{ color: "var(--text2)", fontSize: 13, marginBottom: 20 }}>This will remove this conversation from your inbox.</div>
                 <div style={{ display: "flex", gap: 10 }}>
                   <button onClick={() => setDeletingThread(null)} style={{ flex: 1, padding: "10px", borderRadius: 10, background: "rgba(255,255,255,0.06)", border: "1px solid var(--border)", color: "var(--text2)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>Cancel</button>
                   <button onClick={() => deleteThread(t.otherId)} style={{ flex: 1, padding: "10px", borderRadius: 10, background: "rgba(244,63,94,0.15)", border: "1px solid rgba(244,63,94,0.4)", color: "#f43f5e", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Delete</button>
@@ -1784,33 +1793,36 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
               </div>
             </div>, document.body
           )}
-          <button className="swipe-delete-btn" onClick={() => setDeletingThread(t.otherId)} style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: 80, background: "rgba(244,63,94,0.85)", border: "none", color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, fontFamily: "var(--font-body)", transform: "translateX(0)", zIndex: 0 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-            Delete
-          </button>
-          <div className="swipe-row" onClick={() => { openThread(t.otherId, t.username, t.avatar); setInbox(prev => { const updated = prev.map(i => i.otherId === t.otherId ? { ...i, unread: 0 } : i); setTimeout(() => onUnreadChange?.(updated.reduce((sum, i) => sum + (i.unread || 0), 0)), 0); return updated; }); }} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "12px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, position: "relative", zIndex: 1 }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "var(--card)"}>
-          <div style={{ position: "relative", flexShrink: 0 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "var(--green)", overflow: "hidden", boxShadow: "0 0 0 2px #78b450, 0 0 10px rgba(120,180,80,0.25)" }}>
-              {t.avatar ? <img src={t.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : t.username?.[0]?.toUpperCase()}
+          <div style={{ display: "flex", transform: "translateX(0)", transition: "transform 0.2s" }}
+            onTouchStart={e => { e.currentTarget._startX = e.touches[0].clientX; }}
+            onTouchMove={e => { const dx = Math.min(0, Math.max(-80, e.touches[0].clientX - e.currentTarget._startX)); e.currentTarget.style.transform = `translateX(${dx}px)`; e.currentTarget.style.transition = "none"; }}
+            onTouchEnd={e => { const dx = e.changedTouches[0].clientX - e.currentTarget._startX; if (dx < -40) { e.currentTarget.style.transform = "translateX(-80px)"; } else { e.currentTarget.style.transform = "translateX(0)"; } e.currentTarget.style.transition = "transform 0.2s"; }}>
+            <div onClick={() => { openThread(t.otherId, t.username, t.avatar); setInbox(prev => { const updated = prev.map(i => i.otherId === t.otherId ? { ...i, unread: 0 } : i); setTimeout(() => onUnreadChange?.(updated.reduce((sum, i) => sum + (i.unread || 0), 0)), 0); return updated; }); }} style={{ flex: "0 0 100%", background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "12px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "var(--card)"}>
+              <div style={{ position: "relative", flexShrink: 0 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "var(--green)", overflow: "hidden", boxShadow: "0 0 0 2px #78b450, 0 0 10px rgba(120,180,80,0.25)" }}>
+                  {t.avatar ? <img src={t.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : t.username?.[0]?.toUpperCase()}
+                </div>
+                {t.last_seen && (Date.now() - new Date(t.last_seen)) < 5 * 60 * 1000 && (
+                  <div style={{ position: "absolute", bottom: -2, right: -2, width: 11, height: 11, borderRadius: "50%", background: "#4ade80", border: "2px solid #0d140d" }} />
+                )}
+              </div>
+              <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center", gap: 3 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14, lineHeight: 1 }}>{capName(t.username)}</span>
+                  <span style={{ color: "var(--text3)", fontSize: 11 }}>{new Date(t.lastMessage.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                </div>
+                <div style={{ color: "var(--text3)", fontSize: 12, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1 }}>
+                  {t.lastMessage.image_url ? "📷 Photo" : t.lastMessage.pin_lat ? "📍 Shared a pin" : t.lastMessage.content}
+                </div>
+              </div>
+              {t.unread > 0 && <div style={{ background: "#f43f5e", borderRadius: 20, minWidth: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "white", padding: "0 5px", flexShrink: 0, boxShadow: "0 2px 8px rgba(244,63,94,0.4)" }}>{t.unread > 9 ? "9+" : t.unread}</div>}
             </div>
-            {t.last_seen && (Date.now() - new Date(t.last_seen)) < 5 * 60 * 1000 && (
-              <div style={{ position: "absolute", bottom: -2, right: -2, width: 11, height: 11, borderRadius: "50%", background: "#4ade80", border: "2px solid #0d140d" }} />
-            )}
+            <button onClick={() => setDeletingThread(t.otherId)} style={{ flex: "0 0 80px", background: "#f43f5e", border: "none", color: "white", fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, fontFamily: "var(--font-body)", borderRadius: "var(--radius)" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4h6v2" /></svg>
+              Delete
+            </button>
           </div>
-          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center", gap: 3 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14, lineHeight: 1 }}>{capName(t.username)}</span>
-              <span style={{ color: "var(--text3)", fontSize: 11 }}>{new Date(t.lastMessage.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
-            </div>
-            <div style={{ color: "var(--text3)", fontSize: 12, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1 }}>
-              {t.lastMessage.image_url ? "📷 Photo" : t.lastMessage.pin_lat ? "📍 Shared a pin" : t.lastMessage.content}
-            </div>
-          </div>
-          {t.unread > 0 && <div style={{ background: "#f43f5e", borderRadius: 20, minWidth: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "white", padding: "0 5px", flexShrink: 0, boxShadow: "0 2px 8px rgba(244,63,94,0.4)" }}>{t.unread > 9 ? "9+" : t.unread}</div>}
-          <button onClick={e => { e.stopPropagation(); setDeletingThread(t.otherId); }} style={{ background: "none", border: "none", color: "rgba(255,100,100,0.4)", fontSize: 16, cursor: "pointer", padding: "4px", flexShrink: 0, fontFamily: "var(--font-body)" }}>🗑️</button>
-        </div>
-        </div>
-      ))}
+        </div>))}
     </div>
   );
 }
@@ -1897,11 +1909,11 @@ function HotspotsTab({ posts, loading, user, selectedState, savedPinIds, saveToM
             {post.caption && <p style={{ color: "var(--text2)", fontSize: 13, lineHeight: 1.5, margin: "0 0 10px" }}>{post.caption}</p>}
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <button onClick={() => saveToMap(post)} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: savedPinIds.has(post.id) ? "rgba(120,180,80,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${savedPinIds.has(post.id) ? "var(--border-accent)" : "var(--border)"}`, color: savedPinIds.has(post.id) ? "var(--green)" : "var(--text2)", padding: "9px 14px", borderRadius: 20, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", transition: "all 0.2s" }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill={savedPinIds.has(post.id) ? "var(--green)" : "none"} stroke={savedPinIds.has(post.id) ? "var(--green)" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill={savedPinIds.has(post.id) ? "var(--green)" : "none"} stroke={savedPinIds.has(post.id) ? "var(--green)" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
                 {savedPinIds.has(post.id) ? "Saved" : "Save to Map"}
               </button>
               <a href={`https://www.google.com/maps/dir/?api=1&destination=${post.lat},${post.lng}`} target="_blank" rel="noopener noreferrer" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text2)", padding: "9px 14px", borderRadius: 20, fontSize: 13, fontWeight: 600, textDecoration: "none", transition: "all 0.2s", lineHeight: 1 }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11" /></svg>
                 Directions
               </a>
             </div>
@@ -4181,7 +4193,7 @@ function AdminTab({ user }) {
       try {
         const res = await fetch("https://wildai-server.onrender.com/admin/stats", { headers: { "x-admin-key": "somethinglong123" } });
         if (res.ok) stripeStats = await res.json();
-      } catch {}
+      } catch { }
       setStats({ userCount, postCount, commentCount, likeCount, ...stripeStats });
       const { data: reportData } = await supabase.from("reports").select("*").order("created_at", { ascending: false }).limit(50);
       if (reportData?.length) {
@@ -4575,7 +4587,7 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
   const bottomRef = useRef(null);
   const { user, isLoaded } = useUser();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-const [billingPlan, setBillingPlan] = useState("monthly");
+  const [billingPlan, setBillingPlan] = useState("monthly");
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
