@@ -4574,11 +4574,14 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
             <div style={{ color: "var(--text2)", fontSize: 15, marginBottom: 32, lineHeight: 1.5 }}>Let's personalize your experience. What do you primarily do?</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {[
-                ["hunting", "Hunting", <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" /><path d="M8 12l2 2 4-4" /></svg>],
-                ["fishing", "Fishing", <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 5.5C18 4.12 16.88 3 15.5 3S13 4.12 13 5.5c0 1.74 2.5 4.5 2.5 4.5S18 7.24 18 5.5z" /><path d="M3 18c0 0 3-3 6-3s4 2 7 2 5-2 5-2" /><path d="M3 18v2" /></svg>],
-                ["both", "Both", <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>],
+                ["hunting", "Hunting", <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="22" x2="18" y1="12" y2="12" /><line x1="6" x2="2" y1="12" y2="12" /><line x1="12" x2="12" y1="6" y2="2" /><line x1="12" x2="12" y1="22" y2="18" /></svg>],
+                ["fishing", "Fishing", <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10" /><path d="M20.414 8.586 22 7" /><circle cx="19" cy="10" r="2" /></svg>],
+                ["both", "Both", <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>],
               ].map(([val, label, icon]) => (
-                <button key={val} onClick={() => setInterests(val)} style={{ padding: "16px 20px", borderRadius: 14, border: `2px solid ${interests === val ? "var(--green)" : "var(--border)"}`, background: interests === val ? "rgba(120,180,80,0.1)" : "var(--card)", color: interests === val ? "var(--green)" : "var(--text)", fontSize: 16, fontWeight: 700, cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", transition: "all 0.2s", display: "flex", alignItems: "center", gap: 12 }}>{icon}{label}</button>
+                <button key={val} onClick={() => setInterests(val)} style={{ padding: "18px 20px", borderRadius: 14, border: `2px solid ${interests === val ? "var(--green)" : "var(--border)"}`, background: interests === val ? "rgba(120,180,80,0.12)" : "var(--card)", color: interests === val ? "var(--green)" : "var(--text)", fontSize: 16, fontWeight: 700, cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", transition: "all 0.2s", display: "flex", alignItems: "center", gap: 14 }}>
+                  {icon}{label}
+                  {interests === val && <svg style={{ marginLeft: "auto" }} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+                </button>
               ))}
             </div>
             <button onClick={() => setStep(2)} className="btn-primary" style={{ width: "100%", padding: 16, marginTop: 24, fontSize: 15, borderRadius: 14 }}>Continue →</button>
@@ -4604,7 +4607,7 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
         {step === 3 && (
           <div className="fade-in">
             <div style={{ marginBottom: 8 }}><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg></div>
-            <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Follow some hunters</div>
+            <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Follow some people</div>
             <div style={{ color: "var(--text2)", fontSize: 15, marginBottom: 24, lineHeight: 1.5 }}>Follow a few people to fill your feed with posts.</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
               {suggestedUsers.map(u => (
