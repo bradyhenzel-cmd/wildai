@@ -1550,7 +1550,11 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
     const key = `hidden_threads_${user.id}`;
     const existing = JSON.parse(localStorage.getItem(key) || "[]");
     localStorage.setItem(key, JSON.stringify([...existing, otherId]));
-    setInbox(prev => prev.filter(t => t.otherId !== otherId));
+    setInbox(prev => {
+      const updated = prev.filter(t => t.otherId !== otherId);
+      onUnreadChange?.(updated.reduce((sum, t) => sum + (t.unread || 0), 0));
+      return updated;
+    });
     setDeletingThread(null);
     toast("Conversation removed.", "dark");
   };
@@ -1664,7 +1668,11 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
   useEffect(() => {
     if (!user) return;
     const channel = supabase.channel("inbox-realtime")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `recipient_id=eq.${user.id}` }, () => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `recipient_id=eq.${user.id}` }, (payload) => {
+        const senderId = payload.new.sender_id;
+        const key = `hidden_threads_${user.id}`;
+        const existing = JSON.parse(localStorage.getItem(key) || "[]");
+        localStorage.setItem(key, JSON.stringify(existing.filter(id => id !== senderId)));
         loadInbox();
       }).subscribe();
     return () => supabase.removeChannel(channel);
