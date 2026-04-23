@@ -1839,22 +1839,38 @@ function HotspotsTab({ posts, loading, user, selectedState, savedPinIds, saveToM
       )}
       {filtered.map(post => (
         <div key={post.id} className="card fade-in" style={{ padding: 0, overflow: "hidden" }}>
-          {post.photo && <img src={post.photo} style={{ width: "100%", maxHeight: 200, objectFit: "cover" }} />}
-          <div style={{ padding: "12px 14px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
-              <div>
-                {post.species && <span style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)", padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600, marginRight: 6 }}>{post.species}</span>}
-                <span style={{ color: "var(--text3)", fontSize: 11 }}>{post.state}</span>
-              </div>
-              {post.distance != null && <span style={{ color: "var(--green)", fontSize: 12, fontWeight: 600 }}>{Math.round(post.distance)} mi</span>}
+          {post.photo && (
+            <div style={{ position: "relative" }}>
+              <img src={post.photo} style={{ width: "100%", height: 220, objectFit: "cover", display: "block" }} />
+              {post.species && (
+                <div style={{ position: "absolute", bottom: 10, left: 10, background: "rgba(8,20,8,0.82)", border: "1px solid var(--border-accent)", backdropFilter: "blur(8px)", borderRadius: 20, padding: "4px 12px", display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 13 }}>{SPECIES_ICONS[post.species] || "🎯"}</span>
+                  <span style={{ color: "var(--green)", fontSize: 12, fontWeight: 700 }}>{post.species}</span>
+                </div>
+              )}
+              {post.distance != null && (
+                <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(8,20,8,0.82)", backdropFilter: "blur(8px)", border: "1px solid var(--border-accent)", borderRadius: 20, padding: "4px 10px" }}>
+                  <span style={{ color: "var(--green)", fontSize: 12, fontWeight: 700 }}>{Math.round(post.distance)} mi</span>
+                </div>
+              )}
             </div>
-            {post.location && <div style={{ color: "var(--text2)", fontSize: 13, marginBottom: 4 }}>📍 {post.location}</div>}
-            {post.caption && <p style={{ color: "var(--text2)", fontSize: 13, lineHeight: 1.5, margin: "0 0 8px" }}>{post.caption}</p>}
-            <div style={{ display: "flex", gap: 8 }}>
-              <a href={`https://www.google.com/maps/dir/?api=1&destination=${post.lat},${post.lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 12, fontWeight: 600 }}>🗺️ Directions</a>
-              <button onClick={() => saveToMap(post)} style={{ background: savedPinIds.has(post.id) ? "var(--green-dim)" : "rgba(255,255,255,0.04)", border: `1px solid ${savedPinIds.has(post.id) ? "var(--border-accent)" : "var(--border)"}`, color: savedPinIds.has(post.id) ? "var(--green)" : "var(--text2)", padding: "4px 10px", borderRadius: "var(--radius-sm)", fontSize: 12, cursor: savedPinIds.has(post.id) ? "default" : "pointer", fontFamily: "var(--font-body)" }}>
-                {savedPinIds.has(post.id) ? "✓ Saved" : "📍 Save"}
+          )}
+          <div style={{ padding: "12px 14px 14px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg, #3d7a25, #1a3a0e)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "var(--green)", flexShrink: 0 }}>{(post.username || "?")[0].toUpperCase()}</div>
+              <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 13 }}>{capName(post.username)}</span>
+              {post.location && <span style={{ color: "var(--text3)", fontSize: 12 }}>· 📍 {post.location}</span>}
+            </div>
+            {post.caption && <p style={{ color: "var(--text2)", fontSize: 13, lineHeight: 1.5, margin: "0 0 10px" }}>{post.caption}</p>}
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <button onClick={() => saveToMap(post)} style={{ display: "flex", alignItems: "center", gap: 6, background: savedPinIds.has(post.id) ? "rgba(120,180,80,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${savedPinIds.has(post.id) ? "var(--border-accent)" : "var(--border)"}`, color: savedPinIds.has(post.id) ? "var(--green)" : "var(--text2)", padding: "7px 14px", borderRadius: 20, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", transition: "all 0.2s" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill={savedPinIds.has(post.id) ? "var(--green)" : "none"} stroke={savedPinIds.has(post.id) ? "var(--green)" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                {savedPinIds.has(post.id) ? "Saved" : "Save to Map"}
               </button>
+              <a href={`https://www.google.com/maps/dir/?api=1&destination=${post.lat},${post.lng}`} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text2)", padding: "7px 14px", borderRadius: 20, fontSize: 13, fontWeight: 600, textDecoration: "none", transition: "all 0.2s" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                Directions
+              </a>
             </div>
           </div>
         </div>
