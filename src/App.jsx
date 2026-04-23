@@ -4179,7 +4179,7 @@ function AdminTab({ user }) {
       {adminTab === "stats" && stats && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           {[
-            { label: "Total Users", value: stats.userCount, icon: "👤", color: "#38bdf8" },
+            { label: "Total Users", value: stats.clerkUserCount ?? stats.userCount, icon: "👤", color: "#38bdf8" },
             { label: "Total Posts", value: stats.postCount, icon: "📸", color: "var(--green)" },
             { label: "Total Comments", value: stats.commentCount, icon: "💬", color: "#a78bfa" },
             { label: "Total Likes", value: stats.likeCount, icon: "❤️", color: "#f43f5e" },
