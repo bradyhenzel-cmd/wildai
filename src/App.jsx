@@ -1706,7 +1706,7 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
             });
             await loadConversation(activeThread.otherId);
           }} />
-          <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Message..." style={{ flex: 1, padding: "11px 16px", borderRadius: 24, fontSize: 15, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)" }} />
+          <input value={input} onChange={e => setInput(e.target.value.slice(0, 1000))} onKeyDown={e => e.key === "Enter" && send()} placeholder="Message..." style={{ flex: 1, padding: "11px 16px", borderRadius: 24, fontSize: 15, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)" }} />
           <button onClick={send} disabled={!input.trim() || sending} className="btn-primary" style={{ padding: "9px 16px", fontSize: 13, borderRadius: 20, opacity: !input.trim() ? 0.5 : 1 }}>Send</button>
         </div>
       </div>
@@ -2419,7 +2419,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
             <textarea
               placeholder="Share your experience..."
               value={form.caption}
-              onChange={e => setForm(f => ({ ...f, caption: e.target.value }))}
+              onChange={e => setForm(f => ({ ...f, caption: e.target.value.slice(0, 500) }))}
               style={{ width: "100%", padding: "0", borderRadius: 0, fontSize: 14, minHeight: 40, resize: "none", background: "transparent", border: "none", borderBottom: "1px solid rgba(255,255,255,0.06)", color: "var(--text)", fontFamily: "var(--font-body)", outline: "none", boxSizing: "border-box", paddingBottom: 10, lineHeight: 1.6 }}
             />
             <div style={{ display: "flex", gap: 6 }}>
@@ -2807,7 +2807,7 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded, o
           ref={inputRef}
           placeholder={replyTo ? `Reply to ${capName(replyTo.username)}...` : "Add a comment..."}
           value={text}
-          onChange={e => setText(e.target.value)}
+          onChange={e => setText(e.target.value.slice(0, 300))}
           onKeyDown={e => { if (e.key === "Enter") submit(); }}
           style={{ flex: 1, padding: "7px 12px", borderRadius: 20, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)" }}
         />
