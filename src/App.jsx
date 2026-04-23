@@ -603,7 +603,7 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
               </div>
             ))}
           </div>
-          
+
 
           {/* Solunar Card */}
           {(() => {
@@ -624,26 +624,26 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
             const Mprime = (134.9633964 + 477198.8675055 * T) % 360;
             const D = (297.8501921 + 445267.1114034 * T) % 360;
             const F = (93.2720950 + 483202.0175233 * T) % 360;
-            const sinTerms = [[6288774,0,1,0,0],[1274027,2,-1,0,0],[658314,2,0,0,0],[213618,0,2,0,0],[-185116,1,0,0,0],[-114332,0,0,0,2],[58793,2,-2,0,0],[57066,2,-1,1,0],[53322,2,0,1,0]];
+            const sinTerms = [[6288774, 0, 1, 0, 0], [1274027, 2, -1, 0, 0], [658314, 2, 0, 0, 0], [213618, 0, 2, 0, 0], [-185116, 1, 0, 0, 0], [-114332, 0, 0, 0, 2], [58793, 2, -2, 0, 0], [57066, 2, -1, 1, 0], [53322, 2, 0, 1, 0]];
             let sigmaL = 0;
-            for (const [coef,d,mp,m,f] of sinTerms) sigmaL += coef * Math.sin(rad*(d*D+mp*Mprime+m*M+f*F));
-            const moonLng = (L0 + sigmaL/1000000) % 360;
-            const moonLat = 5.128 * Math.sin(rad*F);
-            const obliquity = 23.439291 - 0.013004*T;
-            const sinRA = Math.sin(rad*moonLng)*Math.cos(rad*obliquity) - Math.tan(rad*moonLat)*Math.sin(rad*obliquity);
-            let RA = deg * Math.atan2(sinRA, Math.cos(rad*moonLng));
+            for (const [coef, d, mp, m, f] of sinTerms) sigmaL += coef * Math.sin(rad * (d * D + mp * Mprime + m * M + f * F));
+            const moonLng = (L0 + sigmaL / 1000000) % 360;
+            const moonLat = 5.128 * Math.sin(rad * F);
+            const obliquity = 23.439291 - 0.013004 * T;
+            const sinRA = Math.sin(rad * moonLng) * Math.cos(rad * obliquity) - Math.tan(rad * moonLat) * Math.sin(rad * obliquity);
+            let RA = deg * Math.atan2(sinRA, Math.cos(rad * moonLng));
             if (RA < 0) RA += 360;
-            const GST = (280.46061837 + 360.98564736629*(JD-2451545.0)) % 360;
+            const GST = (280.46061837 + 360.98564736629 * (JD - 2451545.0)) % 360;
             // Use weather location lng if available, otherwise default to -98 (center US)
             const userLng = typeof weather?.lng === 'number' ? weather.lng : -98;
             const LST = ((GST + userLng) % 360 + 360) % 360;
             let HA = LST - RA;
             if (HA > 180) HA -= 360;
             if (HA < -180) HA += 360;
-            const currentUTCHour = now.getUTCHours() + now.getUTCMinutes()/60;
-            let transitUTC = currentUTCHour - HA/15;
+            const currentUTCHour = now.getUTCHours() + now.getUTCMinutes() / 60;
+            let transitUTC = currentUTCHour - HA / 15;
             transitUTC = ((transitUTC % 24) + 24) % 24;
-            const tzOffset = Math.round(userLng/15);
+            const tzOffset = Math.round(userLng / 15);
             const major1 = (transitUTC + tzOffset + 24) % 24;
             const major2 = (major1 + 12) % 24;
             const minor1 = (major1 + 6) % 24;
@@ -657,8 +657,8 @@ function WeatherWidget({ selectedState, weather, setWeather, locationName, setLo
             const ratingColor = rating > 0.75 ? "#4ade80" : rating > 0.5 ? "#a3e635" : rating > 0.25 ? "#fbbf24" : "#f87171";
             const bars = Math.round(rating * 4);
 
-            const hour = now.getHours() + now.getMinutes()/60;
-            const fmt = (h) => { if (isNaN(h) || !isFinite(h)) return "--:--"; const hh=Math.floor(h),mm=Math.round((h-hh)*60),ap=hh>=12?"PM":"AM"; return `${hh%12||12}:${mm.toString().padStart(2,'0')} ${ap}`; };
+            const hour = now.getHours() + now.getMinutes() / 60;
+            const fmt = (h) => { if (isNaN(h) || !isFinite(h)) return "--:--"; const hh = Math.floor(h), mm = Math.round((h - hh) * 60), ap = hh >= 12 ? "PM" : "AM"; return `${hh % 12 || 12}:${mm.toString().padStart(2, '0')} ${ap}`; };
             const isActive = (h) => { const diff = Math.abs(hour - h); return diff <= 1 || diff >= 23; };
             const moonIcon = phase < 1.85 ? "🌑" : phase < 5.53 ? "🌒" : phase < 9.22 ? "🌓" : phase < 12.91 ? "🌔" : phase < 16.61 ? "🌕" : phase < 20.30 ? "🌖" : phase < 23.99 ? "🌗" : "🌘";
 
@@ -1306,9 +1306,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
           <div style={{ flex: 1, paddingBottom: 4 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
               <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 17, fontFamily: "var(--font-display)" }}>{capName(displayName)}</div>
-              {isOwnProfile && (
-                <span onClick={() => window._clerkOpenProfile?.()} style={{ color: "var(--text3)", fontSize: 11, textDecoration: "none", opacity: 0.6, cursor: "pointer" }}>✏️</span>
-              )}
+              
             </div>
             <div style={{ display: "flex", gap: 16 }}>
               {[["Posts", posts.length, null], ["Followers", followerCount, "followers"], ["Following", followingCount, "following"]].map(([label, val, type], i) => (
@@ -1723,7 +1721,7 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
 
-      
+
       {!loadingInbox && inbox.length === 0 && (
         <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>💬</div>
@@ -1900,7 +1898,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   const [communityTab, setCommunityTab] = useState("feed");
   const [notifs, setNotifs] = useState([]);
   const [notifUnread, setNotifUnread] = useState(0);
-  
+
   const [loadingNotifs, setLoadingNotifs] = useState(false);
 
   const loadNotifs = async () => {
@@ -2169,23 +2167,23 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
 
   return (
     <div key={communityTab} className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14, overflow: "visible" }}
-        onTouchStart={e => { pullStartY.current = e.touches[0].clientY; setIsPulling(true); }}
-        onTouchMove={e => {
-          if (!isPulling) return;
-          const dy = e.touches[0].clientY - pullStartY.current;
-          if (dy > 0 && window.scrollY === 0 && communityTab === "feed") setPullY(Math.min(dy * 0.4, 80));
-        }}
-        onTouchEnd={() => {
-          setIsPulling(false);
-          if (pullY > 50 && !refreshing) {
-            setRefreshing(true);
-            loadPosts().finally(() => { setRefreshing(false); setPullY(0); });
-          } else {
-            setPullY(0);
-          }
-        }}
-      >
-        
+      onTouchStart={e => { pullStartY.current = e.touches[0].clientY; setIsPulling(true); }}
+      onTouchMove={e => {
+        if (!isPulling) return;
+        const dy = e.touches[0].clientY - pullStartY.current;
+        if (dy > 0 && window.scrollY === 0 && communityTab === "feed") setPullY(Math.min(dy * 0.4, 80));
+      }}
+      onTouchEnd={() => {
+        setIsPulling(false);
+        if (pullY > 50 && !refreshing) {
+          setRefreshing(true);
+          loadPosts().finally(() => { setRefreshing(false); setPullY(0); });
+        } else {
+          setPullY(0);
+        }
+      }}
+    >
+
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -2275,7 +2273,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
       )}
       {communityTab === "notifs" && !viewingProfile && !viewingPost && (
         <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          
+
           {!loadingNotifs && notifs.length === 0 && (
             <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>🔔</div>
@@ -2338,6 +2336,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                 onViewUser={(id) => { setViewingProfile(id); }}
                 onPost={() => { setShowForm(true); setCommunityTab("feed"); }}
                 onBlock={(id, unblock) => { setBlockedIds(prev => { const n = new Set(prev); unblock ? n.delete(id) : n.add(id); return n; }); }}
+                openUserProfile={() => window._clerkOpenProfile?.()}
               />
             </div>
           </div>,
@@ -2505,7 +2504,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
       )}
       {communityTab === "feed" && !viewingProfile && pullY > 0 && (
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: pullY, overflow: "hidden", transition: pullY < 50 ? "none" : "height 0.3s", color: "var(--text3)", fontSize: 12 }}>
-          {pullY > 50 || refreshing ? <div style={{ width: 20, height: 20, border: "2px solid var(--green)", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> : <span style={{ opacity: pullY/50 }}>↓ Pull to refresh</span>}
+          {pullY > 50 || refreshing ? <div style={{ width: 20, height: 20, border: "2px solid var(--green)", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> : <span style={{ opacity: pullY / 50 }}>↓ Pull to refresh</span>}
         </div>
       )}
       {communityTab === "feed" && !viewingProfile && !loading && posts.length === 0 && (
@@ -2593,10 +2592,10 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                 {commentCounts[post.id] > 0 && <span>{commentCounts[post.id]}</span>}
               </button>
               <button onClick={() => setSharingPost(post)} style={{ background: "none", border: "none", cursor: "pointer", color: "#6a8a6a", padding: "4px 0", transition: "all 0.15s" }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/><path d="M16 19h6"/><path d="M19 16v6"/></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4" /><path d="M20 21a8 8 0 1 0-16 0" /><path d="M16 19h6" /><path d="M19 16v6" /></svg>
               </button>
               <button onClick={() => navigator.share ? navigator.share({ title: "WildAI", text: post.caption, url: window.location.href }) : toast("Sharing not supported on this device.", "error")} style={{ background: "none", border: "none", cursor: "pointer", color: "#6a8a6a", padding: "4px 0", transition: "all 0.15s" }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
               </button>
               <div style={{ flex: 1 }} />
               {post.lat && post.lng && (
@@ -4621,7 +4620,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            
+
             {isPro ? (
               <div className="mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)" }}>Pro ✓</div>
             ) : (
@@ -4793,7 +4792,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                   </div>
                   <div style={{ margin: "0 24px 16px", height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)" }} />
                   <div style={{ padding: "0 20px 16px" }}>
-                    {["Unlimited AI chat — no message limits", "Unlimited saved map pins", "AI trip planner", "Harvest log & season tracking", "State regulations & official season dates", ].map((f, i) => (
+                    {["Unlimited AI chat — no message limits", "Unlimited saved map pins", "AI trip planner", "Harvest log & season tracking", "State regulations & official season dates",].map((f, i) => (
                       <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, background: i % 2 === 0 ? "rgba(255,255,255,0.02)" : "transparent" }}>
                         <div style={{ width: 20, height: 20, borderRadius: "50%", background: "rgba(232,176,32,0.15)", border: "1px solid rgba(232,176,32,0.4)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           <span style={{ color: "#e8b020", fontSize: 10, fontWeight: 700 }}>✓</span>
@@ -4838,7 +4837,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         {tab === "weather" && (
           <div className="fade-in">
             <WeatherWidget selectedState={selectedState} weather={weather} setWeather={setWeather} locationName={locationName} setLocationName={setLocationName} />
-            
+
           </div>
         )}
 
