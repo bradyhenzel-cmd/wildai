@@ -2152,7 +2152,13 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
 
   const saveToMap = async (post) => {
     if (!user) { openSignIn(); return; }
-    if (savedPinIds.has(post.id)) return;
+    if (savedPinIds.has(post.id)) {
+      await supabase.from("saved_pins").delete().eq("user_id", user.id).eq("post_id", post.id);
+      setSavedPinIds(prev => { const n = new Set(prev); n.delete(post.id); return n; });
+      toast("Pin removed from your map.", "dark");
+      return;
+    }
+    if (!post.lat || !post.lng) { toast("This post doesn't have a location pin.", "error"); return; }
     await supabase.from("saved_pins").insert({
       user_id: user.id, post_id: post.id,
       name: post.location || post.species || "Saved Spot",
