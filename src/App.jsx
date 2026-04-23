@@ -2160,12 +2160,13 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
       return;
     }
     if (!post.lat || !post.lng) { toast("This post doesn't have a location pin.", "error"); return; }
-    await supabase.from("saved_pins").insert({
+    const { error: insertError } = await supabase.from("saved_pins").insert({
       user_id: user.id, post_id: post.id,
       name: post.location || post.species || "Saved Spot",
       location: post.location, species: post.species,
       photo: post.photo, lat: post.lat, lng: post.lng, state: post.state,
     });
+    if (insertError) { console.error("Save pin error:", insertError); toast("Failed to save pin.", "error"); return; }
     setSavedPinIds(prev => new Set([...prev, post.id]));
     onPinSaved?.();
     toast("📍 Saved to your map!", "success");
