@@ -831,7 +831,7 @@ function PinDetailPage({ pin, onBack, onDelete, onSharePin, onSave }) {
   );
 }
 
-function MapTab({ selectedState, user, onSharePin, isPro }) {
+function MapTab({ selectedState, user, onSharePin, isPro, onPinAdded }) {
   const mapRef = useRef(null);
   const mapInst = useRef(null);
   const markersRef = useRef([]);
@@ -875,6 +875,8 @@ function MapTab({ selectedState, user, onSharePin, isPro }) {
     if (!user) return;
     const { data } = await supabase.from("saved_pins").select("*").eq("user_id", user.id);
     setPins(data || []);
+    window._addPinToMap = (pin) => setPins(prev => [...prev, pin]);
+    window._removePinFromMap = (postId) => setPins(prev => prev.filter(p => p.post_id !== postId));
   };
 
   const loadGroups = async () => {
@@ -2156,6 +2158,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
       const { error } = await supabase.from("saved_pins").delete().eq("user_id", user.id).eq("post_id", post.id);
       if (error) { console.error("Delete pin error:", error); toast("Failed to remove pin.", "error"); return; }
       setSavedPinIds(prev => { const n = new Set(prev); n.delete(post.id); return n; });
+      window._removePinFromMap?.(post.id);
       toast("Pin removed from your map.", "dark");
       return;
     }
@@ -2168,6 +2171,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
     });
     if (insertError) { console.error("Save pin error:", insertError); toast("Failed to save pin.", "error"); return; }
     setSavedPinIds(prev => new Set([...prev, post.id]));
+    window._addPinToMap?.({ user_id: user.id, post_id: post.id, name: post.location || post.species || "Saved Spot", location: post.location, species: post.species, photo: post.photo, lat: post.lat, lng: post.lng, state: post.state });
     onPinSaved?.();
     toast("📍 Saved to your map!", "success");
   };
