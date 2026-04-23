@@ -2153,7 +2153,8 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   const saveToMap = async (post) => {
     if (!user) { openSignIn(); return; }
     if (savedPinIds.has(post.id)) {
-      await supabase.from("saved_pins").delete().eq("user_id", user.id).eq("post_id", post.id);
+      const { error } = await supabase.from("saved_pins").delete().eq("user_id", user.id).eq("post_id", post.id);
+      if (error) { console.error("Delete pin error:", error); toast("Failed to remove pin.", "error"); return; }
       setSavedPinIds(prev => { const n = new Set(prev); n.delete(post.id); return n; });
       toast("Pin removed from your map.", "dark");
       return;
