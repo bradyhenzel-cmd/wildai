@@ -1767,7 +1767,10 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
         </div>
       )}
       {inbox.map(t => (
-        <div key={t.otherId} style={{ position: "relative" }}>
+        <div key={t.otherId} style={{ position: "relative", overflow: "hidden", borderRadius: "var(--radius)", marginBottom: 0 }}
+          onTouchStart={e => { e.currentTarget._startX = e.touches[0].clientX; e.currentTarget._swiped = false; }}
+          onTouchMove={e => { const dx = e.touches[0].clientX - e.currentTarget._startX; if (dx < -30) { e.currentTarget._swiped = true; e.currentTarget.querySelector(".swipe-delete-btn").style.transform = `translateX(${Math.max(-80, dx)}px)`; e.currentTarget.querySelector(".swipe-row").style.transform = `translateX(${Math.max(-80, dx)}px)`; } }}
+          onTouchEnd={e => { const row = e.currentTarget.querySelector(".swipe-row"); const btn = e.currentTarget.querySelector(".swipe-delete-btn"); const dx = e.changedTouches[0].clientX - e.currentTarget._startX; if (dx < -50) { row.style.transform = "translateX(-80px)"; row.style.transition = "transform 0.2s"; btn.style.transform = "translateX(-80px)"; btn.style.transition = "transform 0.2s"; } else { row.style.transform = "translateX(0)"; row.style.transition = "transform 0.2s"; btn.style.transform = "translateX(0)"; btn.style.transition = "transform 0.2s"; } }}>
           {deletingThread === t.otherId && createPortal(
             <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center" }} onClick={() => setDeletingThread(null)}>
               <div onClick={e => e.stopPropagation()} style={{ background: "#0d1a0d", border: "1px solid var(--border)", borderRadius: 16, padding: 24, maxWidth: 300, width: "90%", textAlign: "center" }}>
@@ -1781,7 +1784,11 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
               </div>
             </div>, document.body
           )}
-          <div onClick={() => { openThread(t.otherId, t.username, t.avatar); setInbox(prev => { const updated = prev.map(i => i.otherId === t.otherId ? { ...i, unread: 0 } : i); setTimeout(() => onUnreadChange?.(updated.reduce((sum, i) => sum + (i.unread || 0), 0)), 0); return updated; }); }} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "12px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "var(--card)"}>
+          <button className="swipe-delete-btn" onClick={() => setDeletingThread(t.otherId)} style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: 80, background: "rgba(244,63,94,0.85)", border: "none", color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, fontFamily: "var(--font-body)", transform: "translateX(0)", zIndex: 0 }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            Delete
+          </button>
+          <div className="swipe-row" onClick={() => { openThread(t.otherId, t.username, t.avatar); setInbox(prev => { const updated = prev.map(i => i.otherId === t.otherId ? { ...i, unread: 0 } : i); setTimeout(() => onUnreadChange?.(updated.reduce((sum, i) => sum + (i.unread || 0), 0)), 0); return updated; }); }} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "12px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, position: "relative", zIndex: 1 }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "var(--card)"}>
           <div style={{ position: "relative", flexShrink: 0 }}>
             <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "var(--green)", overflow: "hidden", boxShadow: "0 0 0 2px #78b450, 0 0 10px rgba(120,180,80,0.25)" }}>
               {t.avatar ? <img src={t.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : t.username?.[0]?.toUpperCase()}
