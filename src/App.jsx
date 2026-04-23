@@ -469,6 +469,23 @@ const css = `
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 function capName(str) { if (!str) return "Hunter"; return str.charAt(0).toUpperCase() + str.slice(1); }
 
+async function stripExif(file) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext("2d").drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(blob => resolve(new File([blob], file.name, { type: "image/jpeg" })), "image/jpeg", 0.92);
+    };
+    img.onerror = () => resolve(file);
+    img.src = url;
+  });
+}
+
 // ─── TOAST ────────────────────────────────────────────────────────────────────
 let _showToast = null;
 function useToast() {
@@ -1249,6 +1266,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
 
   const uploadAvatar = async (file) => {
     if (!file) return;
+    file = await stripExif(file);
     setUploadingAvatar(true);
     const fileName = `avatar-${userId}-${Date.now()}`;
     const { error } = await supabase.storage.from("post-photos").upload(fileName, file, { contentType: file.type, upsert: true });
@@ -1633,6 +1651,7 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
 
   const sendImage = async (file) => {
     if (!file || !user || !activeThread) return;
+    file = await stripExif(file);
     const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
     const { error } = await supabase.storage.from("post-photos").upload(fileName, file, { contentType: file.type });
     if (error) { toast("Image upload failed.", "error"); return; }
@@ -2515,7 +2534,8 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
               if (!file) return;
               const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
               toast("Uploading photo...", "info");
-              const { data, error } = await supabase.storage.from("post-photos").upload(fileName, file, { contentType: file.type });
+              const stripped = await stripExif(file);
+              const { data, error } = await supabase.storage.from("post-photos").upload(fileName, stripped, { contentType: "image/jpeg" });
               if (error) { toast("Photo upload failed. Try again.", "error"); return; }
               const { data: urlData } = supabase.storage.from("post-photos").getPublicUrl(fileName);
               setForm(f => ({ ...f, photo: urlData.publicUrl }));
@@ -3016,7 +3036,8 @@ function HarvestLogTab({ user, openSignIn, isPro }) {
     let photoUrl = form.photo;
     if (form.photoFile) {
       const fileName = `${user.id}-${Date.now()}-${form.photoFile.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
-      const { data } = await supabase.storage.from("post-photos").upload(fileName, form.photoFile, { contentType: form.photoFile.type });
+      const strippedPhoto = await stripExif(form.photoFile);
+      const { data } = await supabase.storage.from("post-photos").upload(fileName, strippedPhoto, { contentType: "image/jpeg" });
       if (data) {
         const { data: urlData } = supabase.storage.from("post-photos").getPublicUrl(fileName);
         photoUrl = urlData.publicUrl;
