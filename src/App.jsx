@@ -1229,10 +1229,12 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
       await supabase.from("follows").delete().eq("follower_id", currentUser.id).eq("following_id", userId);
       setIsFollowing(false);
       setFollowerCount(c => c - 1);
+      window._updateFollowing?.(userId, false);
     } else {
       await supabase.from("follows").insert({ follower_id: currentUser.id, following_id: userId });
       setIsFollowing(true);
       setFollowerCount(c => c + 1);
+      window._updateFollowing?.(userId, true);
       fetch("https://wildai-server.onrender.com/push/follow", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ followed_id: userId, follower_username: currentUser.username || currentUser.firstName || "Someone" }) }).catch(() => { });
     }
   };
@@ -2117,7 +2119,10 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   useEffect(() => {
     if (!user) return;
     supabase.from("follows").select("following_id").eq("follower_id", user.id).then(({ data }) => {
-      if (data) setFollowingIds(new Set(data.map(f => f.following_id)));
+      if (data) {
+        setFollowingIds(new Set(data.map(f => f.following_id)));
+        window._updateFollowing = (id, add) => setFollowingIds(prev => { const n = new Set(prev); add ? n.add(id) : n.delete(id); return n; });
+      }
     });
   }, [user]);
 
