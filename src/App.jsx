@@ -2386,7 +2386,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
             {sortBy === "top" ? "🔥 Trending" : "✦ New"}
           </button>
           <div style={{ flex: 1 }} />
-          {user && <button onClick={() => setShowForm(s => !s)} style={{ width: 32, height: 32, borderRadius: "50%", background: showForm ? "rgba(255,100,100,0.15)" : "linear-gradient(135deg, #2d5a1b, #1e4010)", border: "none", color: "white", fontSize: showForm ? 16 : 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{showForm ? "✕" : "+"}</button>}
+          {user && <button onClick={() => { if (showForm) { setShowForm(false); setForm({ species: "", location: "", caption: "", photo: "", pinLat: null, pinLng: null }); } else { setShowForm(true); } }} style={{ width: 32, height: 32, borderRadius: "50%", background: showForm ? "rgba(255,100,100,0.15)" : "linear-gradient(135deg, #2d5a1b, #1e4010)", border: "none", color: "white", fontSize: showForm ? 16 : 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{showForm ? "✕" : "+"}</button>}
         </div>
       </>}
 
@@ -2398,10 +2398,12 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
               const file = e.target.files[0];
               if (!file) return;
               const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
+              toast("Uploading photo...", "info");
               const { data, error } = await supabase.storage.from("post-photos").upload(fileName, file, { contentType: file.type });
               if (error) { toast("Photo upload failed. Try again.", "error"); return; }
               const { data: urlData } = supabase.storage.from("post-photos").getPublicUrl(fileName);
               setForm(f => ({ ...f, photo: urlData.publicUrl }));
+              toast("Photo added!", "success");
             }} />
             {form.photo ? (
               <div style={{ position: "relative" }}>
