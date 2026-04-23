@@ -1544,6 +1544,14 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
   const [view, setView] = useState("inbox");
   const [inbox, setInbox] = useState([]);
   const [loadingInbox, setLoadingInbox] = useState(true);
+  const [deletingThread, setDeletingThread] = useState(null);
+
+  const deleteThread = async (otherId) => {
+    await supabase.from("messages").delete().or(`and(sender_id.eq.${user.id},recipient_id.eq.${otherId}),and(sender_id.eq.${otherId},recipient_id.eq.${user.id})`);
+    setInbox(prev => prev.filter(t => t.otherId !== otherId));
+    setDeletingThread(null);
+    toast("Conversation deleted.", "dark");
+  };
   const [activeThread, setActiveThread] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -1759,7 +1767,21 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
         </div>
       )}
       {inbox.map(t => (
-        <div key={t.otherId} onClick={() => { openThread(t.otherId, t.username, t.avatar); setInbox(prev => { const updated = prev.map(i => i.otherId === t.otherId ? { ...i, unread: 0 } : i); setTimeout(() => onUnreadChange?.(updated.reduce((sum, i) => sum + (i.unread || 0), 0)), 0); return updated; }); }} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "12px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "var(--card)"}>
+        <div key={t.otherId} style={{ position: "relative" }}>
+          {deletingThread === t.otherId && createPortal(
+            <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center" }} onClick={() => setDeletingThread(null)}>
+              <div onClick={e => e.stopPropagation()} style={{ background: "#0d1a0d", border: "1px solid var(--border)", borderRadius: 16, padding: 24, maxWidth: 300, width: "90%", textAlign: "center" }}>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>🗑️</div>
+                <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>Delete conversation?</div>
+                <div style={{ color: "var(--text2)", fontSize: 13, marginBottom: 20 }}>This will delete all messages with {capName(t.username)} for both of you.</div>
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button onClick={() => setDeletingThread(null)} style={{ flex: 1, padding: "10px", borderRadius: 10, background: "rgba(255,255,255,0.06)", border: "1px solid var(--border)", color: "var(--text2)", fontSize: 14, cursor: "pointer", fontFamily: "var(--font-body)" }}>Cancel</button>
+                  <button onClick={() => deleteThread(t.otherId)} style={{ flex: 1, padding: "10px", borderRadius: 10, background: "rgba(244,63,94,0.15)", border: "1px solid rgba(244,63,94,0.4)", color: "#f43f5e", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Delete</button>
+                </div>
+              </div>
+            </div>, document.body
+          )}
+          <div onClick={() => { openThread(t.otherId, t.username, t.avatar); setInbox(prev => { const updated = prev.map(i => i.otherId === t.otherId ? { ...i, unread: 0 } : i); setTimeout(() => onUnreadChange?.(updated.reduce((sum, i) => sum + (i.unread || 0), 0)), 0); return updated; }); }} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "12px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "var(--card)"}>
           <div style={{ position: "relative", flexShrink: 0 }}>
             <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "var(--green)", overflow: "hidden", boxShadow: "0 0 0 2px #78b450, 0 0 10px rgba(120,180,80,0.25)" }}>
               {t.avatar ? <img src={t.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : t.username?.[0]?.toUpperCase()}
@@ -1778,6 +1800,8 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
             </div>
           </div>
           {t.unread > 0 && <div style={{ background: "#f43f5e", borderRadius: 20, minWidth: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "white", padding: "0 5px", flexShrink: 0, boxShadow: "0 2px 8px rgba(244,63,94,0.4)" }}>{t.unread > 9 ? "9+" : t.unread}</div>}
+          <button onClick={e => { e.stopPropagation(); setDeletingThread(t.otherId); }} style={{ background: "none", border: "none", color: "rgba(255,100,100,0.4)", fontSize: 16, cursor: "pointer", padding: "4px", flexShrink: 0, fontFamily: "var(--font-body)" }}>🗑️</button>
+        </div>
         </div>
       ))}
     </div>
