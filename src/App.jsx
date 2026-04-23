@@ -4535,6 +4535,97 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
 }
 
 // ─── CHAT PAGE ────────────────────────────────────────────────────────────────
+function OnboardingPage({ user, onComplete, setSelectedState }) {
+  const [step, setStep] = useState(1);
+  const [state, setState] = useState("");
+  const [interests, setInterests] = useState("both");
+  const [following, setFollowing] = useState(new Set());
+  const [suggestedUsers, setSuggestedUsers] = useState([]);
+
+  useEffect(() => {
+    supabase.from("profiles").select("user_id, username, avatar_url, bio").neq("user_id", user.id).limit(6).then(({ data }) => {
+      setSuggestedUsers((data || []).filter(u => u.username));
+    });
+  }, []);
+
+  const complete = async () => {
+    await supabase.from("profiles").update({ onboarding_complete: true, interests, selected_state: state || null }).eq("user_id", user.id);
+    if (state) setSelectedState(state);
+    for (const uid of following) {
+      await supabase.from("follows").insert({ follower_id: user.id, following_id: uid }).catch(() => {});
+    }
+    onComplete();
+  };
+
+  const US_STATES = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
+
+  return (
+    <div style={{ minHeight: "100dvh", background: "var(--bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 20px" }}>
+      <div style={{ width: "100%", maxWidth: 420 }}>
+        <div style={{ display: "flex", gap: 6, marginBottom: 32 }}>
+          {[1,2,3].map(s => <div key={s} style={{ flex: 1, height: 3, borderRadius: 4, background: step >= s ? "var(--green)" : "var(--border)", transition: "background 0.3s" }} />)}
+        </div>
+
+        {step === 1 && (
+          <div className="fade-in">
+            <div style={{ fontSize: 32, marginBottom: 8 }}>🦌</div>
+            <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Welcome to WildAI</div>
+            <div style={{ color: "var(--text2)", fontSize: 15, marginBottom: 32, lineHeight: 1.5 }}>Let's personalize your experience. What do you primarily do?</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {[["hunting", "🦌 Hunting"], ["fishing", "🎣 Fishing"], ["both", "🦌🎣 Both"]].map(([val, label]) => (
+                <button key={val} onClick={() => setInterests(val)} style={{ padding: "16px 20px", borderRadius: 14, border: `2px solid ${interests === val ? "var(--green)" : "var(--border)"}`, background: interests === val ? "rgba(120,180,80,0.1)" : "var(--card)", color: interests === val ? "var(--green)" : "var(--text)", fontSize: 16, fontWeight: 700, cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", transition: "all 0.2s" }}>{label}</button>
+              ))}
+            </div>
+            <button onClick={() => setStep(2)} className="btn-primary" style={{ width: "100%", padding: 16, marginTop: 24, fontSize: 15, borderRadius: 14 }}>Continue →</button>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="fade-in">
+            <div style={{ fontSize: 32, marginBottom: 8 }}>📍</div>
+            <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Where do you hunt or fish?</div>
+            <div style={{ color: "var(--text2)", fontSize: 15, marginBottom: 24, lineHeight: 1.5 }}>We'll use this for regulations, weather and local content.</div>
+            <select value={state} onChange={e => setState(e.target.value)} style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: "2px solid var(--border)", background: "var(--card)", color: state ? "var(--text)" : "var(--text3)", fontSize: 15, fontFamily: "var(--font-body)", marginBottom: 24, outline: "none" }}>
+              <option value="">Select your state...</option>
+              {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setStep(1)} style={{ flex: 1, padding: 16, borderRadius: 14, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text2)", fontSize: 15, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Back</button>
+              <button onClick={() => setStep(3)} className="btn-primary" style={{ flex: 2, padding: 16, fontSize: 15, borderRadius: 14 }}>Continue →</button>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="fade-in">
+            <div style={{ fontSize: 32, marginBottom: 8 }}>👥</div>
+            <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Follow some hunters</div>
+            <div style={{ color: "var(--text2)", fontSize: 15, marginBottom: 24, lineHeight: 1.5 }}>Follow a few people to fill your feed with posts.</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
+              {suggestedUsers.map(u => (
+                <div key={u.user_id} style={{ display: "flex", alignItems: "center", gap: 12, background: "var(--card)", border: `1px solid ${following.has(u.user_id) ? "var(--border-accent)" : "var(--border)"}`, borderRadius: 14, padding: "12px 14px" }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--green-dim)", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 700, color: "var(--green)", flexShrink: 0 }}>
+                    {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : u.username[0].toUpperCase()}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 14 }}>{u.username}</div>
+                    {u.bio && <div style={{ color: "var(--text3)", fontSize: 12, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{u.bio}</div>}
+                  </div>
+                  <button onClick={() => setFollowing(prev => { const n = new Set(prev); n.has(u.user_id) ? n.delete(u.user_id) : n.add(u.user_id); return n; })} style={{ padding: "7px 14px", borderRadius: 20, border: `1px solid ${following.has(u.user_id) ? "var(--border-accent)" : "var(--border)"}`, background: following.has(u.user_id) ? "rgba(120,180,80,0.12)" : "var(--card)", color: following.has(u.user_id) ? "var(--green)" : "var(--text2)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", flexShrink: 0 }}>{following.has(u.user_id) ? "Following" : "Follow"}</button>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setStep(2)} style={{ flex: 1, padding: 16, borderRadius: 14, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text2)", fontSize: 15, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Back</button>
+              <button onClick={complete} className="btn-primary" style={{ flex: 2, padding: 16, fontSize: 15, borderRadius: 14 }}>Let's go! 🎯</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSelectedState, onTerms, messagesUnread, setMessagesUnread, notifUnread, setNotifUnread }) {
   const [tab, setTab] = useState("community");
   const [weather, setWeather] = useState(null);
@@ -5177,10 +5268,13 @@ export default function App() {
   useEffect(() => {
     if (!isLoaded) return;
     if (!user) { setPage("landing"); return; }
-    if (page === "landing") setPage("chat");
-    supabase.from("profiles").select("selected_state").eq("user_id", user.id).single().then(({ data }) => {
+    supabase.from("profiles").select("selected_state, onboarding_complete").eq("user_id", user.id).single().then(({ data }) => {
       if (data?.selected_state && !localStorage.getItem("wildai_selected_state")) {
         handleSetSelectedState(data.selected_state);
+      }
+      if (page === "landing") {
+        if (!data?.onboarding_complete) { setPage("onboarding"); }
+        else { setPage("chat"); }
       }
     });
     supabase.rpc("update_last_seen", { uid: user.id }).then(() => { });
@@ -5314,6 +5408,7 @@ export default function App() {
       <ErrorBoundary>
         {page === "terms" && <TermsPage onBack={() => setPage(prevPage === "chat" ? "chat" : "landing")} />}
         {page === "landing" && <LandingPage onStart={() => goTo("chat")} onSignIn={() => { window._triggerSignIn?.(); }} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} />}
+        {page === "onboarding" && <OnboardingPage user={user} onComplete={() => goTo("chat")} setSelectedState={handleSetSelectedState} />}
         {page === "chat" && <ChatPage onBack={() => { localStorage.removeItem("wildai_selected_state"); setSelectedState(""); goTo("landing"); }} messageCount={messageCount} setMessageCount={setMessageCount} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} messagesUnread={messagesUnread} setMessagesUnread={setMessagesUnread} notifUnread={notifUnread} setNotifUnread={setNotifUnread} />}
       </ErrorBoundary>
     </>
