@@ -4538,7 +4538,7 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
 function OnboardingPage({ user, onComplete, setSelectedState }) {
   const [step, setStep] = useState(1);
   const [state, setState] = useState("");
-  
+
   const [stateOpen, setStateOpen] = useState(false);
   const [interests, setInterests] = useState("both");
   const [following, setFollowing] = useState(new Set());
@@ -4547,7 +4547,8 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
   useEffect(() => {
     supabase.from("profiles").select("user_id, username, avatar_url, bio").neq("user_id", user.id).limit(12).then(({ data }) => {
       const blocked = ["example", "test", "user_342", "admin", "user"];
-      setSuggestedUsers((data || []).filter(u => u.username && !blocked.includes(u.username.toLowerCase()) && !u.username.toLowerCase().startsWith("user_")).slice(0, 6));
+      const adminId = "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a";
+      setSuggestedUsers((data || []).filter(u => u.username && u.user_id !== adminId && !blocked.includes(u.username.toLowerCase()) && !u.username.toLowerCase().startsWith("user_")).slice(0, 6));
     });
   }, []);
 
@@ -4571,7 +4572,7 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
 
         {step === 1 && (
           <div className="fade-in">
-            <div style={{ marginBottom: 16 }}><img src="/logo.png" style={{ width: 56, height: 56, objectFit: "contain" }} /></div>
+            <div style={{ marginBottom: 16 }}><img src="/logo.png" style={{ width: 88, height: 88, objectFit: "contain" }} /></div>
             <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Welcome to WildAI</div>
             <div style={{ color: "var(--text2)", fontSize: 15, marginBottom: 32, lineHeight: 1.5 }}>Let's personalize your experience. What do you primarily do?</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -4586,7 +4587,7 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
                 </button>
               ))}
             </div>
-            <button onClick={() => setStep(2)} className="btn-primary" style={{ width: "100%", padding: 16, marginTop: 24, fontSize: 15, borderRadius: 14 }}>Continue →</button>
+            <button onClick={() => setStep(2)} style={{ width: "100%", padding: "17px", marginTop: 24, fontSize: 16, fontWeight: 700, borderRadius: 14, background: "linear-gradient(135deg, #78b450, #4a8a2a)", border: "none", color: "white", cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 20px rgba(120,180,80,0.35)", transition: "transform 0.15s, box-shadow 0.15s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(120,180,80,0.45)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(120,180,80,0.35)"; }} onMouseDown={e => e.currentTarget.style.transform = "scale(0.97)"} onMouseUp={e => e.currentTarget.style.transform = "translateY(-2px)"} onTouchStart={e => e.currentTarget.style.transform = "scale(0.97)"} onTouchEnd={e => { const el = e.currentTarget; el.style.transform = "scale(1.02)"; setTimeout(() => { if (el) el.style.transform = "scale(1)"; }, 150); }}>Continue →</button>
           </div>
         )}
 
@@ -4598,7 +4599,7 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
             <div style={{ position: "relative", marginBottom: 24 }}>
               <div onClick={() => setStateOpen(o => !o)} style={{ width: "100%", padding: "14px 16px", borderRadius: stateOpen ? "14px 14px 0 0" : 14, border: `2px solid ${state ? "var(--border-accent)" : "var(--border)"}`, background: "#0d1a0d", color: state ? "var(--text)" : "var(--text3)", fontSize: 15, fontFamily: "var(--font-body)", boxSizing: "border-box", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 {state || "Select your state..."}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points={stateOpen ? "18 15 12 9 6 15" : "6 9 12 15 18 9"}/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points={stateOpen ? "18 15 12 9 6 15" : "6 9 12 15 18 9"} /></svg>
               </div>
               {stateOpen && (
                 <div style={{ background: "#0d1a0d", border: "2px solid var(--border)", borderTop: "1px solid rgba(255,255,255,0.06)", borderRadius: "0 0 14px 14px", maxHeight: 220, overflowY: "auto", position: "absolute", width: "100%", zIndex: 10 }}>
@@ -4608,9 +4609,10 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
                 </div>
               )}
             </div>
+            <div style={{ color: "var(--text3)", fontSize: 12, textAlign: "center", marginBottom: 16 }}>You can change this anytime in settings</div>
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => setStep(1)} style={{ flex: 1, padding: 16, borderRadius: 14, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text2)", fontSize: 15, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Back</button>
-              <button onClick={() => setStep(3)} className="btn-primary" style={{ flex: 2, padding: 16, fontSize: 15, borderRadius: 14 }}>Continue →</button>
+              <button onClick={() => setStep(1)} style={{ flex: 1, padding: "17px", borderRadius: 14, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text2)", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", transition: "transform 0.15s", boxShadow: "none" }} onMouseDown={e => e.currentTarget.style.transform = "scale(0.97)"} onMouseUp={e => e.currentTarget.style.transform = "scale(1)"}>← Back</button>
+              <button disabled={!state} onClick={() => setStep(3)} style={{ flex: 2, padding: "17px", borderRadius: 14, background: state ? "linear-gradient(135deg, #78b450, #4a8a2a)" : "rgba(255,255,255,0.06)", border: "none", color: state ? "white" : "var(--text3)", fontSize: 16, fontWeight: 700, cursor: state ? "pointer" : "default", fontFamily: "var(--font-body)", boxShadow: state ? "0 4px 20px rgba(120,180,80,0.35)" : "none", transition: "transform 0.15s, box-shadow 0.15s" }} onMouseEnter={e => { if (!state) return; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(120,180,80,0.45)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = state ? "0 4px 20px rgba(120,180,80,0.35)" : "none"; }} onMouseDown={e => { if (state) e.currentTarget.style.transform = "scale(0.97)"; }} onMouseUp={e => { if (state) e.currentTarget.style.transform = "translateY(-2px)"; }} onTouchStart={e => { if (state) e.currentTarget.style.transform = "scale(0.97)"; }} onTouchEnd={e => { if (!state) return; const el = e.currentTarget; el.style.transform = "scale(1.02)"; setTimeout(() => { if (el) el.style.transform = "scale(1)"; }, 150); }}>Continue →</button>
             </div>
           </div>
         )}
@@ -4627,7 +4629,7 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
                     {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : u.username[0].toUpperCase()}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 14 }}>{u.username}</div>
+                    <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 14 }}>{capName(u.username)}</div>
 
                   </div>
                   <button onClick={() => setFollowing(prev => { const n = new Set(prev); n.has(u.user_id) ? n.delete(u.user_id) : n.add(u.user_id); return n; })} style={{ padding: "7px 14px", borderRadius: 20, border: `1px solid ${following.has(u.user_id) ? "var(--border-accent)" : "var(--border)"}`, background: following.has(u.user_id) ? "rgba(120,180,80,0.12)" : "var(--card)", color: following.has(u.user_id) ? "var(--green)" : "var(--text2)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", flexShrink: 0 }}>{following.has(u.user_id) ? "Following" : "Follow"}</button>
@@ -4635,8 +4637,8 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
               ))}
             </div>
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => setStep(2)} style={{ flex: 1, padding: 16, borderRadius: 14, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text2)", fontSize: 15, cursor: "pointer", fontFamily: "var(--font-body)" }}>← Back</button>
-              <button onClick={complete} className="btn-primary" style={{ flex: 2, padding: 16, fontSize: 15, borderRadius: 14 }}>Let's go! 🎯</button>
+              <button onClick={() => setStep(2)} style={{ flex: 1, padding: "17px", borderRadius: 14, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text2)", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", transition: "transform 0.15s" }} onMouseDown={e => e.currentTarget.style.transform = "scale(0.97)"} onMouseUp={e => e.currentTarget.style.transform = "scale(1)"}>← Back</button>
+              <button onClick={complete} style={{ flex: 2, padding: "17px", borderRadius: 14, background: "linear-gradient(135deg, #78b450, #4a8a2a)", border: "none", color: "white", fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 20px rgba(120,180,80,0.35)", transition: "transform 0.15s, box-shadow 0.15s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(120,180,80,0.45)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(120,180,80,0.35)"; }} onMouseDown={e => e.currentTarget.style.transform = "scale(0.97)"} onMouseUp={e => e.currentTarget.style.transform = "translateY(-2px)"} onTouchStart={e => e.currentTarget.style.transform = "scale(0.97)"} onTouchEnd={e => { const el = e.currentTarget; el.style.transform = "scale(1.02)"; setTimeout(() => { if (el) el.style.transform = "scale(1)"; }, 150); }}>Let's go!</button>
             </div>
           </div>
         )}
