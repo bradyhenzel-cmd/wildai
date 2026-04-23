@@ -1304,7 +1304,12 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
           </div>
           {/* Name + stats */}
           <div style={{ flex: 1, paddingBottom: 4 }}>
-            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 17, fontFamily: "var(--font-display)", marginBottom: 6, textAlign: "left" }}>{capName(displayName)}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 17, fontFamily: "var(--font-display)" }}>{capName(displayName)}</div>
+              {isOwnProfile && (
+                <a href="https://accounts.clerk.dev/user" target="_blank" rel="noopener noreferrer" style={{ color: "var(--text3)", fontSize: 11, textDecoration: "none", opacity: 0.6 }}>✏️</a>
+              )}
+            </div>
             <div style={{ display: "flex", gap: 16 }}>
               {[["Posts", posts.length, null], ["Followers", followerCount, "followers"], ["Following", followingCount, "following"]].map(([label, val, type], i) => (
                 <div key={i} onClick={() => type && openFollowList(type)} style={{ cursor: type ? "pointer" : "default", textAlign: "center" }}>
