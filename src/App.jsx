@@ -1867,7 +1867,7 @@ function HotspotsTab({ posts, loading, user, selectedState, savedPinIds, saveToM
                 <svg width="14" height="14" viewBox="0 0 24 24" fill={savedPinIds.has(post.id) ? "var(--green)" : "none"} stroke={savedPinIds.has(post.id) ? "var(--green)" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 {savedPinIds.has(post.id) ? "Saved" : "Save to Map"}
               </button>
-              <a href={`https://www.google.com/maps/dir/?api=1&destination=${post.lat},${post.lng}`} target="_blank" rel="noopener noreferrer" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text2)", padding: "9px 14px", borderRadius: 20, fontSize: 13, fontWeight: 600, textDecoration: "none", transition: "all 0.2s" }}>
+              <a href={`https://www.google.com/maps/dir/?api=1&destination=${post.lat},${post.lng}`} target="_blank" rel="noopener noreferrer" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text2)", padding: "9px 14px", borderRadius: 20, fontSize: 13, fontWeight: 600, textDecoration: "none", transition: "all 0.2s", lineHeight: 1 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
                 Directions
               </a>
