@@ -4540,6 +4540,7 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
   const [state, setState] = useState("");
 
   const [stateOpen, setStateOpen] = useState(false);
+  const [stateSearch, setStateSearch] = useState("");
   const [interests, setInterests] = useState("both");
   const [following, setFollowing] = useState(new Set());
   const [suggestedUsers, setSuggestedUsers] = useState([]);
@@ -4597,16 +4598,31 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
             <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Where do you hunt or fish?</div>
             <div style={{ color: "var(--text2)", fontSize: 15, marginBottom: 24, lineHeight: 1.5 }}>We'll use this for regulations, weather and local content.</div>
             <div style={{ position: "relative", marginBottom: 24 }}>
-              <div onClick={() => setStateOpen(o => !o)} style={{ width: "100%", padding: "14px 16px", borderRadius: stateOpen ? "14px 14px 0 0" : 14, border: `2px solid ${state ? "var(--border-accent)" : "var(--border)"}`, background: "#0d1a0d", color: state ? "var(--text)" : "var(--text3)", fontSize: 15, fontFamily: "var(--font-body)", boxSizing: "border-box", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                {state || "Select your state..."}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points={stateOpen ? "18 15 12 9 6 15" : "6 9 12 15 18 9"} /></svg>
-              </div>
-              {stateOpen && (
-                <div style={{ background: "#0d1a0d", border: "2px solid var(--border)", borderTop: "1px solid rgba(255,255,255,0.06)", borderRadius: "0 0 14px 14px", maxHeight: 220, overflowY: "auto", position: "absolute", width: "100%", zIndex: 10 }}>
-                  {US_STATES.map(s => (
-                    <div key={s} onClick={() => { setState(s); setStateOpen(false); }} style={{ padding: "12px 16px", cursor: "pointer", color: "var(--text)", fontSize: 15, borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.08)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>{s}</div>
-                  ))}
-                </div>
+              {window.matchMedia("(hover: hover)").matches ? (
+                <>
+                  <input value={stateSearch || state} onChange={e => { setState(""); setStateSearch(e.target.value); setStateOpen(true); }} onFocus={() => { if (state) setStateSearch(state); setStateOpen(true); }} onBlur={() => setTimeout(() => setStateOpen(false), 150)} placeholder="Search your state..." style={{ width: "100%", padding: "14px 16px", borderRadius: stateOpen ? "14px 14px 0 0" : 14, border: `2px solid ${state ? "var(--border-accent)" : "var(--border)"}`, background: "#0d1a0d", color: "var(--text)", fontSize: 15, fontFamily: "var(--font-body)", outline: "none", boxSizing: "border-box" }} />
+                  {stateOpen && (
+                    <div style={{ background: "#0d1a0d", border: "2px solid var(--border)", borderTop: "1px solid rgba(255,255,255,0.06)", borderRadius: "0 0 14px 14px", maxHeight: 220, overflowY: "auto", position: "absolute", width: "100%", zIndex: 10 }}>
+                      {US_STATES.filter(s => s.toLowerCase().includes((stateSearch || "").toLowerCase())).map(s => (
+                        <div key={s} onClick={() => { setState(s); setStateSearch(""); setStateOpen(false); }} style={{ padding: "12px 16px", cursor: "pointer", color: "var(--text)", fontSize: 15, borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.08)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>{s}</div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div onClick={() => setStateOpen(o => !o)} style={{ width: "100%", padding: "14px 16px", borderRadius: stateOpen ? "14px 14px 0 0" : 14, border: `2px solid ${state ? "var(--border-accent)" : "var(--border)"}`, background: "#0d1a0d", color: state ? "var(--text)" : "var(--text3)", fontSize: 15, fontFamily: "var(--font-body)", boxSizing: "border-box", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    {state || "Select your state..."}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points={stateOpen ? "18 15 12 9 6 15" : "6 9 12 15 18 9"} /></svg>
+                  </div>
+                  {stateOpen && (
+                    <div style={{ background: "#0d1a0d", border: "2px solid var(--border)", borderTop: "1px solid rgba(255,255,255,0.06)", borderRadius: "0 0 14px 14px", maxHeight: 220, overflowY: "auto", position: "absolute", width: "100%", zIndex: 10 }}>
+                      {US_STATES.map(s => (
+                        <div key={s} onClick={() => { setState(s); setStateOpen(false); }} style={{ padding: "12px 16px", cursor: "pointer", color: "var(--text)", fontSize: 15, borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.08)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>{s}</div>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
             <div style={{ color: "var(--text3)", fontSize: 12, textAlign: "center", marginBottom: 16 }}>You can change this anytime in settings</div>
