@@ -2095,10 +2095,10 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
     if (!form.caption) { toast("Please add a description to your post.", "error"); return; }
     if (!user) { openSignIn(); return; }
     setSubmitting(true); setError(null);
-    const { data: banned } = await supabase.from("banned_users").select("id").eq("user_id", user.id).single();
+    const { data: banned } = await supabase.from("banned_users").select("id").eq("user_id", user.id).maybeSingle();
     if (banned) { setError("Your account has been suspended."); setSubmitting(false); return; }
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-    const { data: recentPost } = await supabase.from("posts").select("id").eq("user_id", user.id).gte("created_at", fiveMinutesAgo).single();
+    const { data: recentPost } = await supabase.from("posts").select("id").eq("user_id", user.id).gte("created_at", fiveMinutesAgo).maybeSingle();
     if (recentPost) { setError("Please wait 5 minutes between posts."); setSubmitting(false); return; }
     let lat = null, lng = null;
     if (form.pinLat && form.pinLng) {
@@ -2435,7 +2435,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ flex: 1 }} />
               {error && <span style={{ color: "var(--amber)", fontSize: 12 }}>{error}</span>}
-              <button onClick={submitPost} disabled={submitting || !form.photo || !form.caption} className="btn-primary" style={{ padding: "9px 20px", fontSize: 13, borderRadius: 20, opacity: (submitting || !form.photo || !form.caption) ? 0.5 : 1 }}>
+              <button onClick={() => { if (!form.photo || !form.caption) { if (!form.photo && !form.caption) { toast("Please add a photo and description.", "error"); } else if (!form.photo) { toast("Please add a photo to your post.", "error"); } else { toast("Please add a description to your post.", "error"); } return; } submitPost(); }} disabled={submitting} className="btn-primary" style={{ padding: "9px 20px", fontSize: 13, borderRadius: 20, opacity: submitting ? 0.5 : (!form.photo || !form.caption) ? 0.7 : 1 }}>
                 {submitting ? "Posting..." : "Share"}
               </button>
             </div>
