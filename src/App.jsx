@@ -2090,7 +2090,9 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   };
 
   const submitPost = async () => {
+    if (!form.photo && !form.caption) { toast("Please add a photo and description.", "error"); return; }
     if (!form.photo) { toast("Please add a photo to your post.", "error"); return; }
+    if (!form.caption) { toast("Please add a description to your post.", "error"); return; }
     if (!user) { openSignIn(); return; }
     setSubmitting(true); setError(null);
     const { data: banned } = await supabase.from("banned_users").select("id").eq("user_id", user.id).single();
@@ -2433,7 +2435,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ flex: 1 }} />
               {error && <span style={{ color: "var(--amber)", fontSize: 12 }}>{error}</span>}
-              <button onClick={submitPost} disabled={submitting || !form.photo} className="btn-primary" style={{ padding: "9px 20px", fontSize: 13, borderRadius: 20, opacity: (submitting || !form.photo) ? 0.5 : 1 }}>
+              <button onClick={submitPost} disabled={submitting || !form.photo || !form.caption} className="btn-primary" style={{ padding: "9px 20px", fontSize: 13, borderRadius: 20, opacity: (submitting || !form.photo || !form.caption) ? 0.5 : 1 }}>
                 {submitting ? "Posting..." : "Share"}
               </button>
             </div>
