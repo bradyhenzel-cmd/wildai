@@ -2175,11 +2175,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
           }
         }}
       >
-        {communityTab === "feed" && pullY > 0 && (
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: pullY, overflow: "hidden", transition: pullY < 50 ? "none" : "height 0.3s", color: "var(--text3)", fontSize: 12 }}>
-            {pullY > 50 || refreshing ? <div style={{ width: 20, height: 20, border: "2px solid var(--green)", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> : <span style={{ opacity: pullY/50 }}>↓ Pull to refresh</span>}
-          </div>
-        )}
+        
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -2447,6 +2443,11 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
 
       {communityTab === "feed" && !viewingProfile && loading && <div style={{ minHeight: 300 }} />}
 
+      {communityTab === "feed" && !viewingProfile && pullY > 0 && (
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: pullY, overflow: "hidden", transition: pullY < 50 ? "none" : "height 0.3s", color: "var(--text3)", fontSize: 12 }}>
+          {pullY > 50 || refreshing ? <div style={{ width: 20, height: 20, border: "2px solid var(--green)", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> : <span style={{ opacity: pullY/50 }}>↓ Pull to refresh</span>}
+        </div>
+      )}
       {communityTab === "feed" && !viewingProfile && !loading && posts.length === 0 && (
         <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🌲</div>
