@@ -1875,6 +1875,9 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [confirmDeletePost, setConfirmDeletePost] = useState(null);
+  const [sharingPost, setSharingPost] = useState(null);
+  const [shareSearch, setShareSearch] = useState("");
+  const [shareUsers, setShareUsers] = useState([]);
   const [pullY, setPullY] = useState(0);
   const [isPulling, setIsPulling] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -2447,6 +2450,54 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
 
       {communityTab === "feed" && !viewingProfile && loading && <div style={{ minHeight: 300 }} />}
 
+      {sharingPost && createPortal(
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 999999, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={() => { setSharingPost(null); setShareSearch(""); setShareUsers([]); }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 760, background: "#0d1a0d", border: "1px solid var(--border)", borderRadius: "20px 20px 0 0", padding: 24, maxHeight: "70vh", display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, fontFamily: "var(--font-display)" }}>Share to Messages</div>
+            <input
+              placeholder="Search users..."
+              value={shareSearch}
+              autoFocus
+              onChange={async e => {
+                setShareSearch(e.target.value);
+                if (e.target.value.length < 2) { setShareUsers([]); return; }
+                const { data } = await supabase.from("profiles").select("user_id, username, avatar_url").ilike("username", `%${e.target.value}%`).neq("user_id", user.id).limit(10);
+                setShareUsers(data || []);
+              }}
+              style={{ padding: "10px 14px", borderRadius: "var(--radius-sm)", fontSize: 14, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)" }}
+            />
+            <div style={{ overflowY: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
+              {shareUsers.map(u => (
+                <div key={u.user_id} onClick={async () => {
+                  await fetch("https://wildai-server.onrender.com/messages/send", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      sender_id: user.id,
+                      recipient_id: u.user_id,
+                      content: sharingPost.caption ? `📸 ${sharingPost.caption}` : "📸 Shared a post",
+                      image_url: sharingPost.photo,
+                    })
+                  });
+                  setSharingPost(null); setShareSearch(""); setShareUsers([]);
+                  toast(`Post shared to ${capName(u.username)}!`, "success");
+                }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: "var(--radius-sm)", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", cursor: "pointer" }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--green-dim)", overflow: "hidden", flexShrink: 0 }}>
+                    {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", fontWeight: 700 }}>{u.username[0].toUpperCase()}</div>}
+                  </div>
+                  <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{capName(u.username)}</span>
+                </div>
+              ))}
+              {shareSearch.length >= 2 && shareUsers.length === 0 && (
+                <div style={{ color: "var(--text3)", fontSize: 13, textAlign: "center", padding: 20 }}>No users found</div>
+              )}
+              {shareSearch.length < 2 && (
+                <div style={{ color: "var(--text3)", fontSize: 13, textAlign: "center", padding: 20 }}>Type a username to search</div>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
       {communityTab === "feed" && !viewingProfile && pullY > 0 && (
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: pullY, overflow: "hidden", transition: pullY < 50 ? "none" : "height 0.3s", color: "var(--text3)", fontSize: 12 }}>
           {pullY > 50 || refreshing ? <div style={{ width: 20, height: 20, border: "2px solid var(--green)", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> : <span style={{ opacity: pullY/50 }}>↓ Pull to refresh</span>}
@@ -2536,7 +2587,10 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                 {commentCounts[post.id] > 0 && <span>{commentCounts[post.id]}</span>}
               </button>
-              <button onClick={() => navigator.share ? navigator.share({ title: "WildAI", text: post.caption, url: window.location.href }) : null} style={{ background: "none", border: "none", cursor: "pointer", color: "#6a8a6a", padding: "4px 0", transition: "all 0.15s" }}>
+              <button onClick={() => setSharingPost(post)} style={{ background: "none", border: "none", cursor: "pointer", color: "#6a8a6a", padding: "4px 0", transition: "all 0.15s" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+              </button>
+              <button onClick={() => navigator.share ? navigator.share({ title: "WildAI", text: post.caption, url: window.location.href }) : toast("Sharing not supported on this device.", "error")} style={{ background: "none", border: "none", cursor: "pointer", color: "#6a8a6a", padding: "4px 0", transition: "all 0.15s" }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
               </button>
               <div style={{ flex: 1 }} />
