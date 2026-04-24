@@ -2708,7 +2708,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
           <div key={post.id} className="fade-in" style={{ borderRadius: 0, overflow: "hidden", borderTop: isHot ? "1px solid rgba(255,150,0,0.3)" : "1px solid rgba(255,255,255,0.08)", borderBottom: "1px solid rgba(255,255,255,0.08)", borderLeft: "none", borderRight: "none", background: "#0e1510" }}>
 
             {/* Card Header */}
-            <div style={{ padding: "14px 16px 10px", display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ padding: "14px 16px 14px", display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ position: "relative", flexShrink: 0 }}>
                 <div onClick={() => setViewingProfile(post.user_id)} style={{ width: 44, height: 44, borderRadius: 14, background: "linear-gradient(135deg, #3d7a25, #1a3a0e)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", boxShadow: "0 0 0 2px #78b450, 0 0 12px rgba(120,180,80,0.3)" }}>
                   {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "white", fontWeight: 700, fontSize: 17, fontFamily: "var(--font-display)" }}>{(post.username || "H")[0].toUpperCase()}</span>}
