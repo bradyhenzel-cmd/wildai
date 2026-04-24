@@ -4362,28 +4362,28 @@ function AdminTab({ user }) {
 
 function TermsPage({ onBack }) {
   const sections = [
-    ["1. Acceptance of Terms", "By accessing or using WildAI, you agree to be bound by these Terms and Conditions. WildAI reserves the right to update these terms at any time, and continued use constitutes acceptance of any changes. You must be at least 13 years of age to use WildAI. By using this service you represent that you are 13 years of age or older."],
-    ["2. Nature of Service", "WildAI is an AI-powered informational assistant for hunters and anglers. It is not a licensed guide, outfitter, or wildlife agency. All information is for general educational purposes only."],
-    ["3. Regulatory Disclaimer", "Hunting and fishing regulations change frequently. WildAI makes no guarantee that information on seasons, bag limits, or license requirements is current. You are solely responsible for verifying regulations with your state wildlife agency."],
-    ["4. Accuracy of Information", "WildAI strives to provide accurate information but may make errors or provide outdated advice. Always apply your own judgment and consult licensed professionals for decisions involving safety or legality."],
-    ["5. Safety and Personal Responsibility", "Hunting and fishing involve inherent risks. WildAI accepts no liability for any injury, death, or loss resulting from acting on information provided. Users engage in all outdoor activities at their own risk."],
-    ["6. Free Tier and Paid Services", "WildAI offers limited free messages per session. Additional use may require a paid subscription. WildAI reserves the right to modify or discontinue any tier of service with reasonable notice."],
-    ["7. User Conduct", "You agree not to use WildAI to facilitate illegal hunting or fishing, poaching, or violations of wildlife protection laws. You agree not to post content that is illegal, threatening, harassing, defamatory, obscene, or otherwise objectionable. WildAI may remove content and terminate access for users who violate these terms without prior notice."],
-    ["8. User-Generated Content", "WildAI hosts user-generated content including posts, photos, messages, and location pins. WildAI is not responsible for the accuracy, legality, or appropriateness of user-generated content. By posting content, you grant WildAI a non-exclusive license to display and distribute that content within the platform. You represent that you own or have the right to share any content you post. WildAI reserves the right to remove any content at its sole discretion."],
+    ["1. Acceptance of Terms", "By accessing or using Ravlin, you agree to be bound by these Terms and Conditions. Ravlin reserves the right to update these terms at any time, and continued use constitutes acceptance of any changes. You must be at least 13 years of age to use Ravlin. By using this service you represent that you are 13 years of age or older."],
+    ["2. Nature of Service", "Ravlin is an AI-powered informational assistant for hunters and anglers. It is not a licensed guide, outfitter, or wildlife agency. All information is for general educational purposes only."],
+    ["3. Regulatory Disclaimer", "Hunting and fishing regulations change frequently. Ravlin makes no guarantee that information on seasons, bag limits, or license requirements is current. You are solely responsible for verifying regulations with your state wildlife agency."],
+    ["4. Accuracy of Information", "Ravlin strives to provide accurate information but may make errors or provide outdated advice. Always apply your own judgment and consult licensed professionals for decisions involving safety or legality."],
+    ["5. Safety and Personal Responsibility", "Hunting and fishing involve inherent risks. Ravlin accepts no liability for any injury, death, or loss resulting from acting on information provided. Users engage in all outdoor activities at their own risk."],
+    ["6. Free Tier and Paid Services", "Ravlin offers limited free messages per session. Additional use may require a paid subscription. Ravlin reserves the right to modify or discontinue any tier of service with reasonable notice."],
+    ["7. User Conduct", "You agree not to use Ravlin to facilitate illegal hunting or fishing, poaching, or violations of wildlife protection laws. You agree not to post content that is illegal, threatening, harassing, defamatory, obscene, or otherwise objectionable. Ravlin may remove content and terminate access for users who violate these terms without prior notice."],
+    ["8. User-Generated Content", "Ravlin hosts user-generated content including posts, photos, messages, and location pins. Ravlin is not responsible for the accuracy, legality, or appropriateness of user-generated content. By posting content, you grant Ravlin a non-exclusive license to display and distribute that content within the platform. You represent that you own or have the right to share any content you post. Ravlin reserves the right to remove any content at its sole discretion."],
     ["9. Community Guidelines", "Users must not post content depicting illegal take of wildlife, trespassing on private property, animal cruelty, or any activity that violates federal, state, or local law. Users must not impersonate other individuals or post private information about others without consent. Violation of community guidelines may result in immediate account termination."],
-    ["10. Reporting and Moderation", "WildAI provides a reporting mechanism for users to flag content that violates these terms. WildAI reviews reported content and takes action at its discretion. WildAI is not obligated to monitor all content but will act in good faith upon receiving reports. To report content, use the report button available on each post."],
-    ["11. Private Messaging", "WildAI provides a private messaging feature between users. Messages are stored securely and are not reviewed by WildAI unless reported. Users are solely responsible for the content of their messages. WildAI may access message content if required by law or to investigate reports of abuse."],
-    ["12. Location Data", "WildAI may request access to your device location to provide location-based features. Location data is used solely within the app and is not sold to third parties. Location pins you share publicly are visible to other users."],
-    ["13. Intellectual Property", "All content, design, and functionality of WildAI is protected by applicable intellectual property laws. Reproduction without express written permission is prohibited."],
-    ["14. Limitation of Liability", "To the fullest extent permitted by law, WildAI and its affiliates shall not be liable for any direct, indirect, or consequential damages arising from use of the service, including damages arising from user-generated content posted by third parties."],
-    ["15. Indemnification", "You agree to indemnify and hold harmless WildAI and its affiliates from any claims, damages, or expenses arising from your use of the service, your violation of these terms, or your violation of any third-party rights."],
-    ["16. Contact", "Questions about these Terms or to report content violations may be directed to WildAI through the website. We respond to reasonable inquiries in a timely manner."],
+    ["10. Reporting and Moderation", "Ravlin provides a reporting mechanism for users to flag content that violates these terms. Ravlin reviews reported content and takes action at its discretion. Ravlin is not obligated to monitor all content but will act in good faith upon receiving reports. To report content, use the report button available on each post."],
+    ["11. Private Messaging", "Ravlin provides a private messaging feature between users. Messages are stored securely and are not reviewed by Ravlin unless reported. Users are solely responsible for the content of their messages. Ravlin may access message content if required by law or to investigate reports of abuse."],
+    ["12. Location Data", "Ravlin may request access to your device location to provide location-based features. Location data is used solely within the app and is not sold to third parties. Location pins you share publicly are visible to other users."],
+    ["13. Intellectual Property", "All content, design, and functionality of Ravlin is protected by applicable intellectual property laws. Reproduction without express written permission is prohibited."],
+    ["14. Limitation of Liability", "To the fullest extent permitted by law, Ravlin and its affiliates shall not be liable for any direct, indirect, or consequential damages arising from use of the service, including damages arising from user-generated content posted by third parties."],
+    ["15. Indemnification", "You agree to indemnify and hold harmless Ravlin and its affiliates from any claims, damages, or expenses arising from your use of the service, your violation of these terms, or your violation of any third-party rights."],
+    ["16. Contact", "Questions about these Terms or to report content violations may be directed to Ravlin through the website. We respond to reasonable inquiries in a timely manner."],
   ];
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", fontFamily: "var(--font-body)" }}>
       <nav style={{ padding: "20px 32px", display: "flex", alignItems: "center", gap: 16, borderBottom: "1px solid var(--border)" }}>
         <button onClick={onBack} className="btn-ghost" style={{ padding: "8px 16px", fontSize: 13 }}>← Back</button>
-        <span style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "var(--text)" }}>WildAI · Terms & Conditions</span>
+        <span style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "var(--text)" }}>Ravlin · Terms & Conditions</span>
       </nav>
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "48px 24px" }}>
         <h1 style={{ fontFamily: "var(--font-display)", fontSize: 36, fontWeight: 900, color: "var(--text)", marginBottom: 8 }}>Terms & Conditions</h1>
@@ -4397,7 +4397,7 @@ function TermsPage({ onBack }) {
         <div style={{ marginTop: 40, padding: "20px 24px", background: "var(--green-dim)", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)" }}>
           <p style={{ color: "var(--green)", fontSize: 14, lineHeight: 1.7 }}>🦌 Always check your state's current hunting and fishing regulations before heading out. Your state wildlife agency is the definitive source.</p>
         </div>
-        <button onClick={onBack} className="btn-primary" style={{ marginTop: 36, padding: "14px 32px", fontSize: 15 }}>← Back to WildAI</button>
+        <button onClick={onBack} className="btn-primary" style={{ marginTop: 36, padding: "14px 32px", fontSize: 15 }}>← Back to Ravlin</button>
       </div>
     </div>
   );
@@ -4503,14 +4503,14 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
     <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column", fontFamily: "var(--font-body)", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "#070e07", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-body)", transition: "opacity 0.6s ease", opacity: mapReady ? 0 : 1, pointerEvents: mapReady ? "none" : "all" }}>
         <img src="/logo.png" style={{ width: 180, height: 180, objectFit: "contain", animation: "pulse 1.5s ease-in-out infinite", marginBottom: 32 }} />
-        <div style={{ fontFamily: "var(--font-display)", fontSize: 56, color: "#f4f4f0", letterSpacing: "0.02em" }}>WildAI</div>
+        <div style={{ fontFamily: "var(--font-display)", fontSize: 56, color: "#f4f4f0", letterSpacing: "0.02em" }}>Ravlin</div>
         <div style={{ color: "rgba(120,180,80,0.6)", fontSize: 15, marginTop: 12, letterSpacing: "0.12em", fontFamily: "var(--font-display)", fontWeight: 400 }}>YOUR GUIDE FOR EVERY SEASON</div>
       </div>
       {/* Nav */}
       <nav style={{ padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "absolute", top: 0, left: 0, right: 0, zIndex: 50, background: "linear-gradient(to bottom, rgba(7,14,7,0.7) 0%, transparent 100%)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <img src="/logo.png" className="mobile-header-logo-img" style={{ width: 32, height: 32, objectFit: "contain", mixBlendMode: "screen" }} />
-          <span className="mobile-header-logo" style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.5px" }}>WildAI</span>
+          <span className="mobile-header-logo" style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.5px" }}>Ravlin</span>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
 
@@ -4544,7 +4544,7 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
       <footer style={{ borderTop: "1px solid var(--border)", padding: "18px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, position: "relative", zIndex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <img src="/logo.png" style={{ width: 20, height: 20, objectFit: "contain", mixBlendMode: "screen" }} />
-          <span style={{ fontFamily: "var(--font-display)", fontSize: 15, color: "var(--text2)" }}>WildAI</span>
+          <span style={{ fontFamily: "var(--font-display)", fontSize: 15, color: "var(--text2)" }}>Ravlin</span>
         </div>
         <div style={{ display: "flex", gap: 20 }}>
           <button onClick={onTerms} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 12, cursor: "pointer", fontFamily: "var(--font-body)" }}>Terms & Conditions</button>
@@ -4730,7 +4730,7 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
   const [gpsState, setGpsState] = useState("");
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   const [messages, setMessages] = useState([
-    { role: "assistant", content: `Hey, I'm WildAI — your hunting and fishing assistant${selectedState ? ` for ${selectedState}` : ""}. Ask me anything about gear, tactics, seasons, regulations, or trip planning. If you want location-specific advice, make sure your location is set in the Weather tab. What are you after?`, animate: false },
+    { role: "assistant", content: `Hey, I'm Ravlin — your hunting and fishing assistant${selectedState ? ` for ${selectedState}` : ""}. Ask me anything about gear, tactics, seasons, regulations, or trip planning. If you want location-specific advice, make sure your location is set in the Weather tab. What are you after?`, animate: false },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -4829,7 +4829,7 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
       return "New Moon 🌑";
     };
     const timeOfDay = now.getHours() < 12 ? "morning" : now.getHours() < 17 ? "afternoon" : "evening";
-    const system = `You are WildAI, an expert hunting and fishing assistant${selectedState ? ` specializing in ${selectedState}` : ""}. Deep knowledge of hunting tactics, fishing techniques, gear, wildlife behavior, seasons, regulations${selectedState ? ` specific to ${selectedState}` : " across US states"}, trip planning, and public land navigation. Give practical, specific, confident advice like a seasoned outdoorsman. Use **bold** for key terms. Keep responses concise and useful. Never use hashtags or markdown headers (# symbols). Never use bullet point symbols like • or -. Remind users to verify regulations with their state agency when relevant.If a user asks about canceling their subscription or managing billing, tell them to click their profile avatar in the top right corner of the app and select "Manage Subscription".
+    const system = `You are Ravlin, an expert hunting and fishing assistant${selectedState ? ` specializing in ${selectedState}` : ""}. Deep knowledge of hunting tactics, fishing techniques, gear, wildlife behavior, seasons, regulations${selectedState ? ` specific to ${selectedState}` : " across US states"}, trip planning, and public land navigation. Give practical, specific, confident advice like a seasoned outdoorsman. Use **bold** for key terms. Keep responses concise and useful. Never use hashtags or markdown headers (# symbols). Never use bullet point symbols like • or -. Remind users to verify regulations with their state agency when relevant.If a user asks about canceling their subscription or managing billing, tell them to click their profile avatar in the top right corner of the app and select "Manage Subscription".
 
 CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 - Today's date: ${now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
@@ -4909,7 +4909,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 
           <div className="mobile-header-center" style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <img src="/logo.png" className="mobile-header-logo-img" style={{ width: 28, height: 28, objectFit: "contain", mixBlendMode: "screen" }} />
-            <span className="mobile-header-logo" style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, color: "var(--text)" }}>WildAI</span>
+            <span className="mobile-header-logo" style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, color: "var(--text)" }}>Ravlin</span>
             <select className="mobile-state-select" value={selectedState} onChange={e => setSelectedState && setSelectedState(e.target.value)} style={{ background: "transparent", border: "none", color: selectedState ? "var(--text3)" : "var(--text3)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)", outline: "none", maxWidth: 120 }}>
               <option value="">· State</option>
               {STATES.map(s => <option key={s} value={s} style={{ background: "#0a150a" }}>· {s}</option>)}
@@ -4981,7 +4981,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           <div style={{ background: "linear-gradient(135deg, rgba(120,180,80,0.12), rgba(80,140,50,0.08))", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
             <div style={{ flex: 1 }}>
-              <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 13 }}>Add WildAI to your home screen</div>
+              <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 13 }}>Add Ravlin to your home screen</div>
               {isIOS
                 ? <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>Tap <strong style={{ color: "var(--text2)" }}>Share ⬆</strong> → <strong style={{ color: "var(--text2)" }}>Add to Home Screen</strong></div>
                 : <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>Install for the best experience</div>}
@@ -5039,7 +5039,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                   <img src="/logo.png" style={{ width: 20, height: 20, objectFit: "contain" }} />
                 </div>
                 <div>
-                  <div style={{ color: "white", fontWeight: 700, fontSize: 14 }}>WildAI</div>
+                  <div style={{ color: "white", fontWeight: 700, fontSize: 14 }}>Ravlin</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
                     <div style={{ width: 6, height: 6, borderRadius: "50%", background: botStatus === "online" ? "#4ade80" : "#f43f5e", boxShadow: botStatus === "online" ? "0 0 6px rgba(74,222,128,0.8)" : "0 0 6px rgba(244,63,94,0.8)" }} />
                     <span style={{ color: botStatus === "online" ? "#4a7a4a" : "#f43f5e", fontSize: 11 }}>{botStatus === "online" ? "Online" : "Not connected"}</span>
@@ -5086,7 +5086,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                   </div>
                   <div style={{ padding: "32px 24px 20px", textAlign: "center" }}>
                     <div style={{ fontFamily: "var(--font-display)", fontSize: 26, color: "#f4f4f0", marginBottom: 8, lineHeight: 1.2, fontWeight: 900 }}>Every season.<br />Every state.<br /><span style={{ color: "#e8b020" }}>Every question.</span></div>
-                    <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>You've used your 10 free messages —<br />WildAI is clearly working for you 🎯</div>
+                    <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>You've used your 10 free messages —<br />Ravlin is clearly working for you 🎯</div>
                   </div>
                   <div style={{ margin: "0 24px 16px", height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)" }} />
                   <div style={{ padding: "0 20px 16px" }}>
@@ -5278,14 +5278,14 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           <div className="fade-in card" style={{ padding: 32 }}>
             <div style={{ textAlign: "center", marginBottom: 32 }}>
               <img src="/logo.png" style={{ width: 80, height: 80, objectFit: "contain", marginBottom: 16 }} className="float" />
-              <h2 style={{ fontFamily: "var(--font-display)", fontSize: 28, color: "var(--text)", marginBottom: 8 }}>WildAI</h2>
+              <h2 style={{ fontFamily: "var(--font-display)", fontSize: 28, color: "var(--text)", marginBottom: 8 }}>Ravlin</h2>
               <p style={{ color: "var(--green)", fontSize: 14, fontWeight: 500 }}>Built for hunters & anglers, by outdoorsmen</p>
             </div>
             <div style={{ color: "var(--text2)", fontSize: 15, lineHeight: 1.85, display: "flex", flexDirection: "column", gap: 16 }}>
-              <p>WildAI is an AI-powered hunting and fishing assistant designed to give you the kind of advice you'd get from a seasoned outdoorsman — specific, practical, and straight to the point.</p>
-              <p>Whether you're planning your first elk hunt, figuring out what flies are working on your local river, or need to know the regulations for a new state, WildAI has you covered.</p>
+              <p>Ravlin is an AI-powered hunting and fishing assistant designed to give you the kind of advice you'd get from a seasoned outdoorsman — specific, practical, and straight to the point.</p>
+              <p>Whether you're planning your first elk hunt, figuring out what flies are working on your local river, or need to know the regulations for a new state, Ravlin has you covered.</p>
               <div style={{ padding: "16px 20px", background: "var(--amber-dim)", border: "1px solid rgba(212,147,10,0.2)", borderRadius: "var(--radius-sm)" }}>
-                <p style={{ color: "rgba(212,147,10,0.9)", fontSize: 13, margin: 0 }}>⚠️ Always verify current regulations with your state wildlife agency. Regulations change and WildAI's information may not always be current.</p>
+                <p style={{ color: "rgba(212,147,10,0.9)", fontSize: 13, margin: 0 }}>⚠️ Always verify current regulations with your state wildlife agency. Regulations change and Ravlin's information may not always be current.</p>
               </div>
             </div>
             <div style={{ marginTop: 28, paddingTop: 28, borderTop: "1px solid var(--border)" }}>
@@ -5306,7 +5306,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
       </div>
 
       <footer style={{ borderTop: "1px solid var(--border)", padding: "14px 20px", textAlign: "center", position: "relative", zIndex: 1, display: "none" }}>
-        <span style={{ color: "var(--text3)", fontSize: 11 }}>WildAI · Powered by AI · Always verify regulations with your state agency</span>
+        <span style={{ color: "var(--text3)", fontSize: 11 }}>Ravlin · Powered by AI · Always verify regulations with your state agency</span>
       </footer>
     </div>
   );
