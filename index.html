@@ -28,15 +28,15 @@
 
 <body>
   <style>
-    body { margin: 0; background: #070e07; }
-    #splash { position: fixed; inset: 0; background: #070e07; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
-    #splash img { width: 160px; height: 160px; object-fit: contain; animation: pulse 1.5s ease-in-out infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    body { margin: 0; background: #000; }
+    #splash { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 9999; overflow: hidden; }
+    #splash img { width: 320px; max-width: 85vw; object-fit: contain; position: relative; z-index: 2; }
+    #splash img { animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.7;transform:scale(0.97)} }
   </style>
   <div id="splash">
-    <img src="/logo.png" />
-    <div style="font-family: 'Playfair Display', Georgia, serif; font-size: 52px; color: #f4f4f0; letter-spacing: 0.02em; margin-top: 32px;">Ravlin</div>
-    <div style="color: rgba(120,180,80,0.6); font-size: 14px; margin-top: 12px; letter-spacing: 0.12em;">YOUR GUIDE FOR EVERY SEASON</div>
+    
+    <img src="/splash.png" />
   </div>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
