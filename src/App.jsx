@@ -877,6 +877,8 @@ function MapTab({ selectedState, user, onSharePin, isPro, onPinAdded }) {
   const [assigningPin, setAssigningPin] = useState(null);
   const [viewingPin, setViewingPin] = useState(null);
   const [showPinsPage, setShowPinsPage] = useState(false);
+  const [showPrivacyPopup, setShowPrivacyPopup] = useState(false);
+  useEffect(() => { window._showMapPrivacy = () => setShowPrivacyPopup(true); return () => { delete window._showMapPrivacy; }; }, []);
 
   const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
   const STYLES = {
@@ -903,6 +905,17 @@ function MapTab({ selectedState, user, onSharePin, isPro, onPinAdded }) {
   };
 
   useEffect(() => { loadPins(); loadGroups(); }, [user]);
+
+  const PrivacyPopup = showPrivacyPopup && user ? createPortal(
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div className="fade-in" style={{ background: "#0d1a0d", border: "1px solid var(--border-accent)", borderRadius: 20, padding: 28, maxWidth: 320, width: "100%", textAlign: "center" }}>
+        <div style={{ fontSize: 36, marginBottom: 12 }}>🔒</div>
+        <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 17, marginBottom: 10 }}>Your pins are private</div>
+        <div style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>Everything you save to your map is completely private. Pins are only shared if you choose to send them in a DM.</div>
+        <button onClick={() => { setShowPrivacyPopup(false); sessionStorage.setItem("ravlin_map_privacy_seen", "1"); }} style={{ width: "100%", padding: "13px", borderRadius: 14, background: "linear-gradient(135deg, #78b450, #4a8a2a)", border: "none", color: "white", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)" }}>Got it</button>
+      </div>
+    </div>, document.body
+  ) : null;
 
 
 
@@ -1046,6 +1059,7 @@ function MapTab({ selectedState, user, onSharePin, isPro, onPinAdded }) {
 
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      {PrivacyPopup}
       {showPinsPage && !viewingPin && (
         <PinsPage
           pins={pins}
@@ -1740,14 +1754,20 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
                 {m.image_url ? (
                   <img src={m.image_url} style={{ maxWidth: "70%", borderRadius: 12, maxHeight: 200, objectFit: "cover" }} />
                 ) : m.pin_lat ? (
-                  <div style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", borderRadius: 12, padding: "10px 14px", maxWidth: "70%" }}>
-                    <div style={{ color: "var(--green)", fontSize: 13, fontWeight: 700, marginBottom: 6 }}>📍 {m.pin_name || "Shared Pin"}</div>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <a href={`https://www.google.com/maps/dir/?api=1&destination=${m.pin_lat},${m.pin_lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 11, fontWeight: 600 }}>🗺️ Directions</a>
+                  <div style={{ background: "linear-gradient(135deg, rgba(45,90,27,0.3), rgba(30,64,16,0.25))", border: "1px solid var(--border-accent)", borderRadius: 16, padding: "14px 16px", maxWidth: "75%", backdropFilter: "blur(8px)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(120,180,80,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--green)" stroke="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3" fill="#0d1a0d"/></svg>
+                      </div>
+                      <div>
+                        <div style={{ color: "var(--green)", fontSize: 13, fontWeight: 700, lineHeight: 1.2 }}>{m.pin_name || "Shared Pin"}</div>
+                        <div style={{ color: "var(--text3)", fontSize: 10, marginTop: 2 }}>Shared a pin</div>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <a href={`https://www.google.com/maps/dir/?api=1&destination=${m.pin_lat},${m.pin_lng}`} target="_blank" rel="noopener noreferrer" style={{ flex: 1, textAlign: "center", padding: "7px 0", background: "rgba(120,180,80,0.15)", border: "1px solid rgba(120,180,80,0.25)", borderRadius: 8, color: "var(--green)", fontSize: 12, fontWeight: 600, textDecoration: "none" }}>Directions</a>
                       {m.sender_id !== user.id && (
-                        <button onClick={() => {
-                          supabase.from("saved_pins").insert({ user_id: user.id, name: m.pin_name || "Shared Pin", lat: m.pin_lat, lng: m.pin_lng, location: m.pin_name || "Shared Pin" }).then(() => toast("📍 Saved to your map!", "success"));
-                        }} style={{ background: "none", border: "none", color: "var(--green)", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: 0, fontFamily: "var(--font-body)" }}>📌 Save to Map</button>
+                        <button onClick={() => { supabase.from("saved_pins").insert({ user_id: user.id, name: m.pin_name || "Shared Pin", lat: m.pin_lat, lng: m.pin_lng, location: m.pin_name || "Shared Pin" }).then(() => toast("📍 Saved to your map!", "success")); }} style={{ flex: 1, padding: "7px 0", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: "var(--text2)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>Save to Map</button>
                       )}
                     </div>
                   </div>
@@ -4925,7 +4945,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           { id: "chat", label: "Chat", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> },
           { id: "more", label: "More", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg> },
         ].map(t => (
-          <button key={t.id} onClick={() => { setTab(t.id); setShowMore(false); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, background: "none", border: "none", cursor: "pointer", color: tab === t.id ? "var(--green)" : "var(--text3)", transition: "color 0.2s", position: "relative" }}>
+          <button key={t.id} onClick={() => { setTab(t.id); setShowMore(false); if (t.id === "map" && !sessionStorage.getItem("ravlin_map_privacy_seen")) { window._showMapPrivacy?.(); } }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, background: "none", border: "none", cursor: "pointer", color: tab === t.id ? "var(--green)" : "var(--text3)", transition: "color 0.2s", position: "relative" }}>
             {tab === t.id && <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 28, height: 2, borderRadius: "0 0 2px 2px", background: "var(--green)", boxShadow: "0 0 8px rgba(120,180,80,0.9)" }} />}
             <div style={{ position: "relative" }}>
               {t.svg}
