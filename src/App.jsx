@@ -5045,25 +5045,35 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 
       {/* BOTTOM NAV */}
       <div className="bottom-nav" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, background: "rgba(5,10,5,0.92)", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "stretch", height: 64, backdropFilter: "blur(24px)", boxShadow: "0 -4px 24px rgba(0,0,0,0.4), 0 -1px 0 rgba(120,180,80,0.08)" }}>
-        {[
-          { id: "community", label: "Community", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg> },
-          { id: "map", label: "Map", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" /><line x1="9" y1="3" x2="9" y2="18" /><line x1="15" y1="6" x2="15" y2="21" /></svg> },
-          { id: "chat", label: "Chat", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> },
-          { id: "more", label: "More", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg> },
-        ].map(t => (
-          <button key={t.id} onClick={() => { setTab(t.id); setShowMore(false); if (t.id === "map" && !sessionStorage.getItem("ravlin_map_privacy_seen")) { window._showMapPrivacy?.(); } }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, background: "none", border: "none", cursor: "pointer", color: tab === t.id ? "var(--green)" : "var(--text3)", transition: "color 0.2s", position: "relative" }}>
-            {tab === t.id && <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 28, height: 2, borderRadius: "0 0 2px 2px", background: "var(--green)", boxShadow: "0 0 8px rgba(120,180,80,0.9)" }} />}
-            <div style={{ position: "relative" }}>
-              {t.svg}
-              {t.id === "community" && (messagesUnread + notifUnread) > 0 && (
-                <div style={{ position: "absolute", top: -3, right: -3, background: "#f43f5e", borderRadius: "50%", minWidth: 13, height: 13, fontSize: 8, fontWeight: 700, color: "white", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 2px" }}>
-                  {(messagesUnread + notifUnread) > 9 ? "9+" : messagesUnread + notifUnread}
-                </div>
-              )}
+        {(() => {
+          const tabs = ["community", "map", "chat", "more"];
+          const activeIndex = tabs.indexOf(tab);
+          return <>
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, pointerEvents: "none" }}>
+              <div style={{ position: "absolute", top: 0, height: 2, width: 28, borderRadius: "0 0 2px 2px", background: "var(--green)", boxShadow: "0 0 8px rgba(120,180,80,0.9)", left: `calc(${activeIndex} * 25% + 12.5% - 14px)`, transition: "left 0.25s cubic-bezier(0.4, 0, 0.2, 1)" }} />
             </div>
-            <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.04em" }}>{t.label}</span>
-          </button>
-        ))}
+            <div style={{ display: "flex", flex: 1 }}>
+              {[
+                { id: "community", label: "Community", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg> },
+                { id: "map", label: "Map", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" /><line x1="9" y1="3" x2="9" y2="18" /><line x1="15" y1="6" x2="15" y2="21" /></svg> },
+                { id: "chat", label: "Chat", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> },
+                { id: "more", label: "More", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg> },
+              ].map(t => (
+                <button key={t.id} onClick={() => { setTab(t.id); setShowMore(false); if (t.id === "map" && !sessionStorage.getItem("ravlin_map_privacy_seen")) { window._showMapPrivacy?.(); } }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, background: "none", border: "none", cursor: "pointer", color: tab === t.id ? "var(--green)" : "var(--text3)", transition: "color 0.2s" }}>
+                  <div style={{ position: "relative" }}>
+                    {t.svg}
+                    {t.id === "community" && (messagesUnread + notifUnread) > 0 && (
+                      <div style={{ position: "absolute", top: -3, right: -3, background: "#f43f5e", borderRadius: "50%", minWidth: 13, height: 13, fontSize: 8, fontWeight: 700, color: "white", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 2px" }}>
+                        {(messagesUnread + notifUnread) > 9 ? "9+" : messagesUnread + notifUnread}
+                      </div>
+                    )}
+                  </div>
+                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.04em" }}>{t.label}</span>
+                </button>
+              ))}
+            </div>
+          </>;
+        })()}
       </div>
 
 
