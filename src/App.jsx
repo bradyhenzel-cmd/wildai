@@ -2693,7 +2693,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
         </div>
       )}
 
-      {communityTab === "feed" && !viewingProfile && <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>{sortedPosts.map(post => {
+      {communityTab === "feed" && !viewingProfile && <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>{sortedPosts.map(post => {
         const likeCount = likeCounts[post.id] || 0;
         const isLiked = likedPostIds.has(post.id);
         const isHot = likeCount >= 5;
@@ -2705,7 +2705,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
           return `${Math.floor(diff / 86400)}d ago`;
         };
         return (
-          <div key={post.id} className="fade-in" style={{ borderRadius: 20, overflow: "hidden", border: isHot ? "1px solid rgba(255,150,0,0.3)" : "1px solid rgba(255,255,255,0.07)", background: "#0e1510", boxShadow: "0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.04) inset" }}>
+          <div key={post.id} className="fade-in" style={{ borderRadius: 0, overflow: "hidden", borderTop: isHot ? "1px solid rgba(255,150,0,0.3)" : "1px solid rgba(255,255,255,0.05)", borderBottom: "none", borderLeft: "none", borderRight: "none", background: "#0e1510" }}>
 
             {/* Card Header */}
             <div style={{ padding: "14px 16px 10px", display: "flex", alignItems: "center", gap: 12 }}>
@@ -2736,7 +2736,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
             {/* Photo */}
             {post.photo && (
               <div style={{ position: "relative", margin: "0", borderRadius: 0, overflow: "hidden" }}>
-                <img src={post.photo} style={{ width: "100%", maxHeight: 300, objectFit: "cover", display: "block" }} />
+                <img src={post.photo} style={{ width: "100%", maxHeight: 420, objectFit: "cover", display: "block" }} />
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(13,20,13,0.85) 0%, transparent 50%)" }} />
                 <div style={{ position: "absolute", bottom: 10, left: 10, right: 10, display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
                   {post.species && <span style={{ fontSize: 11, fontWeight: 700, padding: "5px 10px", borderRadius: 10, background: "rgba(45,90,27,0.85)", border: "1px solid rgba(61,122,37,0.6)", color: "white", backdropFilter: "blur(4px)" }}>{post.species}</span>}
