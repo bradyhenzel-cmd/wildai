@@ -4500,51 +4500,29 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column", fontFamily: "var(--font-body)", position: "relative", overflow: "hidden" }}>
-      
-      {/* Nav */}
-      <nav style={{ padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "absolute", top: 0, left: 0, right: 0, zIndex: 50, background: "linear-gradient(to bottom, rgba(7,14,7,0.7) 0%, transparent 100%)" }}>
+    <div style={{ minHeight: "100dvh", fontFamily: "var(--font-body)", position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "fixed", inset: 0, backgroundImage: `url(/bg.jpg)`, backgroundSize: "cover", backgroundPosition: "center", zIndex: 0 }} />
+      <div style={{ position: "fixed", inset: 0, background: "linear-gradient(to bottom, rgba(5,10,5,0.3) 0%, rgba(5,10,5,0.55) 40%, rgba(5,10,5,0.95) 100%)", zIndex: 1 }} />
+      <nav style={{ padding: "14px 20px", display: "flex", alignItems: "center", position: "absolute", top: 0, left: 0, right: 0, zIndex: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <img src="/logo.png" className="mobile-header-logo-img" style={{ width: 32, height: 32, objectFit: "contain", mixBlendMode: "screen" }} />
-          <span className="mobile-header-logo" style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.5px" }}>Ravlin</span>
-        </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-
-
+          <img src="/logo.png" style={{ width: 32, height: 32, objectFit: "contain" }} />
+          <span style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "white", letterSpacing: "-0.5px" }}>Ravlin</span>
         </div>
       </nav>
-
-      {/* Hero */}
-      <div style={{ minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "100px 24px 80px", textAlign: "center", background: "radial-gradient(ellipse at 50% 0%, rgba(120,180,80,0.08) 0%, transparent 70%)" }}>
-        <img src="/logo.png" style={{ width: 90, height: 90, objectFit: "contain", marginBottom: 24 }} />
-        <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(48px,10vw,88px)", fontWeight: 900, lineHeight: 1.0, color: "var(--text)", letterSpacing: "-3px", marginBottom: 20, maxWidth: 700 }}>Ravlin</h1>
-        <p style={{ color: "rgba(238,245,232,0.6)", fontSize: 18, maxWidth: 360, lineHeight: 1.6, marginBottom: 16, fontFamily: "var(--font-display)", fontWeight: 400, letterSpacing: "-0.3px" }}>The community for hunters and anglers.</p>
-        <p style={{ color: "rgba(238,245,232,0.35)", fontSize: 14, maxWidth: 340, lineHeight: 1.6, marginBottom: 40 }}>Share harvests, save your spots, get regulations and solunar times — all in one place.</p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 320 }}>
-          <button onClick={() => openSignIn()} style={{ padding: "16px 32px", fontSize: 16, fontWeight: 700, borderRadius: 14, background: "linear-gradient(135deg, #78b450, #4a8a2a)", border: "none", color: "white", cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 24px rgba(120,180,80,0.3)", transition: "transform 0.15s, box-shadow 0.15s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(120,180,80,0.4)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 24px rgba(120,180,80,0.3)"; }}>Sign In / Sign Up</button>
-          <button onClick={onStart} style={{ padding: "14px 32px", fontSize: 15, fontWeight: 600, borderRadius: 14, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(238,245,232,0.6)", cursor: "pointer", fontFamily: "var(--font-body)", transition: "all 0.15s" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.08)"} onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}>Continue as Guest</button>
-        </div>
-        <p style={{ color: "rgba(238,245,232,0.25)", fontSize: 11, marginTop: 20 }}>Free to join · No purchase required</p>
-        <div style={{ display: "flex", gap: 32, marginTop: 60, flexWrap: "wrap", justifyContent: "center" }}>
-          {[["🦌", "Community Feed"], ["📍", "Private Spots"], ["📋", "Regulations"], ["🌙", "Solunar Times"]].map(([icon, label]) => (
-            <div key={label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 24 }}>{icon}</span>
-              <span style={{ color: "rgba(238,245,232,0.4)", fontSize: 12, fontWeight: 600, letterSpacing: "0.05em" }}>{label}</span>
-            </div>
-          ))}
+      <div style={{ position: "relative", zIndex: 2, minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", padding: "0 24px 60px", textAlign: "center" }}>
+        <div style={{ background: "rgba(5,10,5,0.75)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 24, padding: "36px 28px 28px", width: "100%", maxWidth: 360 }}>
+          <img src="/logo.png" style={{ width: 64, height: 64, objectFit: "contain", marginBottom: 16 }} />
+          <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(40px,10vw,72px)", fontWeight: 900, lineHeight: 1.0, color: "white", letterSpacing: "-3px", marginBottom: 12 }}>Ravlin</h1>
+          <p style={{ color: "rgba(238,245,232,0.7)", fontSize: 15, lineHeight: 1.6, marginBottom: 6, fontFamily: "var(--font-display)", fontWeight: 400 }}>The community for hunters and anglers.</p>
+          <p style={{ color: "rgba(238,245,232,0.35)", fontSize: 12, lineHeight: 1.6, marginBottom: 28 }}>Share harvests, save your spots, get regulations and solunar times.</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <button onClick={() => openSignIn()} style={{ padding: "15px 32px", fontSize: 16, fontWeight: 700, borderRadius: 14, background: "linear-gradient(135deg, #78b450, #4a8a2a)", border: "none", color: "white", cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 24px rgba(120,180,80,0.4)", transition: "transform 0.15s, box-shadow 0.15s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(120,180,80,0.5)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 24px rgba(120,180,80,0.4)"; }}>Sign In / Sign Up</button>
+            <button onClick={onStart} style={{ padding: "13px 32px", fontSize: 14, fontWeight: 600, borderRadius: 14, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(238,245,232,0.6)", cursor: "pointer", fontFamily: "var(--font-body)", transition: "all 0.15s" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}>Continue as Guest</button>
+          </div>
+          <p style={{ color: "rgba(238,245,232,0.2)", fontSize: 11, marginTop: 16 }}>Free to join · No purchase required</p>
+          <button onClick={onTerms} style={{ background: "none", border: "none", color: "rgba(238,245,232,0.15)", fontSize: 11, cursor: "pointer", fontFamily: "var(--font-body)", marginTop: 8 }}>Terms & Conditions</button>
         </div>
       </div>
-
-      <footer style={{ borderTop: "1px solid var(--border)", padding: "18px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, position: "relative", zIndex: 1 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <img src="/logo.png" style={{ width: 20, height: 20, objectFit: "contain", mixBlendMode: "screen" }} />
-          <span style={{ fontFamily: "var(--font-display)", fontSize: 15, color: "var(--text2)" }}>Ravlin</span>
-        </div>
-        <div style={{ display: "flex", gap: 20 }}>
-          <button onClick={onTerms} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 12, cursor: "pointer", fontFamily: "var(--font-body)" }}>Terms & Conditions</button>
-          <span style={{ color: "var(--text3)", fontSize: 12 }}>Always verify regulations with your state agency</span>
-        </div>
-      </footer>
     </div>
   );
 }
