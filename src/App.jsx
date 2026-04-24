@@ -4509,10 +4509,10 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
           <img src="/logo.png" style={{ width: 64, height: 64, objectFit: "contain", marginBottom: 16 }} />
           <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(40px,10vw,72px)", fontWeight: 900, lineHeight: 1.0, color: "white", letterSpacing: "-3px", marginBottom: 12 }}>Ravlin</h1>
           <p style={{ color: "rgba(238,245,232,0.7)", fontSize: 15, lineHeight: 1.6, marginBottom: 6, fontFamily: "var(--font-display)", fontWeight: 400 }}>Hunt. Fish. Connect.</p>
-          <p style={{ color: "rgba(238,245,232,0.35)", fontSize: 12, lineHeight: 1.6, marginBottom: 28 }}>Share harvests, save your spots, get regulations and solunar times.</p>
+          
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <button onClick={() => openSignIn()} style={{ padding: "15px 32px", fontSize: 16, fontWeight: 700, borderRadius: 14, background: "linear-gradient(135deg, #78b450, #4a8a2a)", border: "none", color: "white", cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 24px rgba(120,180,80,0.4)", transition: "transform 0.15s, box-shadow 0.15s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(120,180,80,0.5)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 24px rgba(120,180,80,0.4)"; }}>Sign In / Sign Up</button>
-            <button onClick={onStart} style={{ padding: "13px 32px", fontSize: 14, fontWeight: 600, borderRadius: 14, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(238,245,232,0.6)", cursor: "pointer", fontFamily: "var(--font-body)", transition: "all 0.15s" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}>Continue as Guest</button>
+            
           </div>
           <p style={{ color: "rgba(238,245,232,0.2)", fontSize: 11, marginTop: 16 }}>Free to join · No purchase required</p>
           <button onClick={onTerms} style={{ background: "none", border: "none", color: "rgba(238,245,232,0.15)", fontSize: 11, cursor: "pointer", fontFamily: "var(--font-body)", marginTop: 8 }}>Terms & Conditions</button>
