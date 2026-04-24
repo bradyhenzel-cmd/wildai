@@ -89,8 +89,8 @@ app.post("/create-checkout", async (req, res) => {
                 quantity: 1,
             }],
             mode: "subscription",
-            success_url: "https://wildai.app?upgraded=true",
-            cancel_url: "https://wildai.app",
+            success_url: "https://ravlin.app?upgraded=true",
+            cancel_url: "https://ravlin.app",
             metadata: { userId },
         });
         res.json({ url: session.url });
@@ -103,7 +103,7 @@ app.post("/customer-portal", async (req, res) => {
     try {
         const session = await stripe.billingPortal.sessions.create({
             customer: customerId,
-            return_url: "https://wildai.app",
+            return_url: "https://ravlin.app",
         });
         res.json({ url: session.url });
     } catch (err) {
