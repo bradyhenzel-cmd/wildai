@@ -2739,14 +2739,14 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                 <img src={post.photo} style={{ width: "100%", maxHeight: 300, objectFit: "cover", display: "block" }} />
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(13,20,13,0.85) 0%, transparent 50%)" }} />
                 <div style={{ position: "absolute", bottom: 10, left: 10, right: 10, display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-                  {post.species && <span style={{ fontSize: 11, fontWeight: 700, padding: "5px 10px", borderRadius: 10, background: "rgba(45,90,27,0.85)", border: "1px solid rgba(61,122,37,0.6)", color: "white", backdropFilter: "blur(4px)" }}>🐟 {post.species}</span>}
+                  {post.species && <span style={{ fontSize: 11, fontWeight: 700, padding: "5px 10px", borderRadius: 10, background: "rgba(45,90,27,0.85)", border: "1px solid rgba(61,122,37,0.6)", color: "white", backdropFilter: "blur(4px)" }}>{post.species}</span>}
                   {isHot && <span style={{ fontSize: 11, fontWeight: 600, padding: "5px 10px", borderRadius: 10, background: "rgba(30,20,10,0.85)", border: "1px solid rgba(200,100,20,0.3)", color: "#ff9500", backdropFilter: "blur(4px)" }}>🔥 Trending</span>}
                 </div>
               </div>
             )}
             {!post.photo && post.species && (
               <div style={{ padding: "0 16px 6px" }}>
-                <span style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 10, background: "rgba(45,90,27,0.5)", border: "1px solid rgba(61,122,37,0.4)", color: "var(--green)", display: "inline-block" }}>🐟 {post.species}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 10, background: "rgba(45,90,27,0.5)", border: "1px solid rgba(61,122,37,0.4)", color: "var(--green)", display: "inline-block" }}>{post.species}</span>
               </div>
             )}
 
@@ -2865,7 +2865,7 @@ function PostDetailPage({ postId, user, openSignIn, onBack, onViewUser }) {
             <div style={{ position: "relative" }}>
               <img src={post.photo} style={{ width: "100%", maxHeight: 340, objectFit: "cover", display: "block" }} />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(13,20,13,0.85) 0%, transparent 50%)" }} />
-              {post.species && <span style={{ position: "absolute", bottom: 10, left: 10, fontSize: 11, fontWeight: 700, padding: "5px 10px", borderRadius: 10, background: "rgba(45,90,27,0.85)", border: "1px solid rgba(61,122,37,0.6)", color: "white" }}>🐟 {post.species}</span>}
+              {post.species && <span style={{ position: "absolute", bottom: 10, left: 10, fontSize: 11, fontWeight: 700, padding: "5px 10px", borderRadius: 10, background: "rgba(45,90,27,0.85)", border: "1px solid rgba(61,122,37,0.6)", color: "white" }}>{post.species}</span>}
             </div>
           )}
           {post.caption && (
