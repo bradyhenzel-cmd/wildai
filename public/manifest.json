@@ -1,7 +1,7 @@
 {
-  "name": "WildAI",
-  "short_name": "WildAI",
-  "description": "Your expert hunting & fishing assistant",
+  "name": "Ravlin",
+  "short_name": "Ravlin",
+  "description": "Your hunting & fishing community",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#070e07",
