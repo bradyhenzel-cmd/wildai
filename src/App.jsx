@@ -1965,8 +1965,7 @@ function HotspotsTab({ posts, loading, user, selectedState, savedPinIds, saveToM
             <div style={{ position: "relative" }}>
               <img src={post.photo} style={{ width: "100%", height: 220, objectFit: "cover", display: "block" }} />
               {post.species && (
-                <div style={{ position: "absolute", bottom: 10, left: 10, background: "rgba(8,20,8,0.82)", border: "1px solid var(--border-accent)", backdropFilter: "blur(8px)", borderRadius: 20, padding: "4px 12px", display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ fontSize: 13 }}>{SPECIES_ICONS[post.species] || "🎯"}</span>
+                <div style={{ position: "absolute", bottom: 10, left: 10, background: "rgba(8,20,8,0.82)", border: "1px solid var(--border-accent)", backdropFilter: "blur(8px)", borderRadius: 20, padding: "4px 12px" }}>
                   <span style={{ color: "var(--green)", fontSize: 12, fontWeight: 700 }}>{post.species}</span>
                 </div>
               )}
