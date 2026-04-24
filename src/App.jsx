@@ -4649,7 +4649,7 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
 
         {step === 1 && (
           <div className="fade-in">
-            <div style={{ marginBottom: 16 }}><img src="/logo.png" style={{ width: 88, height: 88, objectFit: "contain" }} /></div>
+            <div style={{ marginBottom: 16 }}><img src="/logo.png" style={{ width: 176, height: 176, objectFit: "contain" }} /></div>
             <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Welcome to Ravlin</div>
             <div style={{ color: "var(--text2)", fontSize: 15, marginBottom: 32, lineHeight: 1.5 }}>Let's personalize your experience. What do you primarily do?</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -4963,8 +4963,8 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
 
           <div className="mobile-header-center" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <img src="/logo.png" className="mobile-header-logo-img" style={{ width: 28, height: 28, objectFit: "contain", mixBlendMode: "screen" }} />
-            <span className="mobile-header-logo" style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, color: "var(--text)" }}>Ravlin</span>
+            <img src="/logo.png" className="mobile-header-logo-img" style={{ width: 56, height: 56, objectFit: "contain", mixBlendMode: "screen" }} />
+            <span className="mobile-header-logo" style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, color: "var(--text)", marginLeft: -6 }}>Ravlin</span>
             <select className="mobile-state-select" value={selectedState} onChange={e => setSelectedState && setSelectedState(e.target.value)} style={{ background: "transparent", border: "none", color: selectedState ? "var(--text3)" : "var(--text3)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)", outline: "none", maxWidth: 120 }}>
               <option value="">· State</option>
               {STATES.map(s => <option key={s} value={s} style={{ background: "#0a150a" }}>· {s}</option>)}
@@ -5091,7 +5091,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
             <div className="fade-in" style={{ display: "flex", flexDirection: "column", overflow: "hidden", background: "linear-gradient(160deg, #0d140d 0%, #090d09 100%)", border: "1px solid #1a261a", borderRadius: 20, boxShadow: "0 24px 60px rgba(0,0,0,0.6)" }}>
               <div style={{ padding: "14px 18px", display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid #141e14", background: "rgba(0,0,0,0.2)" }}>
                 <div style={{ width: 36, height: 36, borderRadius: 12, background: "linear-gradient(135deg, #78b450, #4a8a2a)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 16px rgba(120,180,80,0.3)" }}>
-                  <img src="/logo.png" style={{ width: 20, height: 20, objectFit: "contain" }} />
+                  <img src="/chat.png" style={{ width: 64, height: 64, objectFit: "cover", borderRadius: "50%" }} />
                 </div>
                 <div>
                   <div style={{ color: "white", fontWeight: 700, fontSize: 14 }}>Ravlin</div>
@@ -5104,7 +5104,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
               <div style={{ overflowY: "auto", padding: "16px 14px", display: "flex", flexDirection: "column", gap: 12, minHeight: 300, maxHeight: "55vh" }}>
                 {messages.map((m, i) => (
                   <div key={i} className="fade-in" style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start", gap: 10, alignItems: "flex-end" }}>
-                    {m.role === "assistant" && <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,var(--green),var(--green2))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0, boxShadow: "0 4px 12px rgba(120,180,80,0.25)" }}><img src="/logo.png" style={{ width: 20, height: 20, objectFit: "contain" }} /></div>}
+                    {m.role === "assistant" && <img src="/chat.png" style={{ width: 36, height: 36, objectFit: "cover", borderRadius: "50%", flexShrink: 0 }} />}
                     <div style={{ background: m.role === "user" ? "linear-gradient(135deg,var(--green),var(--green2))" : "rgba(255,255,255,0.05)", border: m.role === "assistant" ? "1px solid var(--border)" : "none", color: "var(--text)", padding: "13px 17px", borderRadius: m.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", maxWidth: "80%", boxShadow: m.role === "user" ? "0 4px 16px rgba(120,180,80,0.2)" : "none" }}>
                       {m.role === "assistant" && m.animate
                         ? <TypewriterText text={m.content} onDone={() => setMessages(prev => prev.map((msg, j) => j === i ? { ...msg, animate: false } : msg))} />
@@ -5114,7 +5114,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                 ))}
                 {loading && (
                   <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
-                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,var(--green),var(--green2))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}><img src="/logo.png" style={{ width: 20, height: 20, objectFit: "contain" }} /></div>
+                    <img src="/chat.png" style={{ width: 36, height: 36, objectFit: "cover", borderRadius: "50%", flexShrink: 0 }} />
                     <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", padding: "13px 17px", borderRadius: "18px 18px 18px 4px" }}>
                       <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
                         {[0, 1, 2].map(j => <div key={j} style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--green)", animation: `pulse 1.2s ease-in-out ${j * 0.2}s infinite` }} />)}
@@ -5332,7 +5332,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         {tab === "about" && (
           <div className="fade-in card" style={{ padding: 32 }}>
             <div style={{ textAlign: "center", marginBottom: 32 }}>
-              <img src="/logo.png" style={{ width: 80, height: 80, objectFit: "contain", marginBottom: 16 }} className="float" />
+              <img src="/logo.png" style={{ width: 160, height: 160, objectFit: "contain", marginBottom: 16 }} className="float" />
               <h2 style={{ fontFamily: "var(--font-display)", fontSize: 28, color: "var(--text)", marginBottom: 8 }}>Ravlin</h2>
               <p style={{ color: "var(--green)", fontSize: 14, fontWeight: 500 }}>Built for hunters & anglers, by outdoorsmen</p>
             </div>
