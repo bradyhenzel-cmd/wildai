@@ -1533,7 +1533,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
                 {(post.species || post.location) && (
                   <div style={{ display: "flex", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
                     {post.species && <span style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)", padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600 }}>{post.species}</span>}
-                    {post.location && <span style={{ color: "var(--text2)", fontSize: 12 }}>📍 {post.location}</span>}
+                    {false && post.location && <span style={{ color: "var(--text2)", fontSize: 12 }}>📍 {post.location}</span>}
                   </div>
                 )}
                 {post.caption && <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.6, margin: 0, marginBottom: 6 }}>{post.caption}</p>}
@@ -1567,7 +1567,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
                 {(post.species || post.location) && (
                   <div style={{ display: "flex", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
                     {post.species && <span style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)", padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600 }}>{post.species}</span>}
-                    {post.location && <span style={{ color: "var(--text2)", fontSize: 12 }}>📍 {post.location}</span>}
+                    {false && post.location && <span style={{ color: "var(--text2)", fontSize: 12 }}>📍 {post.location}</span>}
                   </div>
                 )}
                 {post.caption && <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.6, margin: 0, marginBottom: 10 }}>{post.caption}</p>}
@@ -1980,7 +1980,7 @@ function HotspotsTab({ posts, loading, user, selectedState, savedPinIds, saveToM
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
               <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg, #3d7a25, #1a3a0e)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "var(--green)", flexShrink: 0 }}>{(post.username || "?")[0].toUpperCase()}</div>
               <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 13 }}>{capName(post.username)}</span>
-              {post.location && <span style={{ color: "var(--text3)", fontSize: 12 }}>· 📍 {post.location}</span>}
+              {false && post.location && <span style={{ color: "var(--text3)", fontSize: 12 }}>· 📍 {post.location}</span>}
             </div>
             {post.caption && <p style={{ color: "var(--text2)", fontSize: 13, lineHeight: 1.5, margin: "0 0 10px" }}>{post.caption}</p>}
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -2721,7 +2721,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                 <span onClick={() => setViewingProfile(post.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", display: "block" }}>{capName(post.username)}</span>
                 <span style={{ color: "#4a6a4a", fontSize: 11, display: "flex", alignItems: "center", gap: 3 }}>
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#3d7a25" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-                  {post.location || post.state}
+                  {post.state}
                 </span>
               </div>
               <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -2857,7 +2857,7 @@ function PostDetailPage({ postId, user, openSignIn, onBack, onViewUser }) {
             </div>
             <div style={{ flex: 1 }}>
               <span onClick={() => onViewUser(post.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", display: "block" }}>{capName(post.username)}</span>
-              <span style={{ color: "#4a6a4a", fontSize: 11 }}>{post.location || post.state}</span>
+              <span style={{ color: "#4a6a4a", fontSize: 11 }}>{post.state}</span>
             </div>
             <span style={{ fontSize: 10, fontWeight: 600, color: "#3a5a3a", background: "#111a11", border: "1px solid #1c2c1c", padding: "3px 8px", borderRadius: 20 }}>{timeAgo(post.created_at)}</span>
           </div>
