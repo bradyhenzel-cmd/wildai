@@ -4503,17 +4503,12 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
     <div style={{ minHeight: "100dvh", fontFamily: "var(--font-body)", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "fixed", inset: 0, backgroundImage: `url(/bg.jpg)`, backgroundSize: "cover", backgroundPosition: "center", zIndex: 0 }} />
       <div style={{ position: "fixed", inset: 0, background: "linear-gradient(to bottom, rgba(5,10,5,0.3) 0%, rgba(5,10,5,0.55) 40%, rgba(5,10,5,0.95) 100%)", zIndex: 1 }} />
-      <nav style={{ padding: "14px 20px", display: "flex", alignItems: "center", position: "absolute", top: 0, left: 0, right: 0, zIndex: 10 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <img src="/logo.png" style={{ width: 32, height: 32, objectFit: "contain" }} />
-          <span style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "white", letterSpacing: "-0.5px" }}>Ravlin</span>
-        </div>
-      </nav>
-      <div style={{ position: "relative", zIndex: 2, minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", padding: "0 24px 60px", textAlign: "center" }}>
-        <div style={{ background: "rgba(5,10,5,0.75)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 24, padding: "36px 28px 28px", width: "100%", maxWidth: 360 }}>
+      
+      <div style={{ position: "relative", zIndex: 2, minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>
+        <div style={{ background: "rgba(5,10,5,0.6)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 24, padding: "36px 28px 28px", width: "100%", maxWidth: 360 }}>
           <img src="/logo.png" style={{ width: 64, height: 64, objectFit: "contain", marginBottom: 16 }} />
           <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(40px,10vw,72px)", fontWeight: 900, lineHeight: 1.0, color: "white", letterSpacing: "-3px", marginBottom: 12 }}>Ravlin</h1>
-          <p style={{ color: "rgba(238,245,232,0.7)", fontSize: 15, lineHeight: 1.6, marginBottom: 6, fontFamily: "var(--font-display)", fontWeight: 400 }}>The community for hunters and anglers.</p>
+          <p style={{ color: "rgba(238,245,232,0.7)", fontSize: 15, lineHeight: 1.6, marginBottom: 6, fontFamily: "var(--font-display)", fontWeight: 400 }}>Hunt. Fish. Connect.</p>
           <p style={{ color: "rgba(238,245,232,0.35)", fontSize: 12, lineHeight: 1.6, marginBottom: 28 }}>Share harvests, save your spots, get regulations and solunar times.</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <button onClick={() => openSignIn()} style={{ padding: "15px 32px", fontSize: 16, fontWeight: 700, borderRadius: 14, background: "linear-gradient(135deg, #78b450, #4a8a2a)", border: "none", color: "white", cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 24px rgba(120,180,80,0.4)", transition: "transform 0.15s, box-shadow 0.15s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(120,180,80,0.5)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 24px rgba(120,180,80,0.4)"; }}>Sign In / Sign Up</button>
