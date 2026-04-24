@@ -4480,7 +4480,7 @@ function HeatmapLanding({ onReady }) {
 // ─── LANDING PAGE ─────────────────────────────────────────────────────────────
 function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTerms }) {
   const { openSignIn } = useClerk();
-  const [mapReady, setMapReady] = useState(false);
+  
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isIOS] = useState(() => /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone);
   const [isInstalled] = useState(() => window.navigator.standalone === true);
@@ -4501,11 +4501,7 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column", fontFamily: "var(--font-body)", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "#070e07", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-body)", transition: "opacity 0.6s ease", opacity: mapReady ? 0 : 1, pointerEvents: mapReady ? "none" : "all" }}>
-        <img src="/logo.png" style={{ width: 180, height: 180, objectFit: "contain", animation: "pulse 1.5s ease-in-out infinite", marginBottom: 32 }} />
-        <div style={{ fontFamily: "var(--font-display)", fontSize: 56, color: "#f4f4f0", letterSpacing: "0.02em" }}>Ravlin</div>
-        <div style={{ color: "rgba(120,180,80,0.6)", fontSize: 15, marginTop: 12, letterSpacing: "0.12em", fontFamily: "var(--font-display)", fontWeight: 400 }}>YOUR GUIDE FOR EVERY SEASON</div>
-      </div>
+      
       {/* Nav */}
       <nav style={{ padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "absolute", top: 0, left: 0, right: 0, zIndex: 50, background: "linear-gradient(to bottom, rgba(7,14,7,0.7) 0%, transparent 100%)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -4518,26 +4514,24 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
         </div>
       </nav>
 
-      {/* Heatmap Hero */}
-      <div style={{ position: "relative", height: "100dvh" }}>
-        <HeatmapLanding onReady={() => setMapReady(true)} />
-        {/* Overlay */}
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(7,14,7,0.4) 0%, rgba(7,14,7,0.65) 45%, rgba(7,14,7,0.92) 100%)", zIndex: 2, pointerEvents: "none" }} />
-        {/* Content */}
-        <div style={{ position: "absolute", inset: 0, zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", padding: "0 24px 80px", textAlign: "center" }}>
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "65%", background: "linear-gradient(to bottom, transparent, rgba(7,14,7,0.96) 50%)", pointerEvents: "none", zIndex: -1 }} />
-          <style>{`.mapboxgl-ctrl-bottom-left { z-index: 10 !important; }`}</style>
-
-
-          <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(52px,10vw,96px)", fontWeight: 900, lineHeight: 1.0, color: "var(--text)", letterSpacing: "-3px", marginBottom: 16, maxWidth: 700, textShadow: "0 2px 20px rgba(0,0,0,0.6)" }}>
-            Wild<span style={{ color: "var(--green)" }}>AI</span>
-          </h1>
-          <p style={{ color: "rgba(238,245,232,0.82)", fontSize: 18, maxWidth: 440, lineHeight: 1.6, marginBottom: 32, textShadow: "0 2px 12px rgba(0,0,0,0.6)", fontFamily: "var(--font-display)", fontWeight: 400, letterSpacing: "-0.3px" }}>Ask anything. Connect with hunters and anglers near you.</p>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
-            <button onClick={() => openSignIn()} className="btn-primary" style={{ padding: "14px 32px", fontSize: 16, borderRadius: "var(--radius)" }}>Sign In / Sign Up</button>
-            <button onClick={onStart} className="btn-primary" style={{ padding: "14px 24px", fontSize: 15 }}>Continue as Guest</button>
-          </div>
-          <p style={{ color: "rgba(238,245,232,0.35)", fontSize: 11, marginTop: 14 }}>Free to join · No purchase required</p>
+      {/* Hero */}
+      <div style={{ minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "100px 24px 80px", textAlign: "center", background: "radial-gradient(ellipse at 50% 0%, rgba(120,180,80,0.08) 0%, transparent 70%)" }}>
+        <img src="/logo.png" style={{ width: 90, height: 90, objectFit: "contain", marginBottom: 24 }} />
+        <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(48px,10vw,88px)", fontWeight: 900, lineHeight: 1.0, color: "var(--text)", letterSpacing: "-3px", marginBottom: 20, maxWidth: 700 }}>Ravlin</h1>
+        <p style={{ color: "rgba(238,245,232,0.6)", fontSize: 18, maxWidth: 360, lineHeight: 1.6, marginBottom: 16, fontFamily: "var(--font-display)", fontWeight: 400, letterSpacing: "-0.3px" }}>The community for hunters and anglers.</p>
+        <p style={{ color: "rgba(238,245,232,0.35)", fontSize: 14, maxWidth: 340, lineHeight: 1.6, marginBottom: 40 }}>Share harvests, save your spots, get regulations and solunar times — all in one place.</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 320 }}>
+          <button onClick={() => openSignIn()} style={{ padding: "16px 32px", fontSize: 16, fontWeight: 700, borderRadius: 14, background: "linear-gradient(135deg, #78b450, #4a8a2a)", border: "none", color: "white", cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 24px rgba(120,180,80,0.3)", transition: "transform 0.15s, box-shadow 0.15s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(120,180,80,0.4)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 24px rgba(120,180,80,0.3)"; }}>Sign In / Sign Up</button>
+          <button onClick={onStart} style={{ padding: "14px 32px", fontSize: 15, fontWeight: 600, borderRadius: 14, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(238,245,232,0.6)", cursor: "pointer", fontFamily: "var(--font-body)", transition: "all 0.15s" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.08)"} onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}>Continue as Guest</button>
+        </div>
+        <p style={{ color: "rgba(238,245,232,0.25)", fontSize: 11, marginTop: 20 }}>Free to join · No purchase required</p>
+        <div style={{ display: "flex", gap: 32, marginTop: 60, flexWrap: "wrap", justifyContent: "center" }}>
+          {[["🦌", "Community Feed"], ["📍", "Private Spots"], ["📋", "Regulations"], ["🌙", "Solunar Times"]].map(([icon, label]) => (
+            <div key={label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 24 }}>{icon}</span>
+              <span style={{ color: "rgba(238,245,232,0.4)", fontSize: 12, fontWeight: 600, letterSpacing: "0.05em" }}>{label}</span>
+            </div>
+          ))}
         </div>
       </div>
 
