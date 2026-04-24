@@ -96,51 +96,81 @@ const SPECIES_ICONS = {
   // Deer family
   "Elk": "🦌", "Whitetail Deer": "🦌", "Mule Deer": "🦌", "Moose": "🦌", "Antelope": "🦌",
   "Pronghorn": "🦌", "Pronghorn Antelope": "🦌", "Caribou": "🦌", "Bison": "🦬", "Buffalo": "🦬",
+  "Sitka Deer": "🦌", "Axis Deer": "🦌", "Fallow Deer": "🦌", "Whitetail": "🦌",
   // Bears
   "Bear": "🐻", "Black Bear": "🐻", "Brown Bear": "🐻", "Grizzly Bear": "🐻", "Grizzly": "🐻",
-  // Birds
-  "Turkey": "🦃", "Wild Turkey": "🦃", "Pheasant": "🐦", "Ring-necked Pheasant": "🐦",
-  "Quail": "🐦", "Bobwhite Quail": "🐦", "California Quail": "🐦", "Gambel's Quail": "🐦",
-  "Dove": "🕊️", "Mourning Dove": "🕊️", "Duck": "🦆", "Mallard": "🦆", "Teal": "🦆",
-  "Goose": "🪿", "Canada Goose": "🪿", "Snow Goose": "🪿", "Grouse": "🐦",
-  "Ruffed Grouse": "🐦", "Sage Grouse": "🐦", "Blue Grouse": "🐦", "Sharp-tailed Grouse": "🐦",
-  "Ptarmigan": "🐦", "Chukar": "🐦", "Hungarian Partridge": "🐦", "Woodcock": "🐦",
-  "Waterfowl": "🦆", "Prairie Chicken": "🐦",
-  // Predators / small game
-  "Hog": "🐗", "Wild Hog": "🐗", "Feral Hog": "🐗", "Wild Boar": "🐗", "Javelina": "🐗",
-  "Coyote": "🐺", "Fox": "🦊", "Red Fox": "🦊", "Gray Fox": "🦊",
-  "Rabbit": "🐇", "Cottontail": "🐇", "Jackrabbit": "🐇", "Snowshoe Hare": "🐇",
-  "Squirrel": "🐿️", "Fox Squirrel": "🐿️", "Gray Squirrel": "🐿️",
+  "Polar Bear": "🐻‍❄️",
+  // Cats
   "Mountain Lion": "🐆", "Cougar": "🐆", "Puma": "🐆", "Bobcat": "🐆",
-  "Wolf": "🐺", "Gray Wolf": "🐺",
-  "Mountain Goat": "🐐", "Bighorn Sheep": "🐏", "Dall Sheep": "🐏",
-  "Raccoon": "🦝", "Opossum": "🐾", "Beaver": "🦫",
+  "Lynx": "🐱", "Canada Lynx": "🐱",
+  // Canines
+  "Wolf": "🐺", "Gray Wolf": "🐺", "Timber Wolf": "🐺", "Coyote": "🐺",
+  "Fox": "🦊", "Red Fox": "🦊", "Gray Fox": "🦊", "Arctic Fox": "🦊",
+  // Wild pig
+  "Hog": "🐗", "Wild Hog": "🐗", "Feral Hog": "🐗", "Wild Boar": "🐗", "Javelina": "🐗", "Feral Pig": "🐗",
+  // Small predators
+  "Wolverine": "🦡", "Fisher": "🦡", "Marten": "🦡", "Badger": "🦡",
+  "Raccoon": "🦝", "Opossum": "🐾", "Beaver": "🦫", "Mink": "🦦", "Otter": "🦦",
+  "Muskrat": "🐀", "Skunk": "🦨", "Weasel": "🐾",
+  // Sheep & goats
+  "Mountain Goat": "🐐", "Bighorn Sheep": "🐏", "Dall Sheep": "🐏", "Desert Bighorn": "🐏",
+  "Mouflon Sheep": "🐏",
+  // Small game
+  "Rabbit": "🐇", "Cottontail": "🐇", "Jackrabbit": "🐇", "Snowshoe Hare": "🐇", "Hare": "🐇",
+  "Squirrel": "🐿️", "Fox Squirrel": "🐿️", "Gray Squirrel": "🐿️", "Red Squirrel": "🐿️",
+  "Prairie Dog": "🐿️", "Groundhog": "🐿️", "Woodchuck": "🐿️",
+  // Upland birds
+  "Turkey": "🦃", "Wild Turkey": "🦃", "Merriam's Turkey": "🦃", "Osceola Turkey": "🦃",
+  "Pheasant": "🐦", "Ring-necked Pheasant": "🐦", "Quail": "🐦", "Bobwhite Quail": "🐦",
+  "California Quail": "🐦", "Gambel's Quail": "🐦", "Scaled Quail": "🐦", "Montezuma Quail": "🐦",
+  "Dove": "🕊️", "Mourning Dove": "🕊️", "White-winged Dove": "🕊️", "Eurasian Collared Dove": "🕊️",
+  "Grouse": "🐦", "Ruffed Grouse": "🐦", "Sage Grouse": "🐦", "Blue Grouse": "🐦",
+  "Sharp-tailed Grouse": "🐦", "Spruce Grouse": "🐦", "Dusky Grouse": "🐦", "Sooty Grouse": "🐦",
+  "Ptarmigan": "🐦", "White-tailed Ptarmigan": "🐦", "Rock Ptarmigan": "🐦",
+  "Chukar": "🐦", "Hungarian Partridge": "🐦", "Gray Partridge": "🐦",
+  "Woodcock": "🐦", "American Woodcock": "🐦", "Snipe": "🐦", "Prairie Chicken": "🐦",
+  // Waterfowl
+  "Duck": "🦆", "Mallard": "🦆", "Teal": "🦆", "Wood Duck": "🦆", "Pintail": "🦆",
+  "Widgeon": "🦆", "Canvasback": "🦆", "Redhead": "🦆", "Scaup": "🦆", "Bufflehead": "🦆",
+  "Gadwall": "🦆", "Shoveler": "🦆", "Ring-necked Duck": "🦆", "Eider": "🦆",
+  "Goose": "🪿", "Canada Goose": "🪿", "Snow Goose": "🪿", "White-fronted Goose": "🪿",
+  "Ross's Goose": "🪿", "Brant": "🪿", "Waterfowl": "🦆",
   // Freshwater fish
   "Bass": "🐟", "Largemouth Bass": "🐟", "Smallmouth Bass": "🐟", "Spotted Bass": "🐟",
-  "Striped Bass": "🐟", "White Bass": "🐟", "Hybrid Striped Bass": "🐟",
+  "Striped Bass": "🐟", "White Bass": "🐟", "Hybrid Striped Bass": "🐟", "Kentucky Bass": "🐟",
   "Trout": "🐟", "Rainbow Trout": "🐟", "Brown Trout": "🐟", "Brook Trout": "🐟",
   "Cutthroat Trout": "🐟", "Lake Trout": "🐟", "Bull Trout": "🐟", "Tiger Trout": "🐟",
+  "Apache Trout": "🐟", "Gila Trout": "🐟",
   "Walleye": "🐟", "Sauger": "🐟", "Pike": "🐟", "Northern Pike": "🐟",
   "Muskie": "🐟", "Muskellunge": "🐟", "Tiger Muskie": "🐟",
   "Catfish": "🐟", "Channel Catfish": "🐟", "Blue Catfish": "🐟", "Flathead Catfish": "🐟",
   "Crappie": "🐟", "Black Crappie": "🐟", "White Crappie": "🐟",
   "Bluegill": "🐟", "Sunfish": "🐟", "Pumpkinseed": "🐟", "Perch": "🐟", "Yellow Perch": "🐟",
   "Salmon": "🐟", "Chinook Salmon": "🐟", "Coho Salmon": "🐟", "Sockeye Salmon": "🐟",
-  "King Salmon": "🐟", "Pink Salmon": "🐟", "Chum Salmon": "🐟",
-  "Steelhead": "🐟", "Carp": "🐟", "Common Carp": "🐟", "Drum": "🐟",
-  "Freshwater Drum": "🐟", "Bowfin": "🐟", "Gar": "🐟", "Burbot": "🐟",
-  "Kokanee": "🐟", "Cisco": "🐟", "Whitefish": "🐟", "Grayling": "🐟",
+  "King Salmon": "🐟", "Pink Salmon": "🐟", "Chum Salmon": "🐟", "Atlantic Salmon": "🐟",
+  "Steelhead": "🐟", "Carp": "🐟", "Common Carp": "🐟", "Grass Carp": "🐟",
+  "Drum": "🐟", "Freshwater Drum": "🐟", "Bowfin": "🐟", "Gar": "🐟", "Alligator Gar": "🐟",
+  "Burbot": "🐟", "Kokanee": "🐟", "Cisco": "🐟", "Whitefish": "🐟", "Grayling": "🐟",
+  "Sturgeon": "🐟", "White Sturgeon": "🐟", "Paddlefish": "🐟", "Saugeye": "🐟",
+  "Cod": "🐟", "Atlantic Cod": "🐟", "Pacific Cod": "🐟", "Pollock": "🐟",
   // Saltwater fish
   "Redfish": "🐠", "Red Drum": "🐠", "Snook": "🐠", "Tarpon": "🐠",
   "Flounder": "🐠", "Grouper": "🐠", "Snapper": "🐠", "Red Snapper": "🐠",
   "Cobia": "🐠", "Mahi-Mahi": "🐠", "Mahi": "🐠", "Dorado": "🐠",
-  "Tuna": "🐠", "Yellowfin Tuna": "🐠", "Bluefin Tuna": "🐠", "Albacore": "🐠",
-  "Marlin": "🐠", "Striped Marlin": "🐠", "Blue Marlin": "🐠",
-  "Shark": "🦈", "Bull Shark": "🦈", "Hammerhead": "🦈",
+  "Tuna": "🐠", "Yellowfin Tuna": "🐠", "Bluefin Tuna": "🐠", "Albacore": "🐠", "Skipjack": "🐠",
+  "Marlin": "🐠", "Striped Marlin": "🐠", "Blue Marlin": "🐠", "White Marlin": "🐠",
+  "Shark": "🦈", "Bull Shark": "🦈", "Hammerhead": "🦈", "Tiger Shark": "🦈", "Mako Shark": "🦈",
   "Swordfish": "🐠", "Wahoo": "🐠", "Amberjack": "🐠", "Pompano": "🐠",
   "Sheepshead": "🐠", "Speckled Trout": "🐠", "Spotted Sea Trout": "🐠",
-  "Halibut": "🐠", "Lingcod": "🐠", "Rockfish": "🐠", "Striped Bass (Salt)": "🐠",
-  "Bluefish": "🐠", "Weakfish": "🐠", "Striped Marlin": "🐠",
+  "Halibut": "🐠", "Pacific Halibut": "🐠", "Lingcod": "🐠", "Rockfish": "🐠",
+  "Striped Bass (Salt)": "🐠", "Bluefish": "🐠", "Weakfish": "🐠",
+  "Permit": "🐠", "Bonefish": "🐠", "Tripletail": "🐠", "Kingfish": "🐠",
+  "Mackerel": "🐠", "Spanish Mackerel": "🐠", "King Mackerel": "🐠",
+  "Sailfish": "🐠", "Barracuda": "🐠", "Yellowtail": "🐠",
+  // Shellfish
+  "Crab": "🦀", "Dungeness Crab": "🦀", "Blue Crab": "🦀", "King Crab": "🦀", "Snow Crab": "🦀",
+  "Lobster": "🦞", "Spiny Lobster": "🦞", "Shrimp": "🍤", "Oyster": "🦪", "Clam": "🦪",
+  "Scallop": "🦪", "Mussel": "🦪",
 };
 const SPECIES = [
   { name: "Elk", icon: "🦌", type: "hunting", desc: "Rocky Mountain & Roosevelt" },
@@ -1757,7 +1787,7 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
                   <div style={{ background: "linear-gradient(135deg, rgba(45,90,27,0.3), rgba(30,64,16,0.25))", border: "1px solid var(--border-accent)", borderRadius: 16, padding: "14px 16px", maxWidth: "75%", backdropFilter: "blur(8px)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
                       <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(120,180,80,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--green)" stroke="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3" fill="#0d1a0d"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--green)" stroke="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" fill="#0d1a0d" /></svg>
                       </div>
                       <div>
                         <div style={{ color: "var(--green)", fontSize: 13, fontWeight: 700, lineHeight: 1.2 }}>{m.pin_name || "Shared Pin"}</div>
@@ -2372,7 +2402,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
       <div style={{ display: "flex", borderRadius: 16, padding: 4, gap: 2, background: "#0e160e", border: "1px solid #192019" }}>
         {[
           { id: "feed", label: "Feed", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg> },
-          { id: "chat", label: "Chat", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg> },
+          { id: "chat", label: "Chat", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /><path d="M2 12h20" /></svg> },
           { id: "notifs", label: "Activity", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg> },
           { id: "messages", label: "Messages", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg> },
           { id: "profile", label: "Profile", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg> },
@@ -2747,7 +2777,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
               </button>
               <div style={{ flex: 1 }} />
-              
+
             </div>
 
             {expandedComments.has(post.id) && (
@@ -3768,14 +3798,14 @@ function LicensesTab({ selectedState }) {
           </div>
         </a>
       </div>
-      <div style={{ padding: "16px 20px", background: "var(--green-dim)", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)" }}>
+      {false && <div style={{ padding: "16px 20px", background: "var(--green-dim)", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)" }}>
         <p style={{ color: "var(--green)", fontSize: 13, lineHeight: 1.7 }}>💬 Have a specific regulation question? Ask the AI in the Chat tab for more detailed info.</p>
         {STATE_WILDLIFE_AGENCIES[selectedState] && (
           <a href={STATE_WILDLIFE_AGENCIES[selectedState].hunting} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 13, fontWeight: 600, display: "inline-block", marginTop: 8 }}>
             Visit {STATE_WILDLIFE_AGENCIES[selectedState].name} for official regulations →
           </a>
         )}
-      </div>
+      </div>}
       <div style={{ padding: "16px 20px", background: "var(--amber-dim)", border: "1px solid rgba(212,147,10,0.2)", borderRadius: "var(--radius)" }}>
         <p style={{ color: "rgba(212,147,10,0.9)", fontSize: 13, lineHeight: 1.7 }}>⚠️ License requirements and fees change annually. Always verify current requirements with your state agency.</p>
       </div>
@@ -4053,7 +4083,7 @@ function RegulationsTab({ selectedState, currentUser }) {
       setLoading(true);
       setRegs(null);
       const { data } = await supabase.from("regulations_cache").select("*").eq("state", selectedState).single();
-      if (false && data) {
+      if (false) {
         setRegs(data);
       } else {
         await generate();
@@ -4064,8 +4094,10 @@ function RegulationsTab({ selectedState, currentUser }) {
   }, [selectedState]);
 
   const generate = async () => {
+    return; // disabled
     setGenerating(true);
     try {
+      return; // regs disabled
       const prompt = `Provide current ${new Date().getFullYear()} hunting and fishing regulations for ${selectedState}. Return a JSON object with exactly these three keys: "hunting" (key species season dates and bag limits), "fishing" (key species seasons and limits), "general" (license costs and important notes). Keep each value under 300 characters. No markdown, just the JSON object.`;
       const res = await fetch("https://wildai-server.onrender.com/chat", {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -4122,39 +4154,46 @@ function RegulationsTab({ selectedState, currentUser }) {
 
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div className="card" style={{ padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 0" }}>
         <div>
-          <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 4 }}>REGULATIONS OVERVIEW</div>
-          <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 16 }}>{selectedState}</div>
-          {regs?.updated_at && <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>Updated {new Date(regs.updated_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })}</div>}
+          <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 2 }}>REGULATIONS</div>
+          <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 22, fontFamily: "var(--font-display)" }}>{selectedState}</div>
         </div>
         {currentUser?.id === ADMIN_USER_ID && (
-          <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={refresh} disabled={generating} className="btn-ghost" style={{ padding: "6px 14px", fontSize: 12, opacity: generating ? 0.5 : 1 }}>
-              {generating ? "⏳ Updating..." : "🔄 Refresh"}
-            </button>
-            <button onClick={() => setShowAdmin(s => !s)} className="btn-ghost" style={{ padding: "6px 14px", fontSize: 12 }}>
-              {showAdmin ? "✕ Close" : "⚙️ All States"}
-            </button>
-          </div>
+          <button onClick={() => setShowAdmin(s => !s)} className="btn-ghost" style={{ padding: "6px 14px", fontSize: 12 }}>
+            {showAdmin ? "✕ Close" : "⚙️ Admin"}
+          </button>
         )}
-
       </div>
 
-      {(loading || generating) && (
-        <div style={{ textAlign: "center", padding: 40, color: "var(--text3)" }} className="pulse">
-          {generating ? `Generating ${selectedState} regulations...` : "Loading..."}
+      {/* Official links */}
+      {STATE_WILDLIFE_AGENCIES[selectedState] && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <a href={STATE_WILDLIFE_AGENCIES[selectedState].hunting} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 20px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", textDecoration: "none", transition: "border-color 0.2s" }} onMouseEnter={e => e.currentTarget.style.borderColor = "var(--green)"} onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div>
+                <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15, fontFamily: "var(--font-display)", marginBottom: 3 }}>Hunting Regulations</div>
+                <div style={{ color: "var(--text3)", fontSize: 12 }}>{selectedState} Official Wildlife Agency</div>
+              </div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+          </a>
+          <a href={STATE_WILDLIFE_AGENCIES[selectedState].fishing} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 20px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", textDecoration: "none", transition: "border-color 0.2s" }} onMouseEnter={e => e.currentTarget.style.borderColor = "var(--green)"} onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div>
+                <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15, fontFamily: "var(--font-display)", marginBottom: 3 }}>Fishing Regulations</div>
+                <div style={{ color: "var(--text3)", fontSize: 12 }}>{selectedState} Official Wildlife Agency</div>
+              </div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+          </a>
         </div>
       )}
 
-      <div style={{ padding: "16px 20px", background: "var(--amber-dim)", border: "1px solid rgba(212,147,10,0.2)", borderRadius: "var(--radius)" }}>
-        <p style={{ color: "rgba(212,147,10,0.9)", fontSize: 13, lineHeight: 1.7 }}>🚧 <strong>Regulations are coming soon.</strong> We're building a comprehensive, verified regulations database for all 50 states. For now, use the official links below — they're always up to date.</p>
-        {STATE_WILDLIFE_AGENCIES[selectedState] && (
-          <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-            <a href={STATE_WILDLIFE_AGENCIES[selectedState].hunting} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "11px 16px", background: "linear-gradient(135deg, rgba(212,147,10,0.3), rgba(180,120,5,0.2))", border: "1px solid rgba(212,147,10,0.5)", borderRadius: "var(--radius-sm)", color: "#e8b020", fontSize: 13, fontWeight: 700, textDecoration: "none", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 4px 16px rgba(212,147,10,0.2)", transition: "all 0.2s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(212,147,10,0.4)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(212,147,10,0.2)"; }}>🎯 Hunting Regs →</a>
-            <a href={STATE_WILDLIFE_AGENCIES[selectedState].fishing} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "11px 16px", background: "linear-gradient(135deg, rgba(80,140,220,0.25), rgba(50,100,180,0.15))", border: "1px solid rgba(80,140,220,0.45)", borderRadius: "var(--radius-sm)", color: "#7ab0e0", fontSize: 13, fontWeight: 700, textDecoration: "none", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 4px 16px rgba(80,140,220,0.2)", transition: "all 0.2s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(80,140,220,0.4)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(80,140,220,0.2)"; }}>🎣 Fishing Regs →</a>
-          </div>
-        )}
+      <div style={{ padding: "13px 18px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)" }}>
+        <div style={{ color: "var(--text3)", fontSize: 12, lineHeight: 1.6 }}>Detailed in-app regulations coming soon. Official agency links above are always current.</div>
       </div>
 
       {regs && !loading && !generating && (
@@ -4200,9 +4239,9 @@ function RegulationsTab({ selectedState, currentUser }) {
         </div>
       )}
 
-      <div style={{ padding: "16px 20px", background: "var(--green-dim)", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)" }}>
+      {false && <div style={{ padding: "16px 20px", background: "var(--green-dim)", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)" }}>
         <p style={{ color: "var(--green)", fontSize: 13, lineHeight: 1.7 }}>💬 Have a specific regulation question? Ask the AI in the Chat tab for more detailed info.</p>
-      </div>
+      </div>}
     </div>
   );
 }
@@ -4496,7 +4535,7 @@ function HeatmapLanding({ onReady }) {
 // ─── LANDING PAGE ─────────────────────────────────────────────────────────────
 function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTerms }) {
   const { openSignIn } = useClerk();
-  
+
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isIOS] = useState(() => /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone);
   const [isInstalled] = useState(() => window.navigator.standalone === true);
@@ -4519,7 +4558,7 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
     <div style={{ minHeight: "100dvh", fontFamily: "var(--font-body)", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "fixed", inset: 0, backgroundImage: `url(/bg.jpg)`, backgroundSize: "cover", backgroundPosition: "center 30%", backgroundRepeat: "no-repeat", zIndex: 0 }} />
       <div style={{ position: "fixed", inset: 0, background: "linear-gradient(to bottom, rgba(5,10,5,0.0) 0%, rgba(5,10,5,0.15) 40%, rgba(5,10,5,0.75) 100%)", zIndex: 1 }} />
-      
+
       <div style={{ position: "relative", zIndex: 2, minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px 80px", textAlign: "center" }}>
         <div style={{ background: "rgba(5,10,5,0.25)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.12)", borderTop: "1px solid rgba(255,255,255,0.2)", borderRadius: 28, padding: "40px 32px 32px", width: "100%", maxWidth: 380, position: "relative", overflow: "hidden" }}>
           <img src="/badge1.png" style={{ width: "100%", height: "100%", objectFit: "contain", opacity: 0.16, position: "absolute", top: "30%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 0, pointerEvents: "none" }} />
@@ -4527,10 +4566,10 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
             <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(42px,8vw,64px)", fontWeight: 700, lineHeight: 1.0, color: "white", letterSpacing: "0.02em", marginBottom: 8 }}>Ravlin</h1>
             <p style={{ color: "rgba(238,245,232,0.6)", fontSize: 13, lineHeight: 1.5, marginBottom: 12, fontFamily: "var(--font-display)", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" }}>Hunt. Fish. Connect.</p>
           </div>
-          
+
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <button onClick={() => openSignIn()} style={{ padding: "15px 32px", fontSize: 16, fontWeight: 700, borderRadius: 14, background: "linear-gradient(135deg, #3a7020, #2d5a1a)", border: "1px solid rgba(120,180,80,0.5)", color: "white", cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(120,180,80,0.2)", transition: "transform 0.15s, box-shadow 0.15s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(60,140,30,0.5)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 24px rgba(0,0,0,0.4)"; }} onMouseDown={e => e.currentTarget.style.transform = "scale(0.96)"} onMouseUp={e => e.currentTarget.style.transform = "translateY(-2px)"} onTouchStart={e => e.currentTarget.style.transform = "scale(0.96)"} onTouchEnd={e => { const el = e.currentTarget; el.style.transform = "scale(1.02)"; setTimeout(() => { if (el) el.style.transform = "scale(1)"; }, 150); }}>Sign In / Sign Up</button>
-            
+
           </div>
           <button onClick={onTerms} style={{ background: "none", border: "none", color: "rgba(238,245,232,0.15)", fontSize: 11, cursor: "pointer", fontFamily: "var(--font-body)", marginTop: 16 }}>Terms & Conditions</button>
         </div>
