@@ -336,7 +336,7 @@ const FireSVG = ({ style: s = {} }) => (
 
 // ─── GLOBAL CSS ───────────────────────────────────────────────────────────────
 const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
   * { box-sizing:border-box; margin:0; padding:0; word-break:break-word; overflow-wrap:break-word; }
   :root {
     --bg:#050505; --bg2:#0a0a0a;
@@ -346,7 +346,7 @@ const css = `
     --green:#8bc34a; --green2:#7cb342; --green-dim:rgba(139,195,74,0.12);
     --amber:#b87333; --amber-dim:rgba(184,115,51,0.12);
     --text:#f5f7f3; --text2:rgba(245,247,243,0.7); --text3:rgba(245,247,243,0.5);
-    --font-display:'Playfair Display',Georgia,serif;
+    --font-display:'Cinzel',Georgia,serif;
     --font-body:'DM Sans',system-ui,sans-serif;
     --radius:16px; --radius-sm:10px;
     --green-glow:rgba(139,195,74,0.15);
@@ -4521,21 +4521,22 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
 
   return (
     <div style={{ minHeight: "100dvh", fontFamily: "var(--font-body)", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "fixed", inset: 0, backgroundImage: `url(/bg.jpg)`, backgroundSize: "cover", backgroundPosition: "center", zIndex: 0 }} />
-      <div style={{ position: "fixed", inset: 0, background: "linear-gradient(to bottom, rgba(5,10,5,0.3) 0%, rgba(5,10,5,0.55) 40%, rgba(5,10,5,0.95) 100%)", zIndex: 1 }} />
+      <div style={{ position: "fixed", inset: 0, backgroundImage: `url(/bg.jpg)`, backgroundSize: "cover", backgroundPosition: "center 30%", backgroundRepeat: "no-repeat", zIndex: 0 }} />
+      <div style={{ position: "fixed", inset: 0, background: "linear-gradient(to bottom, rgba(5,10,5,0.0) 0%, rgba(5,10,5,0.15) 40%, rgba(5,10,5,0.75) 100%)", zIndex: 1 }} />
       
-      <div style={{ position: "relative", zIndex: 2, minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>
-        <div style={{ background: "rgba(5,10,5,0.6)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 24, padding: "36px 28px 28px", width: "100%", maxWidth: 360 }}>
-          <img src="/logo.png" style={{ width: 64, height: 64, objectFit: "contain", marginBottom: 16 }} />
-          <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(40px,10vw,72px)", fontWeight: 900, lineHeight: 1.0, color: "white", letterSpacing: "-3px", marginBottom: 12 }}>Ravlin</h1>
-          <p style={{ color: "rgba(238,245,232,0.7)", fontSize: 15, lineHeight: 1.6, marginBottom: 6, fontFamily: "var(--font-display)", fontWeight: 400 }}>Hunt. Fish. Connect.</p>
+      <div style={{ position: "relative", zIndex: 2, minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px 80px", textAlign: "center" }}>
+        <div style={{ background: "rgba(5,10,5,0.25)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.12)", borderTop: "1px solid rgba(255,255,255,0.2)", borderRadius: 28, padding: "40px 32px 32px", width: "100%", maxWidth: 380, position: "relative", overflow: "hidden" }}>
+          <img src="/badge1.png" style={{ width: "100%", height: "100%", objectFit: "contain", opacity: 0.18, position: "absolute", top: "33%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 0, pointerEvents: "none" }} />
+          <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 8, zIndex: 1 }}>
+            <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(42px,8vw,64px)", fontWeight: 700, lineHeight: 1.0, color: "white", letterSpacing: "0.02em", marginBottom: 8 }}>Ravlin</h1>
+            <p style={{ color: "rgba(238,245,232,0.6)", fontSize: 13, lineHeight: 1.5, marginBottom: 12, fontFamily: "var(--font-display)", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" }}>Hunt. Fish. Connect.</p>
+          </div>
           
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <button onClick={() => openSignIn()} style={{ padding: "15px 32px", fontSize: 16, fontWeight: 700, borderRadius: 14, background: "linear-gradient(135deg, #78b450, #4a8a2a)", border: "none", color: "white", cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 24px rgba(120,180,80,0.4)", transition: "transform 0.15s, box-shadow 0.15s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(120,180,80,0.5)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 24px rgba(120,180,80,0.4)"; }}>Sign In / Sign Up</button>
+            <button onClick={() => openSignIn()} style={{ padding: "15px 32px", fontSize: 16, fontWeight: 700, borderRadius: 14, background: "linear-gradient(135deg, #3a7020, #2d5a1a)", border: "1px solid rgba(120,180,80,0.5)", color: "white", cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(120,180,80,0.2)", transition: "transform 0.15s, box-shadow 0.15s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(120,180,80,0.2)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(120,180,80,0.2)"; }}>Sign In / Sign Up</button>
             
           </div>
-          <p style={{ color: "rgba(238,245,232,0.2)", fontSize: 11, marginTop: 16 }}>Free to join · No purchase required</p>
-          <button onClick={onTerms} style={{ background: "none", border: "none", color: "rgba(238,245,232,0.15)", fontSize: 11, cursor: "pointer", fontFamily: "var(--font-body)", marginTop: 8 }}>Terms & Conditions</button>
+          <button onClick={onTerms} style={{ background: "none", border: "none", color: "rgba(238,245,232,0.15)", fontSize: 11, cursor: "pointer", fontFamily: "var(--font-body)", marginTop: 16 }}>Terms & Conditions</button>
         </div>
       </div>
     </div>
