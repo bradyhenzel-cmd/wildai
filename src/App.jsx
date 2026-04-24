@@ -5479,7 +5479,7 @@ export default function App() {
     return () => clearTimeout(t);
   }, [user?.id]);
 
-  if (!isLoaded || (showSplash && page !== "chat")) return null;
+  if (!isLoaded && !showSplash) return null;
 
   const enablePush = async () => {
     setShowPushBanner(false);
