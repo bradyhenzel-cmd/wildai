@@ -2705,7 +2705,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
           return `${Math.floor(diff / 86400)}d ago`;
         };
         return (
-          <div key={post.id} className="fade-in" style={{ borderRadius: 0, overflow: "hidden", borderTop: isHot ? "1px solid rgba(255,150,0,0.3)" : "1px solid rgba(255,255,255,0.05)", borderBottom: "none", borderLeft: "none", borderRight: "none", background: "#0e1510" }}>
+          <div key={post.id} className="fade-in" style={{ borderRadius: 0, overflow: "hidden", borderTop: isHot ? "1px solid rgba(255,150,0,0.3)" : "1px solid rgba(255,255,255,0.08)", borderBottom: "1px solid rgba(255,255,255,0.08)", borderLeft: "none", borderRight: "none", background: "#0e1510" }}>
 
             {/* Card Header */}
             <div style={{ padding: "14px 16px 10px", display: "flex", alignItems: "center", gap: 12 }}>
