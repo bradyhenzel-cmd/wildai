@@ -3055,7 +3055,7 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded, o
 }
 
 // ─── HARVEST LOG TAB ──────────────────────────────────────────────────────────
-function HarvestLogTab({ user, openSignIn, isPro }) {
+function HarvestLogTab({ user, openSignIn, isPro, openPricingModal }) {
   const [entries, setEntries] = useState([]);
   const [loadingEntries, setLoadingEntries] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -3144,7 +3144,7 @@ function HarvestLogTab({ user, openSignIn, isPro }) {
     <div className="card" style={{ padding: 40, textAlign: "center" }}>
       <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Harvest Log is Pro</div>
       <div style={{ color: "var(--text2)", fontSize: 14, marginBottom: 20 }}>Track every harvest and catch. Upgrade to Pro to unlock.</div>
-      <button onClick={openSignIn} className="btn-gold" style={{ padding: "12px 28px", fontSize: 14, borderRadius: "var(--radius-sm)" }}>Upgrade to Pro →</button>
+      <button onClick={openPricingModal} className="btn-gold" style={{ padding: "12px 28px", fontSize: 14, borderRadius: "var(--radius-sm)" }}>Upgrade to Pro →</button>
     </div>
   );
   if (!user) return (
@@ -5241,7 +5241,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 
         {tab === "regs" && <RegulationsTab selectedState={selectedState} currentUser={user} />}
         {tab === "licenses" && <LicensesTab selectedState={selectedState} />}
-        {tab === "trip" && <TripPlannerTab selectedState={selectedState} user={user} isPro={isPro} hitLimit={hitLimit} messageCount={messageCount} setMessageCount={setMessageCount} onUpgrade={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id, plan: billingPlan }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }} />}
+        {tab === "trip" && <TripPlannerTab selectedState={selectedState} user={user} isPro={isPro} hitLimit={hitLimit} messageCount={messageCount} setMessageCount={setMessageCount} onUpgrade={() => { if (!user) { openSignIn(); return; } setShowPricingModal(true); }} />}
         {tab === "species" && (
           <div className="fade-in">
             {!selectedState ? (
@@ -5362,7 +5362,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           </div>
         )}
         {tab === "admin" && user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a" && <AdminTab user={user} />}
-        {tab === "harvest" && <HarvestLogTab user={user} openSignIn={openSignIn} isPro={isPro} />}
+        {tab === "harvest" && <HarvestLogTab user={user} openSignIn={openSignIn} isPro={isPro} openPricingModal={() => setShowPricingModal(true)} />}
         {tab === "ballistics" && <BallisticsTab />}
         {tab === "trophy" && <TrophyBoardTab user={user} openSignIn={openSignIn} selectedState={selectedState} />}
         {tab === "community" && <CommunityTab selectedState={selectedState} user={user} openSignIn={openSignIn} externalSetUnread={setMessagesUnread} externalSetNotifUnread={setNotifUnread} />}
