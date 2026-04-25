@@ -5241,7 +5241,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 
         {tab === "regs" && <RegulationsTab selectedState={selectedState} currentUser={user} />}
         {tab === "licenses" && <LicensesTab selectedState={selectedState} />}
-        {tab === "trip" && <TripPlannerTab selectedState={selectedState} user={user} isPro={isPro} hitLimit={hitLimit} messageCount={messageCount} setMessageCount={setMessageCount} onUpgrade={() => { if (!user) { openSignIn(); return; } setShowPricingModal(true); }} />}
+        {tab === "trip" && <TripPlannerTab selectedState={selectedState} user={user} isPro={isPro} hitLimit={hitLimit} messageCount={messageCount} setMessageCount={setMessageCount} onUpgrade={() => { if (!user) { openSignIn(); return; } openPricingModal(); }} />}
         {tab === "species" && (
           <div className="fade-in">
             {!selectedState ? (
@@ -5362,7 +5362,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           </div>
         )}
         {tab === "admin" && user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a" && <AdminTab user={user} />}
-        {tab === "harvest" && <HarvestLogTab user={user} openSignIn={openSignIn} isPro={isPro} openPricingModal={() => setShowPricingModal(true)} />}
+        {tab === "harvest" && <HarvestLogTab user={user} openSignIn={openSignIn} isPro={isPro} openPricingModal={openPricingModal} />}
         {tab === "ballistics" && <BallisticsTab />}
         {tab === "trophy" && <TrophyBoardTab user={user} openSignIn={openSignIn} selectedState={selectedState} />}
         {tab === "community" && <CommunityTab selectedState={selectedState} user={user} openSignIn={openSignIn} externalSetUnread={setMessagesUnread} externalSetNotifUnread={setNotifUnread} />}
