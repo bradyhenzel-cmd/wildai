@@ -5559,6 +5559,14 @@ export default function App() {
         {page === "onboarding" && <OnboardingPage user={user} onComplete={() => goTo("chat")} setSelectedState={handleSetSelectedState} />}
         {page === "chat" && <ChatPage onBack={() => { localStorage.removeItem("wildai_selected_state"); setSelectedState(""); goTo("landing"); }} messageCount={messageCount} setMessageCount={setMessageCount} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} messagesUnread={messagesUnread} setMessagesUnread={setMessagesUnread} notifUnread={notifUnread} setNotifUnread={setNotifUnread} openPricingModal={() => setShowPricingModal(true)} />}
       </ErrorBoundary>
+      {showPricingModal && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setShowPricingModal(false)}>
+          <div style={{ background: "#070e07", borderRadius: 24, padding: 24, width: "100%", maxWidth: 480, maxHeight: "90dvh", overflowY: "auto", position: "relative" }} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowPricingModal(false)} style={{ position: "absolute", top: 16, right: 16, background: "none", border: "none", color: "var(--text3)", fontSize: 20, cursor: "pointer", zIndex: 1 }}>✕</button>
+            <stripe-pricing-table pricing-table-id="prctbl_1TQ1qWE7yi7ZXXNUs0Tsz3tx" publishable-key="pk_live_51TLSHhE7yi7ZXXNUtATahGMSzvluem99FP2Daos8zyIlzmTVUOcGQjBvPYqbaxCLHyfHfEVXFt2nff2vAaLKvO0j009ZOXhB2U" client-reference-id={user?.id} />
+          </div>
+        </div>
+      )}
       </>
   );
 }
