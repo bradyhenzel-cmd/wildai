@@ -129,6 +129,26 @@ app.post("/webhook", async (req, res) => {
         }
     }
 
+    if (event.type === "customer.subscription.created" || event.type === "customer.subscription.updated") {
+        const subscription = event.data.object;
+        const clientReferenceId = subscription.metadata?.userId || subscription.client_reference_id;
+        if (clientReferenceId && subscription.status === "active") {
+            await clerk.users.updateUserMetadata(clientReferenceId, {
+                publicMetadata: { isPro: true, stripeCustomerId: subscription.customer }
+            });
+        }
+    }
+
+    if (event.type === "checkout.session.completed") {
+        const session = event.data.object;
+        const userId = session.client_reference_id || session.metadata?.userId;
+        if (userId) {
+            await clerk.users.updateUserMetadata(userId, {
+                publicMetadata: { isPro: true, stripeCustomerId: session.customer }
+            });
+        }
+    }
+
     if (event.type === "customer.subscription.deleted") {
         const subscription = event.data.object;
         const customerId = subscription.customer;
