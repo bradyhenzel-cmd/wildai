@@ -1507,7 +1507,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
       {/* Tabs */}
       <div style={{ display: "flex", borderBottom: "1px solid var(--border)", marginBottom: 12 }}>
         <button onClick={() => setProfileTab("posts")} style={{ flex: 1, background: "none", border: "none", borderBottom: profileTab === "posts" ? "2px solid var(--green)" : "2px solid transparent", color: profileTab === "posts" ? "var(--text)" : "var(--text3)", padding: "10px 0", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", transition: "all 0.2s" }}>Posts</button>
-        <button onClick={() => setProfileTab("spots")} style={{ flex: 1, background: "none", border: "none", borderBottom: profileTab === "spots" ? "2px solid var(--green)" : "2px solid transparent", color: profileTab === "spots" ? "var(--text)" : "var(--text3)", padding: "10px 0", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", transition: "all 0.2s" }}>📍 Spots</button>
+        {false && <button onClick={() => setProfileTab("spots")} style={{ flex: 1, background: "none", border: "none", borderBottom: profileTab === "spots" ? "2px solid var(--green)" : "2px solid transparent", color: profileTab === "spots" ? "var(--text)" : "var(--text3)", padding: "10px 0", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", transition: "all 0.2s" }}>📍 Spots</button>}
       </div>
 
       {viewingProfilePost && createPortal(
@@ -2280,7 +2280,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
     const { error } = await supabase.from("posts").insert({
       user_id: user.id,
       username: user.username || user.firstName || "Hunter",
-      state: selectedState || "Unknown",
+      state: form.location || selectedState || "Unknown",
       species: form.species,
       location: form.location,
       caption: form.caption,
@@ -2613,11 +2613,10 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
             />
             <div style={{ display: "flex", gap: 6 }}>
               <input placeholder="Species" value={form.species} onChange={e => setForm(f => ({ ...f, species: e.target.value }))} style={{ flex: 1, padding: "6px 10px", borderRadius: 20, fontSize: 12, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", minWidth: 0, boxSizing: "border-box" }} />
-              <div style={{ flex: 1, position: "relative", minWidth: 0, display: "flex", gap: 5, alignItems: "center" }}>
-                <input placeholder="Location" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value, pinLat: null, pinLng: null }))} style={{ flex: 1, padding: "6px 10px", borderRadius: 20, fontSize: 12, background: form.pinLat ? "var(--green-dim)" : "rgba(255,255,255,0.04)", border: form.pinLat ? "1px solid var(--border-accent)" : "1px solid rgba(255,255,255,0.08)", color: "var(--text)", boxSizing: "border-box", minWidth: 0 }} />
-                <PinPicker user={user} onSelect={(pin) => setForm(f => ({ ...f, location: pin.name || pin.location || f.location, pinLat: pin.lat, pinLng: pin.lng }))} />
-                {form.pinLat && <button onClick={() => setForm(f => ({ ...f, pinLat: null, pinLng: null, location: "" }))} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 13, cursor: "pointer", padding: 0, flexShrink: 0 }}>✕</button>}
-              </div>
+              <select value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ flex: 1, padding: "6px 10px", borderRadius: 20, fontSize: 12, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: form.location ? "var(--text)" : "var(--text3)", minWidth: 0, boxSizing: "border-box", fontFamily: "var(--font-body)" }}>
+                <option value="">State (optional)</option>
+                {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ flex: 1 }} />
