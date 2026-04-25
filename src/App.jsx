@@ -5001,8 +5001,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
 
           <div className="mobile-header-center" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <img src="/logo.png" className="mobile-header-logo-img" style={{ width: 56, height: 56, objectFit: "contain", mixBlendMode: "screen" }} />
-            <span className="mobile-header-logo" style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, color: "var(--text)", marginLeft: -6 }}>Ravlin</span>
+            <span className="mobile-header-logo" style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "var(--text)" }}>Ravlin</span>
             <select className="mobile-state-select" value={selectedState} onChange={e => setSelectedState && setSelectedState(e.target.value)} style={{ background: "transparent", border: "none", color: selectedState ? "var(--text3)" : "var(--text3)", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-body)", outline: "none", maxWidth: 120 }}>
               <option value="">· State</option>
               {STATES.map(s => <option key={s} value={s} style={{ background: "#0a150a" }}>· {s}</option>)}
