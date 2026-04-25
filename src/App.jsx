@@ -5014,8 +5014,8 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
             {isPro ? (
               <div className="mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)" }}>Pro ✓</div>
             ) : (
-              <button onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id, plan: billingPlan }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }} className="btn-gold mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12 }}>
-                {checkoutLoading ? "..." : "Go Pro"}
+              <button onClick={() => { if (!user) { openSignIn(); return; } setTab("more"); }} className="btn-gold mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12 }}>
+                Go Pro
               </button>
             )}
           </div>
