@@ -384,6 +384,7 @@ const css = `
   body { background:var(--bg); color:var(--text); font-family:var(--font-body); }
   button { transition: transform 0.1s ease; }
   button:active { transform: scale(0.96); }
+  button { transition: transform 0.12s ease; }
   body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
     background:
       radial-gradient(ellipse 90% 50% at 50% -10%, rgba(0,0,0,0) 0%, transparent 65%),
