@@ -4853,6 +4853,7 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
   useEffect(() => {
     const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone;
     setIsIOS(ios);
+    if (localStorage.getItem("ravlin_install_dismissed")) return;
     if (ios) { setShowInstallBanner(true); return; }
     const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); setShowInstallBanner(true); };
     window.addEventListener("beforeinstallprompt", handler);
@@ -5085,7 +5086,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                 : <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>Install for the best experience</div>}
             </div>
             {!isIOS && <button onClick={handleInstall} className="btn-primary" style={{ padding: "6px 14px", fontSize: 12, flexShrink: 0 }}>Install</button>}
-            <button onClick={() => setShowInstallBanner(false)} style={{ background: "none", border: "none", color: "var(--text3)", cursor: "pointer", fontSize: 16, padding: 0, flexShrink: 0 }}>✕</button>
+            <button onClick={() => { setShowInstallBanner(false); localStorage.setItem("ravlin_install_dismissed", "1"); }} style={{ background: "none", border: "none", color: "var(--text3)", cursor: "pointer", fontSize: 16, padding: 0, flexShrink: 0 }}>✕</button>
           </div>
         )}
 
