@@ -5014,7 +5014,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
             {isPro ? (
               <div className="mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)" }}>Pro ✓</div>
             ) : (
-              <button onClick={() => { if (!user) { openSignIn(); return; } setTab("more"); }} className="btn-gold mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12 }}>
+              <button onClick={() => { if (!user) { openSignIn(); return; } setTab("more"); setShowMore(false); }} className="btn-gold mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12 }}>
                 Go Pro
               </button>
             )}
@@ -5201,20 +5201,9 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                       </div>
                     ))}
                   </div>
-                  <div style={{ padding: "8px 20px 28px", textAlign: "center" }}>
-                    <div style={{ display: "flex", background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: 4, marginBottom: 20, border: "1px solid rgba(255,255,255,0.08)" }}>
-                      <button onClick={() => setBillingPlan("monthly")} style={{ flex: 1, padding: "8px 0", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: "pointer", border: "none", transition: "all 0.2s", background: billingPlan === "monthly" ? "rgba(232,176,32,0.2)" : "transparent", color: billingPlan === "monthly" ? "#e8b020" : "rgba(255,255,255,0.35)" }}>Monthly</button>
-                      <button onClick={() => setBillingPlan("annual")} style={{ flex: 1, padding: "8px 0", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: "pointer", border: "none", transition: "all 0.2s", background: billingPlan === "annual" ? "rgba(232,176,32,0.2)" : "transparent", color: billingPlan === "annual" ? "#e8b020" : "rgba(255,255,255,0.35)", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>Annual <span style={{ background: "rgba(120,180,80,0.25)", color: "#78b450", fontSize: 10, fontWeight: 700, padding: "2px 6px", borderRadius: 6 }}>Save 44%</span></button>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 6, marginBottom: 4 }}>
-                      <span style={{ color: "white", fontSize: 52, fontWeight: 900, fontFamily: "var(--font-display)", letterSpacing: "-2px", lineHeight: 1 }}>{billingPlan === "annual" ? "$19.99" : "$2.99"}</span>
-                      <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 14, paddingBottom: 8 }}>/ {billingPlan === "annual" ? "year" : "month"}</span>
-                    </div>
-                    <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 11, marginBottom: 16 }}>{billingPlan === "annual" ? "Just $1.67/mo · Best value" : "Less than a cup of coffee · Resets monthly"}</div>
-                    <button className="btn-gold" style={{ width: "100%", padding: "16px", borderRadius: 14, fontSize: 15, fontWeight: 700, opacity: checkoutLoading ? 0.6 : 1, boxShadow: "0 8px 32px rgba(232,176,32,0.35)" }} disabled={checkoutLoading} onClick={async () => { if (!user) { openSignIn(); return; } setCheckoutLoading(true); const res = await fetch("https://wildai-server.onrender.com/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: user?.id, plan: billingPlan }) }); const data = await res.json(); if (data.url) window.location.href = data.url; setCheckoutLoading(false); }}>
-                      {checkoutLoading ? "Loading..." : "Upgrade to Pro →"}
-                    </button>
-                    <div style={{ marginTop: 10, fontSize: 11, color: "rgba(255,255,255,0.18)" }}>Cancel anytime · Secure payment via Stripe</div>
+                  <div style={{ padding: "8px 20px 28px" }}>
+                    <stripe-pricing-table pricing-table-id="prctbl_1TQ1qWE7yi7ZXXNUs0Tsz3tx" publishable-key="pk_live_51TLSHhE7yi7ZXXNUtATahGMSzvluem99FP2Daos8zyIlzmTVUOcGQjBvPYqbaxCLHyfHfEVXFt2nff2vAaLKvO0j009ZOXhB2U" client-reference-id={user?.id} />
+                    <div style={{ marginTop: 10, fontSize: 11, color: "rgba(255,255,255,0.18)", textAlign: "center" }}>Cancel anytime · Secure payment via Stripe</div>
                   </div>
                 </div>
               )}

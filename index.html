@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="/logo.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, interactive-widget=resizes-content" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, interactive-widget=resizes-content" />
   <title>Ravlin — Hunting & Fishing</title>
   <link rel="manifest" href="/manifest.json" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -24,18 +25,55 @@
     gtag('js', new Date());
     gtag('config', 'G-FFC9LT2BDG');
   </script>
+  <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
 </head>
 
 <body>
   <style>
-    body { margin: 0; background: #000; }
-    #splash { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 9999; overflow: hidden; }
-    #splash img { width: 320px; max-width: 85vw; object-fit: contain; position: relative; z-index: 2; }
-    #splash img { animation: pulse 2s ease-in-out infinite; }
-    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.7;transform:scale(0.97)} }
+    body {
+      margin: 0;
+      background: #000;
+    }
+
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      overflow: hidden;
+    }
+
+    #splash img {
+      width: 320px;
+      max-width: 85vw;
+      object-fit: contain;
+      position: relative;
+      z-index: 2;
+    }
+
+    #splash img {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1)
+      }
+
+      50% {
+        opacity: 0.7;
+        transform: scale(0.97)
+      }
+    }
   </style>
   <div id="splash">
-    
+
     <img src="/splash.png" />
   </div>
   <div id="root"></div>
