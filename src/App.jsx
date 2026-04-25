@@ -1520,30 +1520,26 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
       )}
       {profileTab === "posts" && (
         posts.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14, minHeight: 200 }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>🌲</div>
-            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{isOwnProfile ? "You haven't posted yet" : `${displayName} hasn't posted yet`}</div>
-            {isOwnProfile && <div style={{ color: "var(--text3)", fontSize: 13 }}>Share your first hunt or catch in the community feed!</div>}
+          <div style={{ textAlign: "center", padding: "48px 24px", minHeight: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(120,180,80,0.08)", border: "1px solid rgba(120,180,80,0.2)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(120,180,80,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15, marginBottom: 6, fontFamily: "var(--font-display)" }}>{isOwnProfile ? "No posts yet" : `${displayName} hasn't posted yet`}</div>
+            {isOwnProfile && <div style={{ color: "var(--text3)", fontSize: 13, lineHeight: 1.6 }}>Share your first hunt or catch</div>}
           </div>
         ) : (
-          posts.map(post => (
-            <div key={post.id} className="card fade-in" onClick={() => setViewingProfilePost(post.id)} style={{ padding: 0, overflow: "hidden", cursor: "pointer" }}>
-              {post.photo && <img src={post.photo} style={{ width: "100%", maxHeight: 280, objectFit: "cover" }} />}
-              <div style={{ padding: "14px 16px" }}>
-                {(post.species || post.location) && (
-                  <div style={{ display: "flex", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
-                    {post.species && <span style={{ background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)", padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600 }}>{post.species}</span>}
-                    {false && post.location && <span style={{ color: "var(--text2)", fontSize: 12 }}>📍 {post.location}</span>}
-                  </div>
-                )}
-                {post.caption && <p style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.6, margin: 0, marginBottom: 6 }}>{post.caption}</p>}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div style={{ color: "var(--text3)", fontSize: 11 }}>{new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
-                  {isOwnProfile && <button onClick={() => deletePost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.5)", fontSize: 12, padding: 0, fontFamily: "var(--font-body)" }}>Delete</button>}
-                </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, background: "rgba(255,255,255,0.03)" }}>
+            {posts.map(post => (
+              <div key={post.id} className="fade-in" onClick={() => setViewingProfilePost(post.id)} style={{ position: "relative", aspectRatio: "1", overflow: "hidden", cursor: "pointer", background: "#0e1510" }}>
+                {post.photo
+                  ? <img src={post.photo} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.2s" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.03)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} />
+                  : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text3)", fontSize: 12, padding: 8, textAlign: "center" }}>{post.caption?.slice(0, 60)}</div>
+                }
+                {post.species && <div style={{ position: "absolute", bottom: 6, left: 6, background: "rgba(8,20,8,0.85)", borderRadius: 10, padding: "2px 8px", fontSize: 10, fontWeight: 700, color: "var(--green)" }}>{post.species}</div>}
+                {isOwnProfile && <button onClick={e => { e.stopPropagation(); deletePost(post.id); }} style={{ position: "absolute", top: 6, right: 6, background: "rgba(0,0,0,0.6)", border: "none", borderRadius: "50%", width: 22, height: 22, cursor: "pointer", color: "rgba(255,100,100,0.8)", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>}
               </div>
-            </div>
-          ))
+            ))}
+          </div>
         )
       )}
 
