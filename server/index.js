@@ -149,6 +149,19 @@ app.post("/webhook", async (req, res) => {
         }
     }
 
+    if (event.type === "customer.subscription.created" || event.type === "customer.subscription.updated") {
+        const subscription = event.data.object;
+        const userId = subscription.metadata?.userId || subscription.client_reference_id;
+        if (userId && subscription.status === "active") {
+            await clerk.users.updateUserMetadata(userId, {
+                publicMetadata: { isPro: true, stripeCustomerId: subscription.customer }
+            });
+            const { createClient } = require("@supabase/supabase-js");
+            const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+            await sb.from("profiles").update({ is_pro: true }).eq("user_id", userId);
+        }
+    }
+
     if (event.type === "customer.subscription.deleted") {
         const subscription = event.data.object;
         const customerId = subscription.customer;

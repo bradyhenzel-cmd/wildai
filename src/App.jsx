@@ -1389,7 +1389,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
           <div style={{ flex: 1, paddingBottom: 4 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
               <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 17, fontFamily: "var(--font-display)" }}>{capName(displayName)}</div>
-
+              {profile?.is_pro && <span style={{ background: "linear-gradient(135deg, #f0c030, #e8b020)", color: "#0a1200", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 20, letterSpacing: "0.04em" }}>PRO</span>}
             </div>
             <div style={{ display: "flex", gap: 16 }}>
               {[["Posts", posts.length, null], ["Followers", followerCount, "followers"], ["Following", followingCount, "following"]].map(([label, val, type], i) => (
