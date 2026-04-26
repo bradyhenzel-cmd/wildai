@@ -498,6 +498,9 @@ const css = `
 `;
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
+const _reelsStyle = document.createElement('style');
+_reelsStyle.textContent = `@keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`;
+if (!document.head.querySelector('#reels-style')) { _reelsStyle.id = 'reels-style'; document.head.appendChild(_reelsStyle); }
 function capName(str) { if (!str) return "Hunter"; return str.charAt(0).toUpperCase() + str.slice(1); }
 function avatarColor(username) {
   const colors = [["#e05a2b", "#7a2000"], ["#2b7be0", "#0a3a7a"], ["#9b2be0", "#4a0a7a"], ["#2bc4b4", "#0a5a52"], ["#e02b6b", "#7a0a30"], ["#e0b02b", "#7a5500"], ["#2be05a", "#0a7a28"], ["#e02bb0", "#7a0a55"]];
@@ -2075,6 +2078,25 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   const [shareOptionsPost, setShareOptionsPost] = useState(null);
   const [postMenu, setPostMenu] = useState(null);
   const [expandedCaptions, setExpandedCaptions] = useState(new Set());
+  const [reelsIndex, setReelsIndex] = useState(null);
+  const [reelsComments, setReelsComments] = useState(false);
+  const timeAgo = (date) => {
+    const diff = (Date.now() - new Date(date)) / 1000;
+    if (diff < 60) return "just now";
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+  };
+  useEffect(() => {
+    if (reelsIndex === null) return;
+    const handler = (e) => {
+      if (e.key === 'ArrowUp') { setReelsIndex(i => Math.max(0, i - 1)); setReelsComments(false); }
+      if (e.key === 'ArrowDown') { setReelsIndex(i => { const next = i + 1; return next < posts.length ? next : i; }); setReelsComments(false); }
+      if (e.key === 'Escape') { setReelsIndex(null); setReelsComments(false); }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [reelsIndex, posts.length]);
   const [shareSearch, setShareSearch] = useState("");
   const [shareUsers, setShareUsers] = useState([]);
   const [pullY, setPullY] = useState(0);
@@ -2361,9 +2383,9 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
 
   const reportPost = async (postId) => {
     if (!user) { openSignIn(); return; }
-    const { data: existing } = await supabase.from("reports").select("id").eq("post_id", postId).eq("user_id", user.id).single();
+    const { data: existing } = await supabase.from("reports").select("id").eq("post_id", postId).eq("reported_by", user.id).single();
     if (existing) { toast("You've already reported this post."); return; }
-    await supabase.from("reports").insert({ post_id: postId, reason: "User reported", user_id: user.id });
+    await supabase.from("reports").insert({ post_id: postId, reason: "User reported", reported_by: user.id });
     toast("Post reported. Thank you.", "success");
   };
 
@@ -2671,6 +2693,110 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
 
       {communityTab === "feed" && !viewingProfile && loading && <div style={{ minHeight: 300 }} />}
 
+      {reelsIndex !== null && createPortal(
+        (() => {
+          const post = sortedPosts[reelsIndex];
+          if (!post) return null;
+          const isLiked = likedPostIds.has(post.id);
+          const likeCount = likeCounts[post.id] || 0;
+          return (
+            <div
+              style={{ position: "fixed", inset: 0, zIndex: 999998, background: "#000", display: "flex", flexDirection: "column" }}
+              onTouchStart={e => { e._reelsTouchY = e.touches[0].clientY; e._reelsTouchX = e.touches[0].clientX; }}
+              onTouchEnd={e => {
+                const dy = e.changedTouches[0].clientY - e._reelsTouchY;
+                const dx = e.changedTouches[0].clientX - e._reelsTouchX;
+                if (Math.abs(dy) > Math.abs(dx)) {
+                  if (dy < -60 && reelsIndex < sortedPosts.length - 1) { setReelsIndex(i => i + 1); setReelsComments(false); }
+                  else if (dy > 60) { if (reelsIndex > 0) { setReelsIndex(i => i - 1); setReelsComments(false); } else { setReelsIndex(null); setReelsComments(false); } }
+                }
+              }}
+            >
+              {/* Photo fullscreen */}
+              <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+                {post.photo && <img src={post.photo} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "blur(20px)", transform: "scale(1.1)", opacity: 0.6 }} />}
+                {post.photo && <img src={post.photo} style={{ position: "relative", width: "100%", height: "100%", objectFit: "contain", zIndex: 1 }} />}
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 25%, transparent 50%, rgba(0,0,0,0.75) 100%)", zIndex: 2, pointerEvents: "none" }} />
+                {/* Close button */}
+                <button onClick={() => { setReelsIndex(null); setReelsComments(false); }} style={{ position: "absolute", top: 16, left: 16, background: "rgba(0,0,0,0.4)", border: "none", color: "white", width: 36, height: 36, borderRadius: "50%", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(6px)", zIndex: 3 }}>✕</button>
+                {/* Nav arrows */}
+
+                
+                {/* Three-dot top right */}
+                <div style={{ position: "absolute", top: 16, right: 12, zIndex: 3 }}>
+                  <button onClick={() => setPostMenu(postMenu === post.id ? null : post.id)} style={{ background: "rgba(0,0,0,0.4)", border: "none", cursor: "pointer", color: "white", padding: "6px 8px", borderRadius: 8, backdropFilter: "blur(6px)", lineHeight: 0 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" /></svg>
+                  </button>
+                  {postMenu === post.id && (
+                    <div style={{ position: "absolute", top: 36, right: 0, background: "rgba(15,22,15,0.97)", border: "1px solid #1c2a1c", borderRadius: 12, overflow: "hidden", minWidth: 150, backdropFilter: "blur(12px)", zIndex: 10 }}>
+                      {(user?.id === post.user_id || user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a") && (
+                        <button onClick={() => { deletePost(post.id); setPostMenu(null); setReelsIndex(null); }} style={{ width: "100%", padding: "12px 16px", background: "none", border: "none", color: "rgba(255,100,100,0.9)", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", display: "flex", alignItems: "center", gap: 10 }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /></svg>
+                          Delete post
+                        </button>
+                      )}
+                      <button onClick={() => { reportPost(post.id); setPostMenu(null); }} style={{ width: "100%", padding: "12px 16px", background: "none", border: "none", color: "rgba(220,180,60,0.9)", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", display: "flex", alignItems: "center", gap: 10, borderTop: user?.id === post.user_id ? "1px solid #1c2a1c" : "none" }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" y1="22" x2="4" y2="15" /></svg>
+                          Report post
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Vertical action buttons */}
+                <div style={{ position: "absolute", right: 12, bottom: reelsComments ? "64%" : 80, display: "flex", flexDirection: "column", alignItems: "center", gap: 20, transition: "bottom 0.3s", zIndex: 3 }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                    <button onClick={(e) => { toggleLike(post); const svg = e.currentTarget.querySelector('svg'); svg.classList.remove('like-pop'); void svg.offsetWidth; svg.classList.add('like-pop'); }} style={{ background: "none", border: "none", cursor: "pointer", color: isLiked ? "#f43f5e" : "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))" }}>
+                      <svg width="30" height="30" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                    </button>
+                    <span style={{ color: "white", fontSize: 11, fontWeight: 700, textShadow: "0 1px 4px rgba(0,0,0,0.9)", height: 14, display: "block", textAlign: "center" }}>{likeCount > 0 ? likeCount : ""}</span>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                    <button onClick={() => setReelsComments(c => !c)} style={{ background: "none", border: "none", cursor: "pointer", color: reelsComments ? "var(--green)" : "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))" }}>
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                    </button>
+                    <span style={{ color: "white", fontSize: 11, fontWeight: 700, textShadow: "0 1px 4px rgba(0,0,0,0.9)", height: 14, display: "block", textAlign: "center" }}>{commentCounts[post.id] > 0 ? commentCounts[post.id] : ""}</span>
+                  </div>
+                  <button onClick={() => { setShareOptionsPost(post); }} style={{ background: "none", border: "none", cursor: "pointer", color: "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))" }}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
+                  </button>
+                </div>
+
+              </div>
+              {/* Comments slide-up sheet */}
+              {/* Time ago bottom left */}
+                <div style={{ position: "absolute", bottom: 80, left: 16, display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.35)", backdropFilter: "blur(10px)", padding: "8px 12px 8px 8px", borderRadius: 20, zIndex: 3 }}>
+                  <div onClick={() => { setViewingProfile(post.user_id); setReelsIndex(null); }} style={{ width: 38, height: 38, borderRadius: 12, background: `linear-gradient(135deg, ${avatarColor(post.username)[0]}, ${avatarColor(post.username)[1]})`, overflow: "hidden", cursor: "pointer", flexShrink: 0, boxShadow: "0 0 0 2px rgba(120,180,80,0.9)" }}>
+                    {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "white", fontWeight: 700, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontFamily: "var(--font-display)" }}>{(post.username || "H")[0].toUpperCase()}</span>}
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "white", textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}>{capName(post.username)}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <span style={{ fontSize: 10, color: "rgba(255,255,255,0.65)" }}>{timeAgo(post.created_at)}</span>
+                      {post.state && <><span style={{ color: "rgba(255,255,255,0.3)", fontSize: 10 }}>·</span><span style={{ fontSize: 10, color: "rgba(255,255,255,0.65)", display: "flex", alignItems: "center", gap: 3 }}><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#78b450" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>{post.state}</span></>}
+                    </div>
+                  </div>
+                </div>
+              {reelsComments && (
+                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "62%", background: "rgba(10,16,10,0.97)", borderRadius: "20px 20px 0 0", border: "1px solid #1c2a1c", backdropFilter: "blur(12px)", display: "flex", flexDirection: "column", animation: "slideUp 0.35s cubic-bezier(0.32, 0.72, 0, 1)" }}>
+                  <div style={{ width: 36, height: 4, borderRadius: 2, background: "#2a3a2a", margin: "12px auto 0" }} />
+                  {post.caption && (
+                    <div style={{ padding: "12px 16px 8px", borderBottom: "1px solid #192019" }}>
+                      <p style={{ color: "var(--text2)", fontSize: 13, lineHeight: 1.55, margin: 0 }}>
+                        <span style={{ fontWeight: 700, color: "white" }}>{capName(post.username)}</span> {post.caption}
+                      </p>
+                    </div>
+                  )}
+                  <div style={{ flex: 1, overflowY: "auto" }}>
+                    <PostComments postId={post.id} postOwnerId={post.user_id} user={user} openSignIn={openSignIn} onCommentAdded={(delta = 1) => setCommentCounts(prev => ({ ...prev, [post.id]: Math.max(0, (prev[post.id] || 0) + delta) }))} onViewUser={(id) => { setViewingProfile(id); setReelsIndex(null); }} />
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })(),
+        document.body
+      )}
       {shareOptionsPost && createPortal(
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 999999, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={() => setShareOptionsPost(null)}>
           <div style={{ background: "#0e1510", border: "1px solid #1c2a1c", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 480, padding: "20px 16px 36px", display: "flex", flexDirection: "column", gap: 12 }} onClick={e => e.stopPropagation()}>
@@ -2768,8 +2894,8 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
             {/* Photo with overlaid header and actions */}
             {post.photo ? (
               <div style={{ position: "relative", margin: 0, borderRadius: 0, overflow: "hidden", height: 480, background: "#000", borderRadius: "16px 16px 0 0" }}>
-                <img src={post.photo} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 30%, transparent 50%, rgba(0,0,0,0.7) 100%)" }} />
+                <img src={post.photo} onClick={() => setReelsIndex(sortedPosts.findIndex(p => p.id === post.id))} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", cursor: "pointer" }} />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 30%, transparent 50%, rgba(0,0,0,0.7) 100%)", pointerEvents: "none" }} />
                 {/* Header overlay top-left */}
                 <div style={{ position: "absolute", top: 12, left: 12, right: 52, display: "flex", alignItems: "center", gap: 10 }}>
                   <div style={{ position: "relative", flexShrink: 0 }}>
@@ -2787,7 +2913,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                       {post.state}
                     </span>
                   </div>
-                  </div>
+                </div>
                 {/* Three-dot menu */}
                 <div style={{ position: "absolute", top: 12, right: 10 }}>
                   <button onClick={() => setPostMenu(postMenu === post.id ? null : post.id)} style={{ background: "rgba(0,0,0,0.4)", border: "none", cursor: "pointer", color: "white", padding: "6px 8px", borderRadius: 8, backdropFilter: "blur(6px)", lineHeight: 0 }}>
@@ -3099,65 +3225,65 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded, o
     const replyList = repliesFor(c.id);
     const expanded = expandedReplies.has(c.id);
     return (
-      <div style={{ display: "flex", gap: 8, marginBottom: isReply ? 6 : 10, alignItems: "flex-start", paddingLeft: isReply ? 32 : 0 }}>
-        <div style={{ width: isReply ? 22 : 28, height: isReply ? 22 : 28, borderRadius: "50%", background: `linear-gradient(135deg, ${avatarColor(c.username)[0]}, ${avatarColor(c.username)[1]})`, flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px #78b450" }}>
-          {avatars[c.user_id] ? <img src={avatars[c.user_id]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: isReply ? 9 : 11 }}>{(c.username || "H")[0].toUpperCase()}</div>}
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ padding: "2px 0", textAlign: "left" }}>
-            <span onClick={() => onViewUser?.(c.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 13, cursor: onViewUser ? "pointer" : "default" }}>{capName(c.username || "Hunter")}</span>
-            <span style={{ color: "rgba(238,245,232,0.55)", fontSize: 13, lineHeight: 1.5 }}>&nbsp;&nbsp;{c.content}</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 4, paddingLeft: 2 }}>
-            <span style={{ color: "rgba(238,245,232,0.3)", fontSize: 10 }}>{timeAgo(c.created_at)}</span>
-            {!isReply && <button onClick={() => { setReplyTo({ id: c.id, username: c.username }); setText(`@${c.username} `); inputRef.current?.focus(); }} style={{ background: "none", border: "none", color: "rgba(238,245,232,0.5)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0, letterSpacing: "0.02em" }}>Reply</button>}
-            <button onClick={() => toggleCommentLike(c.id)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 3, color: liked ? "#f43f5e" : "rgba(238,245,232,0.3)", fontSize: 10, fontFamily: "var(--font-body)", padding: 0 }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill={liked ? "#f43f5e" : "none"} stroke={liked ? "#f43f5e" : "currentColor"} strokeWidth="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-              {likeCount > 0 && <span style={{ fontWeight: 600 }}>{likeCount}</span>}
-            </button>
-            {(user?.id === c.user_id || user?.id === postOwnerId) && <button onClick={() => deleteComment(c.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.3)", fontSize: 10, padding: 0, fontFamily: "var(--font-body)" }}>Delete</button>}
-          </div>
-          {!isReply && replyList.length > 0 && (
-            <button onClick={() => setExpandedReplies(prev => { const n = new Set(prev); n.has(c.id) ? n.delete(c.id) : n.add(c.id); return n; })} style={{ background: "none", border: "none", color: "var(--green)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", padding: "4px 0 2px 2px", display: "flex", alignItems: "center", gap: 4 }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points={expanded ? "18 15 12 9 6 15" : "6 9 12 15 18 9"} /></svg>
-              {expanded ? "Hide" : `View ${replyList.length} repl${replyList.length === 1 ? "y" : "ies"}`}
-            </button>
-          )}
-          {!isReply && expanded && replyList.map(r => <CommentRow key={r.id} c={r} isReply />)}
-        </div>
+      <div style={{ display: "flex", gap: 10, marginBottom: isReply ? 6 : 14, alignItems: "flex-start", paddingLeft: isReply ? 34 : 0 }}>
+      <div style={{ width: isReply ? 22 : 30, height: isReply ? 22 : 30, borderRadius: "50%", background: `linear-gradient(135deg, ${avatarColor(c.username)[0]}, ${avatarColor(c.username)[1]})`, flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px rgba(120,180,80,0.5)" }}>
+        {avatars[c.user_id] ? <img src={avatars[c.user_id]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: isReply ? 9 : 11 }}>{(c.username || "H")[0].toUpperCase()}</div>}
       </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ textAlign: "left" }}>
+          <span onClick={() => onViewUser?.(c.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 13, cursor: onViewUser ? "pointer" : "default" }}>{capName(c.username || "Hunter")}</span>
+          <span style={{ color: "rgba(238,245,232,0.65)", fontSize: 13, lineHeight: 1.5 }}>{" "}{c.content}</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 5, paddingLeft: 4 }}>
+          <span style={{ color: "rgba(255,255,255,0.2)", fontSize: 10 }}>{timeAgo(c.created_at)}</span>
+          {!isReply && <button onClick={() => { setReplyTo({ id: c.id, username: c.username }); setText(`@${c.username} `); inputRef.current?.focus(); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>Reply</button>}
+          <button onClick={() => toggleCommentLike(c.id)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 3, color: liked ? "#f43f5e" : "rgba(255,255,255,0.2)", padding: 0 }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill={liked ? "#f43f5e" : "none"} stroke={liked ? "#f43f5e" : "currentColor"} strokeWidth="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+            {likeCount > 0 && <span style={{ fontSize: 10, fontWeight: 600, color: liked ? "#f43f5e" : "rgba(255,255,255,0.3)" }}>{likeCount}</span>}
+          </button>
+          {(user?.id === c.user_id || user?.id === postOwnerId) && <button onClick={() => deleteComment(c.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.3)", fontSize: 10, padding: 0, fontFamily: "var(--font-body)" }}>Delete</button>}
+        </div>
+        {!isReply && replyList.length > 0 && (
+          <button onClick={() => setExpandedReplies(prev => { const n = new Set(prev); n.has(c.id) ? n.delete(c.id) : n.add(c.id); return n; })} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: 10, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font-body)", padding: "4px 0 0 4px", display: "flex", alignItems: "center", gap: 4 }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points={expanded ? "18 15 12 9 6 15" : "6 9 12 15 18 9"} /></svg>
+            {expanded ? "Hide replies" : `${replyList.length} repl${replyList.length === 1 ? "y" : "ies"}`}
+          </button>
+        )}
+        {!isReply && expanded && replyList.map(r => <CommentRow key={r.id} c={r} isReply />)}
+      </div>
+    </div>
     );
   };
 
   return (
-    <div style={{ padding: "14px 16px 4px", background: "rgba(0,0,0,0.15)", display: "flex", flexDirection: "column", gap: 4 }}>
-      {loading && <div style={{ color: "var(--text3)", fontSize: 12, paddingBottom: 8 }} className="pulse">Loading...</div>}
-      {topLevel.map(c => <CommentRow key={c.id} c={c} />)}
-      {topLevel.length === 0 && !loading && <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 12 }}>No comments yet</div>}
-      {replyTo && (
-        <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 8px", background: "var(--green-dim)", borderRadius: 8, marginBottom: 6 }}>
-          <span style={{ color: "var(--green)", fontSize: 11 }}>Replying to {capName(replyTo.username)}</span>
-          <button onClick={() => { setReplyTo(null); setText(""); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 12, cursor: "pointer", marginLeft: "auto" }}>✕</button>
-        </div>
-      )}
-      <div style={{ display: "flex", gap: 8, alignItems: "center", paddingBottom: 12, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
-        <div style={{ width: 28, height: 28, borderRadius: "50%", background: `linear-gradient(135deg, ${avatarColor(user?.username)[0]}, ${avatarColor(user?.username)[1]})`, flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px #78b450", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: 11 }}>
-          {avatars[user?.id] ? <img src={avatars[user?.id]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : user?.imageUrl ? <img src={user.imageUrl} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (user?.username || user?.firstName || "?")[0].toUpperCase()}
-        </div>
-        <input
-          ref={inputRef}
-          placeholder={replyTo ? `Reply to ${capName(replyTo.username)}...` : "Add a comment..."}
-          value={text}
-          onChange={e => setText(e.target.value.slice(0, 300))}
-          onKeyDown={e => { if (e.key === "Enter") submit(); }}
-          style={{ flex: 1, padding: "7px 12px", borderRadius: 20, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)" }}
-        />
-        <button onClick={submit} disabled={!text.trim() || submitting} style={{ background: "none", border: "none", cursor: "pointer", color: text.trim() ? "var(--green)" : "var(--text3)", padding: "4px", transition: "color 0.15s" }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
-        </button>
+    <div style={{ padding: "16px 16px 4px", background: "rgba(0,0,0,0.15)", display: "flex", flexDirection: "column", gap: 8 }}>
+    {loading && <div style={{ color: "var(--text3)", fontSize: 12, paddingBottom: 8 }} className="pulse">Loading...</div>}
+    {topLevel.map(c => <CommentRow key={c.id} c={c} />)}
+    {topLevel.length === 0 && !loading && <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 12 }}>No comments yet</div>}
+    {replyTo && (
+      <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 8px", background: "var(--green-dim)", borderRadius: 8, marginBottom: 6 }}>
+        <span style={{ color: "var(--green)", fontSize: 11 }}>Replying to {capName(replyTo.username)}</span>
+        <button onClick={() => { setReplyTo(null); setText(""); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 12, cursor: "pointer", marginLeft: "auto" }}>✕</button>
       </div>
+    )}
+    <div style={{ display: "flex", gap: 8, alignItems: "center", paddingBottom: 12, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
+      <div style={{ width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg, ${avatarColor(user?.username)[0]}, ${avatarColor(user?.username)[1]})`, flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px #78b450", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: 10 }}>
+        {avatars[user?.id] ? <img src={avatars[user?.id]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : user?.imageUrl ? <img src={user.imageUrl} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (user?.username || user?.firstName || "?")[0].toUpperCase()}
+      </div>
+      <input
+        ref={inputRef}
+        placeholder={replyTo ? `Reply to ${capName(replyTo.username)}...` : "Add a comment..."}
+        value={text}
+        onChange={e => setText(e.target.value.slice(0, 300))}
+        onKeyDown={e => { if (e.key === "Enter") submit(); }}
+        style={{ flex: 1, padding: "9px 16px", borderRadius: 24, fontSize: 13, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", outline: "none" }}
+      />
+      <button onClick={submit} disabled={!text.trim() || submitting} style={{ background: text.trim() ? "var(--green)" : "transparent", border: "none", cursor: "pointer", color: text.trim() ? "white" : "var(--text3)", padding: "7px 8px", borderRadius: "50%", transition: "all 0.15s", lineHeight: 0 }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
+      </button>
     </div>
-  );
+  </div>
+);
 }
 
 // ─── HARVEST LOG TAB ──────────────────────────────────────────────────────────
