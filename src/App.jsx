@@ -541,7 +541,7 @@ function ToastContainer({ toasts }) {
   return createPortal(
     <div style={{ position: "fixed", bottom: 80, left: "50%", transform: "translateX(-50%)", zIndex: 999999, display: "flex", flexDirection: "column", gap: 8, alignItems: "center", pointerEvents: "none" }}>
       {toasts.map(t => (
-        <div key={t.id} className="fade-in" style={{ background: t.type === "error" ? "rgba(220,50,50,0.95)" : t.type === "success" ? "rgba(45,90,27,0.97)" : "rgba(20,30,20,0.97)", color: "white", padding: "10px 20px", borderRadius: 24, fontSize: 14, fontWeight: 600, fontFamily: "var(--font-body)", boxShadow: "0 4px 24px rgba(0,0,0,0.4)", border: t.type === "success" ? "1px solid rgba(120,180,80,0.4)" : "1px solid rgba(255,255,255,0.1)", whiteSpace: "nowrap" }}>
+        <div key={t.id} className="fade-in" style={{ background: t.type === "error" ? "rgba(220,50,50,0.95)" : t.type === "success" ? "rgba(45,90,27,0.97)" : "rgba(20,30,20,0.97)", color: "white", padding: "10px 20px", borderRadius: 24, fontSize: 14, fontWeight: 600, fontFamily: "var(--font-body)", boxShadow: "0 4px 24px rgba(0,0,0,0.4)", border: t.type === "success" ? "1px solid rgba(120,180,80,0.4)" : "1px solid rgba(255,255,255,0.1)", whiteSpace: "normal", maxWidth: "85vw", textAlign: "center" }}>
           {t.msg}
         </div>
       ))}
@@ -1786,7 +1786,7 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
             {messages.map(m => (
               <div key={m.id} style={{ display: "flex", justifyContent: m.sender_id === user.id ? "flex-end" : "flex-start", flexDirection: "column", alignItems: m.sender_id === user.id ? "flex-end" : "flex-start" }}>
                 {m.shared_post_id ? (
-                  <div onClick={(e) => { e.stopPropagation(); if (window._openPost) window._openPost(m.shared_post_id); }} style={{ maxWidth: "75%", borderRadius: 16, overflow: "hidden", border: "1px solid #1c2a1c", cursor: "pointer", background: "#0e1510" }}>
+                  <div onClick={(e) => { e.stopPropagation(); if (window._openPost) { window._openPost(m.shared_post_id); } else { window._pendingPost = m.shared_post_id; } }} style={{ maxWidth: "75%", borderRadius: 16, overflow: "hidden", border: "1px solid #1c2a1c", cursor: "pointer", background: "#0e1510" }}>
                     {m.shared_post_photo && <img src={m.shared_post_photo} style={{ width: "100%", maxHeight: 180, objectFit: "cover", display: "block" }} />}
                     <div style={{ padding: "10px 12px" }}>
                       <div style={{ color: "var(--green)", fontWeight: 700, fontSize: 12, marginBottom: 3 }}>{capName(m.shared_post_username)}</div>
@@ -1817,13 +1817,28 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", alignItems: m.sender_id === user.id ? "flex-end" : "flex-start", maxWidth: "70%" }}>
                     <div style={{ background: m.sender_id === user.id ? "var(--green)" : "rgba(255,255,255,0.07)", borderRadius: m.sender_id === user.id ? "18px 18px 4px 18px" : "18px 18px 18px 4px", padding: "10px 14px", fontSize: 14, color: m.sender_id === user.id ? "#fff" : "var(--text)", lineHeight: 1.5, wordBreak: "break-word", overflowWrap: "break-word", cursor: m.sender_id === user.id ? "pointer" : "default" }}
-                      onClick={() => {
+                      onPointerDown={(e) => {
                         if (m.sender_id !== user.id) return;
-                        const ageMinutes = (Date.now() - new Date(m.created_at)) / 60000;
-                        if (ageMinutes > 5) { toast("You can only delete messages within 5 minutes of sending.", "error"); return; }
-                        if (!window.confirm("Delete this message?")) return;
-                        supabase.from("messages").delete().eq("id", m.id).then(() => { setMessages(prev => prev.filter(msg => msg.id !== m.id)); toast("Message deleted.", "success"); });
-                      }}>
+                        const el = e.currentTarget;
+                        el._pressTimer = setTimeout(() => {
+                          const ageMinutes = (Date.now() - new Date(m.created_at)) / 60000;
+                          if (ageMinutes > 5) { toast("You can only delete messages within 5 minutes of sending.", "error"); return; }
+                          navigator.vibrate?.(40);
+                          el.style.transition = "transform 0.1s ease-out, opacity 0.1s, filter 0.1s";
+                          el.style.transform = "scale(1.12)";
+                          el.style.filter = "brightness(1.4)";
+                          setTimeout(() => {
+                            el.style.transition = "transform 0.2s ease-in, opacity 0.2s";
+                            el.style.transform = "scale(1.5)";
+                            el.style.opacity = "0";
+                            setTimeout(() => {
+                              supabase.from("messages").delete().eq("id", m.id).then(() => setMessages(prev => prev.filter(msg => msg.id !== m.id)));
+                            }, 200);
+                          }, 100);
+                        }, 500);
+                      }}
+                      onPointerUp={(e) => { clearTimeout(e.currentTarget._pressTimer); }}
+                      onPointerLeave={(e) => { clearTimeout(e.currentTarget._pressTimer); }}>
                       {m.content}
                     </div>
                     {m.sender_id === user.id && (() => {
