@@ -2245,10 +2245,12 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   useEffect(() => {
     const channel = supabase
       .channel("posts-realtime")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "posts" }, (payload) => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "posts" }, async (payload) => {
         const newPost = payload.new;
+        const { data: prof } = await supabase.from("profiles").select("avatar_url").eq("user_id", newPost.user_id).single();
+        newPost.avatar_url = prof?.avatar_url || null;
         if (stateFilter !== "all" && newPost.state !== stateFilter) return;
-        setPosts(prev => [newPost, ...prev]);
+        setPosts(prev => prev.some(p => p.id === newPost.id) ? prev : [newPost, ...prev]);
       })
       .on("postgres_changes", { event: "DELETE", schema: "public", table: "posts" }, (payload) => {
         setPosts(prev => prev.filter(p => p.id !== payload.old.id));
@@ -2319,7 +2321,15 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
       lat, lng,
     });
     if (error) { setError("Failed to post. Try again."); }
-    else { setForm({ species: "", location: "", caption: "", photo: "", pinLat: null, pinLng: null }); setShowForm(false); }
+    else {
+      const { data: newPost } = await supabase.from("posts").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1).single();
+      if (newPost) {
+        const { data: myProfile } = await supabase.from("profiles").select("avatar_url").eq("user_id", user.id).single();
+        const postWithAvatar = { ...newPost, avatar_url: myProfile?.avatar_url || null };
+        setPosts(prev => prev.some(p => p.id === postWithAvatar.id) ? prev : [postWithAvatar, ...prev]);
+      }
+      setForm({ species: "", location: "", caption: "", photo: "", pinLat: null, pinLng: null }); setShowForm(false);
+    }
     setSubmitting(false);
   };
 
