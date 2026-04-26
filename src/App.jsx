@@ -499,6 +499,13 @@ const css = `
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 function capName(str) { if (!str) return "Hunter"; return str.charAt(0).toUpperCase() + str.slice(1); }
+function avatarColor(username) {
+  const colors = [["#e05a2b","#7a2000"],["#2b7be0","#0a3a7a"],["#9b2be0","#4a0a7a"],["#2bc4b4","#0a5a52"],["#e02b6b","#7a0a30"],["#e0b02b","#7a5500"],["#2be05a","#0a7a28"],["#e02bb0","#7a0a55"]];
+  if (!username) return ["#3d7a25","#1a3a0e"];
+  let hash = 0;
+  for (let i = 0; i < username.length; i++) hash = username.charCodeAt(i) + ((hash << 5) - hash);
+  return colors[Math.abs(hash) % colors.length];
+}
 
 async function stripExif(file) {
   return new Promise(resolve => {
@@ -1222,8 +1229,8 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
       setLoading(true);
       const { data: postData } = await supabase.from("posts").select("*").eq("user_id", userId).order("created_at", { ascending: false });
       let { data: profileData } = await supabase.from("profiles").select("*").eq("user_id", userId).single();
-      if (!profileData) {
-        const username = postData?.[0]?.username || (currentUser?.id === userId ? (currentUser?.username || currentUser?.firstName) : null) || "Hunter";
+      if (!profileData && currentUser?.id === userId) {
+        const username = currentUser?.username || currentUser?.firstName || "Hunter";
         await supabase.from("profiles").insert({ user_id: userId, username });
         profileData = { user_id: userId, username };
       }
@@ -1375,12 +1382,12 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
           <div style={{ position: "relative", marginTop: -36, flexShrink: 0 }}>
             <label style={{ cursor: isOwnProfile ? "pointer" : "default", display: "block" }}>
               {isOwnProfile && <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => uploadAvatar(e.target.files[0])} />}
-              <div style={{ width: 90, height: 90, borderRadius: 20, background: "linear-gradient(135deg, #1e4010, #0f2408)", border: "4px solid #080d08", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", boxShadow: "0 0 0 2.5px var(--green), 0 4px 16px rgba(0,0,0,0.5)" }}>
+              <div style={{ width: 90, height: 90, borderRadius: 20, background: `linear-gradient(135deg, ${avatarColor(profile?.username)[0]}, ${avatarColor(profile?.username)[1]})`, border: "4px solid #080d08", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", boxShadow: "0 0 0 2.5px var(--green), 0 4px 16px rgba(0,0,0,0.5)" }}>
                 {uploadingAvatar
                   ? <span style={{ color: "var(--text3)", fontSize: 11 }}>...</span>
                   : profile?.avatar_url
                     ? <img src={`${profile.avatar_url}?t=${profile.avatar_updated_at || 0}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    : <span style={{ fontSize: 32, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700 }}>{displayName[0]?.toUpperCase()}</span>
+                    : <span style={{ fontSize: 32, fontFamily: "var(--font-display)", color: "white", fontWeight: 700 }}>{displayName[0]?.toUpperCase()}</span>
                 }
               </div>
               {isOwnProfile && <div style={{ position: "absolute", bottom: 2, right: 2, background: "var(--green)", borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, border: "2px solid #080d08" }}>✏️</div>}
@@ -1495,8 +1502,8 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
               <div key={u.user_id} onClick={() => { setShowFollowList(null); onViewUser(u.user_id); }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid var(--border)", cursor: "pointer" }}
                 onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg, #1e4010, #0f2408)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0, boxShadow: "0 0 0 2px #78b450" }}>
-                  {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 16, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700 }}>{u.username?.[0]?.toUpperCase()}</span>}
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: `linear-gradient(135deg, ${avatarColor(u.username)[0]}, ${avatarColor(u.username)[1]})`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0, boxShadow: "0 0 0 2px #78b450" }}>
+                  {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 16, fontFamily: "var(--font-display)", color: "white", fontWeight: 700 }}>{u.username?.[0]?.toUpperCase()}</span>}
                 </div>
                 <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{capName(u.username)}</span>
               </div>
@@ -1975,7 +1982,7 @@ function HotspotsTab({ posts, loading, user, selectedState, savedPinIds, saveToM
           )}
           <div style={{ padding: "12px 14px 14px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg, #3d7a25, #1a3a0e)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "var(--green)", flexShrink: 0 }}>{(post.username || "?")[0].toUpperCase()}</div>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: `linear-gradient(135deg, ${avatarColor(post.username)[0]}, ${avatarColor(post.username)[1]})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "white", flexShrink: 0 }}>{(post.username || "?")[0].toUpperCase()}</div>
               <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 13 }}>{capName(post.username)}</span>
               {false && post.location && <span style={{ color: "var(--text3)", fontSize: 12 }}>· 📍 {post.location}</span>}
             </div>
@@ -2384,8 +2391,8 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                 onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.08)"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}
               >
-                <div style={{ width: 32, height: 32, borderRadius: 10, overflow: "hidden", background: "linear-gradient(135deg, #1e4010, #0f2408)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 0 0 2px #78b450, 0 0 10px rgba(120,180,80,0.25)" }}>
-                  {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 14, fontFamily: "var(--font-display)", color: "var(--green)", fontWeight: 700 }}>{u.username?.[0]?.toUpperCase()}</span>}
+                <div style={{ width: 32, height: 32, borderRadius: 10, overflow: "hidden", background: `linear-gradient(135deg, ${avatarColor(u.username)[0]}, ${avatarColor(u.username)[1]})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 0 0 2px #78b450, 0 0 10px rgba(120,180,80,0.25)" }}>
+                  {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 14, fontFamily: "var(--font-display)", color: "white", fontWeight: 700 }}>{u.username?.[0]?.toUpperCase()}</span>}
                 </div>
                 {capName(u.username)}
               </div>
@@ -2462,8 +2469,8 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
             }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 4px", borderBottom: "1px solid var(--border)", cursor: "pointer", borderRadius: 8, transition: "background 0.15s" }}
               onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-              <div style={{ width: 42, height: 42, borderRadius: 12, background: "linear-gradient(135deg, #1e4010, #0f2408)", overflow: "hidden", flexShrink: 0, boxShadow: "0 0 0 2px #78b450" }}>
-                {n.avatar ? <img src={n.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", fontWeight: 700, fontSize: 15 }}>{n.username[0].toUpperCase()}</div>}
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: `linear-gradient(135deg, ${avatarColor(n.username)[0]}, ${avatarColor(n.username)[1]})`, overflow: "hidden", flexShrink: 0, boxShadow: "0 0 0 2px #78b450" }}>
+                {n.avatar ? <img src={n.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: 15 }}>{n.username[0].toUpperCase()}</div>}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 13 }}>{capName(n.username)}</span>
@@ -2660,7 +2667,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                   toast(`Post shared to ${capName(u.username)}!`, "success");
                 }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: "var(--radius-sm)", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", cursor: "pointer" }}>
                   <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--green-dim)", overflow: "hidden", flexShrink: 0 }}>
-                    {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", fontWeight: 700 }}>{u.username[0].toUpperCase()}</div>}
+                    {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700 }}>{u.username[0].toUpperCase()}</div>}
                   </div>
                   <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{capName(u.username)}</span>
                 </div>
@@ -2706,7 +2713,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
             {/* Card Header */}
             <div style={{ padding: "14px 16px 14px", display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ position: "relative", flexShrink: 0 }}>
-                <div onClick={() => setViewingProfile(post.user_id)} style={{ width: 44, height: 44, borderRadius: 14, background: "linear-gradient(135deg, #3d7a25, #1a3a0e)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", boxShadow: "0 0 0 2px #78b450, 0 0 12px rgba(120,180,80,0.3)" }}>
+                <div onClick={() => setViewingProfile(post.user_id)} style={{ width: 44, height: 44, borderRadius: 14, background: `linear-gradient(135deg, ${avatarColor(post.username)[0]}, ${avatarColor(post.username)[1]})`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", boxShadow: "0 0 0 2px #78b450, 0 0 12px rgba(120,180,80,0.3)" }}>
                   {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "white", fontWeight: 700, fontSize: 17, fontFamily: "var(--font-display)" }}>{(post.username || "H")[0].toUpperCase()}</span>}
                 </div>
                 {post.last_seen && (Date.now() - new Date(post.last_seen)) < 5 * 60 * 1000 && (
@@ -2848,7 +2855,7 @@ function PostDetailPage({ postId, user, openSignIn, onBack, onViewUser }) {
         </button>
         <div style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)", background: "#0e1510" }}>
           <div style={{ padding: "14px 16px 10px", display: "flex", alignItems: "center", gap: 12 }}>
-            <div onClick={() => onViewUser(post.user_id)} style={{ width: 44, height: 44, borderRadius: 14, background: "linear-gradient(135deg, #3d7a25, #1a3a0e)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", boxShadow: "0 0 0 2px #78b450" }}>
+            <div onClick={() => onViewUser(post.user_id)} style={{ width: 44, height: 44, borderRadius: 14, background: `linear-gradient(135deg, ${avatarColor(post.username)[0]}, ${avatarColor(post.username)[1]})`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", boxShadow: "0 0 0 2px #78b450" }}>
               {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "white", fontWeight: 700, fontSize: 17 }}>{(post.username || "H")[0].toUpperCase()}</span>}
             </div>
             <div style={{ flex: 1 }}>
@@ -2991,8 +2998,8 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded, o
     const expanded = expandedReplies.has(c.id);
     return (
       <div style={{ display: "flex", gap: 8, marginBottom: isReply ? 6 : 10, alignItems: "flex-start", paddingLeft: isReply ? 32 : 0 }}>
-        <div style={{ width: isReply ? 22 : 28, height: isReply ? 22 : 28, borderRadius: "50%", background: "linear-gradient(135deg, #1e4010, #0f2408)", flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px #3d7a25" }}>
-          {avatars[c.user_id] ? <img src={avatars[c.user_id]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", fontWeight: 700, fontSize: isReply ? 9 : 11 }}>{(c.username || "H")[0].toUpperCase()}</div>}
+        <div style={{ width: isReply ? 22 : 28, height: isReply ? 22 : 28, borderRadius: "50%", background: `linear-gradient(135deg, ${avatarColor(c.username)[0]}, ${avatarColor(c.username)[1]})`, flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px #78b450" }}>
+          {avatars[c.user_id] ? <img src={avatars[c.user_id]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: isReply ? 9 : 11 }}>{(c.username || "H")[0].toUpperCase()}</div>}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ padding: "2px 0", textAlign: "left" }}>
@@ -3032,7 +3039,7 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded, o
         </div>
       )}
       <div style={{ display: "flex", gap: 8, alignItems: "center", paddingBottom: 12, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
-        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg, #1e4010, #0f2408)", flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px #3d7a25", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", fontWeight: 700, fontSize: 11 }}>
+        <div style={{ width: 28, height: 28, borderRadius: "50%", background: `linear-gradient(135deg, ${avatarColor(user?.username)[0]}, ${avatarColor(user?.username)[1]})`, flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px #78b450", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: 11 }}>
           {avatars[user?.id] ? <img src={avatars[user?.id]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : user?.imageUrl ? <img src={user.imageUrl} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (user?.username || user?.firstName || "?")[0].toUpperCase()}
         </div>
         <input
