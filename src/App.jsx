@@ -2073,6 +2073,8 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   const [confirmDeletePost, setConfirmDeletePost] = useState(null);
   const [sharingPost, setSharingPost] = useState(null);
   const [shareOptionsPost, setShareOptionsPost] = useState(null);
+  const [postMenu, setPostMenu] = useState(null);
+  const [expandedCaptions, setExpandedCaptions] = useState(new Set());
   const [shareSearch, setShareSearch] = useState("");
   const [shareUsers, setShareUsers] = useState([]);
   const [pullY, setPullY] = useState(0);
@@ -2749,7 +2751,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
         </div>
       )}
 
-      {communityTab === "feed" && !viewingProfile && <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>{sortedPosts.map(post => {
+      {communityTab === "feed" && !viewingProfile && <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: "8px 10px" }}>{sortedPosts.map(post => {
         const likeCount = likeCounts[post.id] || 0;
         const isLiked = likedPostIds.has(post.id);
         const isHot = likeCount >= 5;
@@ -2761,77 +2763,126 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
           return `${Math.floor(diff / 86400)}d ago`;
         };
         return (
-          <div key={post.id} className="fade-in" style={{ borderRadius: 0, overflow: "hidden", borderTop: isHot ? "1px solid rgba(255,150,0,0.3)" : "1px solid rgba(255,255,255,0.08)", borderBottom: "1px solid rgba(255,255,255,0.08)", borderLeft: "none", borderRight: "none", background: "#0e1510" }}>
+          <div key={post.id} className="fade-in" style={{ borderRadius: 16, overflow: "hidden", border: isHot ? "1px solid rgba(255,150,0,0.3)" : "1px solid rgba(255,255,255,0.06)", background: "#0e1510", boxShadow: "0 4px 20px rgba(0,0,0,0.4)" }}>
 
-            {/* Card Header */}
-            <div style={{ padding: "14px 16px 14px", display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ position: "relative", flexShrink: 0 }}>
-                <div onClick={() => setViewingProfile(post.user_id)} style={{ width: 44, height: 44, borderRadius: 14, background: `linear-gradient(135deg, ${avatarColor(post.username)[0]}, ${avatarColor(post.username)[1]})`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", boxShadow: "0 0 0 2px #78b450, 0 0 12px rgba(120,180,80,0.3)" }}>
-                  {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "white", fontWeight: 700, fontSize: 17, fontFamily: "var(--font-display)" }}>{(post.username || "H")[0].toUpperCase()}</span>}
+            {/* Photo with overlaid header and actions */}
+            {post.photo ? (
+              <div style={{ position: "relative", margin: 0, borderRadius: 0, overflow: "hidden", height: 480, background: "#000", borderRadius: "16px 16px 0 0" }}>
+                <img src={post.photo} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 30%, transparent 50%, rgba(0,0,0,0.7) 100%)" }} />
+                {/* Header overlay top-left */}
+                <div style={{ position: "absolute", top: 12, left: 12, right: 52, display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ position: "relative", flexShrink: 0 }}>
+                    <div onClick={() => setViewingProfile(post.user_id)} style={{ width: 40, height: 40, borderRadius: 12, background: `linear-gradient(135deg, ${avatarColor(post.username)[0]}, ${avatarColor(post.username)[1]})`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", boxShadow: "0 0 0 2px rgba(120,180,80,0.9)" }}>
+                      {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "white", fontWeight: 700, fontSize: 15, fontFamily: "var(--font-display)" }}>{(post.username || "H")[0].toUpperCase()}</span>}
+                    </div>
+                    {post.last_seen && (Date.now() - new Date(post.last_seen)) < 5 * 60 * 1000 && (
+                      <div style={{ position: "absolute", bottom: -1, right: -1, width: 11, height: 11, borderRadius: "50%", background: "#4ade80", border: "2px solid #0d140d" }} />
+                    )}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <span onClick={() => setViewingProfile(post.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "block", textAlign: "left", textShadow: "0 1px 6px rgba(0,0,0,0.9)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{capName(post.username)}</span>
+                    <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 10, display: "flex", alignItems: "center", gap: 3 }}>
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#78b450" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+                      {post.state}
+                    </span>
+                  </div>
+                  </div>
+                {/* Three-dot menu */}
+                <div style={{ position: "absolute", top: 12, right: 10 }}>
+                  <button onClick={() => setPostMenu(postMenu === post.id ? null : post.id)} style={{ background: "rgba(0,0,0,0.4)", border: "none", cursor: "pointer", color: "white", padding: "6px 8px", borderRadius: 8, backdropFilter: "blur(6px)", lineHeight: 0 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" /></svg>
+                  </button>
+                  {postMenu === post.id && (
+                    <div style={{ position: "absolute", top: 36, right: 0, background: "rgba(15,22,15,0.97)", border: "1px solid #1c2a1c", borderRadius: 12, overflow: "hidden", minWidth: 150, backdropFilter: "blur(12px)", zIndex: 10 }}>
+                      {(user?.id === post.user_id || user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a") && (
+                        <button onClick={() => { deletePost(post.id); setPostMenu(null); }} style={{ width: "100%", padding: "12px 16px", background: "none", border: "none", color: "rgba(255,100,100,0.9)", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", display: "flex", alignItems: "center", gap: 10 }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /></svg>
+                          Delete post
+                        </button>
+                      )}
+                      <button onClick={() => { reportPost(post.id); setPostMenu(null); }} style={{ width: "100%", padding: "12px 16px", background: "none", border: "none", color: "rgba(220,180,60,0.9)", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", display: "flex", alignItems: "center", gap: 10, borderTop: user?.id === post.user_id ? "1px solid #1c2a1c" : "none" }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" y1="22" x2="4" y2="15" /></svg>
+                        Report post
+                      </button>
+                    </div>
+                  )}
                 </div>
-                {post.last_seen && (Date.now() - new Date(post.last_seen)) < 5 * 60 * 1000 && (
-                  <div style={{ position: "absolute", bottom: -1, right: -1, width: 13, height: 13, borderRadius: "50%", background: "#4ade80", border: "2px solid #0d140d" }} />
-                )}
-              </div>
-              <div style={{ flex: 1, textAlign: "left" }}>
-                <span onClick={() => setViewingProfile(post.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", display: "block" }}>{capName(post.username)}</span>
-                <span style={{ color: "#4a6a4a", fontSize: 11, display: "flex", alignItems: "center", gap: 3 }}>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#3d7a25" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-                  {post.state}
-                </span>
-              </div>
-              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                <span style={{ fontSize: 10, fontWeight: 600, color: "#3a5a3a", background: "#111a11", border: "1px solid #1c2c1c", padding: "3px 8px", borderRadius: 20 }}>
-                  {timeAgo(post.created_at)}
-                </span>
-                {(user?.id === post.user_id || user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a") && <button onClick={() => deletePost(post.id)} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,60,60,0.12)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"} style={{ background: "transparent", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.5)", padding: "4px 6px", borderRadius: 8, transition: "all 0.15s" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /></svg></button>}
-                <button onClick={() => reportPost(post.id)} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,180,0,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"} style={{ background: "transparent", border: "none", cursor: "pointer", color: "rgba(180,140,40,0.6)", padding: "4px 6px", borderRadius: 8, transition: "all 0.15s" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" y1="22" x2="4" y2="15" /></svg></button>
-              </div>
-            </div>
-
-            {/* Photo */}
-            {post.photo && (
-              <div style={{ position: "relative", margin: "0", borderRadius: 0, overflow: "hidden" }}>
-                <img src={post.photo} style={{ width: "100%", maxHeight: 420, objectFit: "cover", display: "block" }} />
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(13,20,13,0.85) 0%, transparent 50%)" }} />
-                <div style={{ position: "absolute", bottom: 10, left: 10, right: 10, display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-                  {post.species && <span style={{ fontSize: 11, fontWeight: 700, padding: "5px 10px", borderRadius: 10, background: "rgba(45,90,27,0.85)", border: "1px solid rgba(61,122,37,0.6)", color: "white", backdropFilter: "blur(4px)" }}>{post.species}</span>}
-                  {isHot && <span style={{ fontSize: 11, fontWeight: 600, padding: "5px 10px", borderRadius: 10, background: "rgba(30,20,10,0.85)", border: "1px solid rgba(200,100,20,0.3)", color: "#ff9500", backdropFilter: "blur(4px)" }}>🔥 Trending</span>}
+                {/* Right side vertical action buttons */}
+                <div style={{ position: "absolute", right: 12, bottom: 16, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+                  <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                    <button onClick={(e) => { toggleLike(post); const svg = e.currentTarget.querySelector('svg'); svg.classList.remove('like-pop'); void svg.offsetWidth; svg.classList.add('like-pop'); }} style={{ background: "none", border: "none", cursor: "pointer", color: isLiked ? "#f43f5e" : "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))" }}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                    </button>
+                    <span style={{ color: "white", fontSize: 10, fontWeight: 700, textShadow: "0 1px 4px rgba(0,0,0,0.9)", marginTop: 3, minHeight: 14 }}>{likeCount > 0 ? likeCount : ""}</span>
+                  </div>
+                  <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                    <button onClick={() => setExpandedComments(prev => { if (prev.has(post.id)) return new Set(); return new Set([post.id]); })} style={{ background: "none", border: "none", cursor: "pointer", color: expandedComments.has(post.id) ? "var(--green)" : "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))", transition: "all 0.15s" }}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                    </button>
+                    <span style={{ color: "white", fontSize: 10, fontWeight: 700, textShadow: "0 1px 4px rgba(0,0,0,0.9)", marginTop: 3, minHeight: 14 }}>{commentCounts[post.id] > 0 ? commentCounts[post.id] : ""}</span>
+                  </div>
+                  <button onClick={() => setShareOptionsPost(post)} style={{ background: "none", border: "none", cursor: "pointer", color: "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))", transition: "all 0.15s" }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
+                  </button>
+                </div>
+                <div style={{ position: "absolute", bottom: 12, left: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 9, fontWeight: 600, color: "rgba(255,255,255,0.55)", background: "rgba(0,0,0,0.4)", padding: "3px 8px", borderRadius: 20, backdropFilter: "blur(6px)" }}>{timeAgo(post.created_at)}</span>
+                  {isHot && <span style={{ fontSize: 11, fontWeight: 600, padding: "5px 10px", borderRadius: 10, background: "rgba(30,20,10,0.9)", border: "1px solid rgba(200,100,20,0.4)", color: "#ff9500", backdropFilter: "blur(4px)" }}>🔥</span>}
                 </div>
               </div>
-            )}
-            {!post.photo && post.species && (
-              <div style={{ padding: "0 16px 6px" }}>
-                <span style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 10, background: "rgba(45,90,27,0.5)", border: "1px solid rgba(61,122,37,0.4)", color: "var(--green)", display: "inline-block" }}>{post.species}</span>
-              </div>
+            ) : (
+              <>
+                {/* Header for no-photo posts */}
+                <div style={{ padding: "14px 16px 14px", display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ position: "relative", flexShrink: 0 }}>
+                    <div onClick={() => setViewingProfile(post.user_id)} style={{ width: 44, height: 44, borderRadius: 14, background: `linear-gradient(135deg, ${avatarColor(post.username)[0]}, ${avatarColor(post.username)[1]})`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", boxShadow: "0 0 0 2px #78b450, 0 0 12px rgba(120,180,80,0.3)" }}>
+                      {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "white", fontWeight: 700, fontSize: 17, fontFamily: "var(--font-display)" }}>{(post.username || "H")[0].toUpperCase()}</span>}
+                    </div>
+                    {post.last_seen && (Date.now() - new Date(post.last_seen)) < 5 * 60 * 1000 && (
+                      <div style={{ position: "absolute", bottom: -1, right: -1, width: 13, height: 13, borderRadius: "50%", background: "#4ade80", border: "2px solid #0d140d" }} />
+                    )}
+                  </div>
+                  <div style={{ flex: 1, textAlign: "left" }}>
+                    <span onClick={() => setViewingProfile(post.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", display: "block" }}>{capName(post.username)}</span>
+                    <span style={{ color: "#4a6a4a", fontSize: 11, display: "flex", alignItems: "center", gap: 3 }}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#3d7a25" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+                      {post.state}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: "#3a5a3a", background: "#111a11", border: "1px solid #1c2c1c", padding: "3px 8px", borderRadius: 20 }}>{timeAgo(post.created_at)}</span>
+                    {(user?.id === post.user_id || user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a") && <button onClick={() => deletePost(post.id)} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,60,60,0.12)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"} style={{ background: "transparent", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.5)", padding: "4px 6px", borderRadius: 8, transition: "all 0.15s" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /></svg></button>}
+                    <button onClick={() => reportPost(post.id)} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,180,0,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"} style={{ background: "transparent", border: "none", cursor: "pointer", color: "rgba(180,140,40,0.6)", padding: "4px 6px", borderRadius: 8, transition: "all 0.15s" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" y1="22" x2="4" y2="15" /></svg></button>
+                  </div>
+                </div>
+                {post.species && <div style={{ padding: "0 16px 6px" }}><span style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 10, background: "rgba(45,90,27,0.5)", border: "1px solid rgba(61,122,37,0.4)", color: "var(--green)", display: "inline-block" }}>{post.species}</span></div>}
+                <div style={{ padding: "8px 14px 12px", display: "flex", alignItems: "center", gap: 14 }}>
+                  <button onClick={(e) => { toggleLike(post); const svg = e.currentTarget.querySelector('svg'); svg.classList.remove('like-pop'); void svg.offsetWidth; svg.classList.add('like-pop'); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: isLiked ? "#f43f5e" : "#6a8a6a", padding: "4px 0", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600 }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                    {likeCount > 0 && <span>{likeCount}</span>}
+                  </button>
+                  <button onClick={() => setExpandedComments(prev => { if (prev.has(post.id)) return new Set(); return new Set([post.id]); })} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: expandedComments.has(post.id) ? "var(--green)" : "#6a8a6a", padding: "4px 0", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                    {commentCounts[post.id] > 0 && <span>{commentCounts[post.id]}</span>}
+                  </button>
+                  <button onClick={() => setShareOptionsPost(post)} style={{ background: "none", border: "none", cursor: "pointer", color: "#6a8a6a", padding: "4px 0", transition: "all 0.15s" }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
+                  </button>
+                  <div style={{ flex: 1 }} />
+                </div>
+              </>
             )}
 
             {/* Caption */}
             {post.caption && (
-              <div style={{ padding: "10px 16px 6px" }}>
+              <div style={{ padding: "10px 16px 14px" }}>
                 <p style={{ color: "#b8ccb8", fontSize: 13, lineHeight: 1.55, margin: 0, textAlign: "left" }}>
-                  <span style={{ fontWeight: 700, color: "white" }}>{capName(post.username)}</span> {post.caption}
+                  <span style={{ fontWeight: 700, color: "white" }}>{capName(post.username)}</span>{" "}
+                  {expandedCaptions.has(post.id) ? <>{post.caption}<span onClick={() => setExpandedCaptions(prev => { const n = new Set(prev); n.delete(post.id); return n; })} style={{ color: "rgba(255,255,255,0.4)", cursor: "pointer" }}> hide</span></> : post.caption.length > 100 ? <>{post.caption.slice(0, 100)}<span onClick={() => setExpandedCaptions(prev => { const n = new Set(prev); n.add(post.id); return n; })} style={{ color: "rgba(255,255,255,0.4)", cursor: "pointer" }}> ...more</span></> : post.caption}
                 </p>
               </div>
             )}
-
-            {/* Actions — IG style */}
-            <div style={{ padding: "8px 14px 12px", display: "flex", alignItems: "center", gap: 14 }}>
-              <button onClick={(e) => { toggleLike(post); const svg = e.currentTarget.querySelector('svg'); svg.classList.remove('like-pop'); void svg.offsetWidth; svg.classList.add('like-pop'); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: isLiked ? "#f43f5e" : "#6a8a6a", padding: "4px 0", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600 }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-                {likeCount > 0 && <span>{likeCount}</span>}
-              </button>
-              <button onClick={() => setExpandedComments(prev => { if (prev.has(post.id)) return new Set(); return new Set([post.id]); })} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: expandedComments.has(post.id) ? "var(--green)" : "#6a8a6a", padding: "4px 0", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-                {commentCounts[post.id] > 0 && <span>{commentCounts[post.id]}</span>}
-              </button>
-              <button onClick={() => setShareOptionsPost(post)} style={{ background: "none", border: "none", cursor: "pointer", color: "#6a8a6a", padding: "4px 0", transition: "all 0.15s" }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
-              </button>
-
-              <div style={{ flex: 1 }} />
-
-            </div>
 
             {expandedComments.has(post.id) && (
               <div style={{ borderTop: "1px solid #192019" }}>
