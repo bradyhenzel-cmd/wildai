@@ -500,8 +500,8 @@ const css = `
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 function capName(str) { if (!str) return "Hunter"; return str.charAt(0).toUpperCase() + str.slice(1); }
 function avatarColor(username) {
-  const colors = [["#e05a2b","#7a2000"],["#2b7be0","#0a3a7a"],["#9b2be0","#4a0a7a"],["#2bc4b4","#0a5a52"],["#e02b6b","#7a0a30"],["#e0b02b","#7a5500"],["#2be05a","#0a7a28"],["#e02bb0","#7a0a55"]];
-  if (!username) return ["#3d7a25","#1a3a0e"];
+  const colors = [["#e05a2b", "#7a2000"], ["#2b7be0", "#0a3a7a"], ["#9b2be0", "#4a0a7a"], ["#2bc4b4", "#0a5a52"], ["#e02b6b", "#7a0a30"], ["#e0b02b", "#7a5500"], ["#2be05a", "#0a7a28"], ["#e02bb0", "#7a0a55"]];
+  if (!username) return ["#3d7a25", "#1a3a0e"];
   let hash = 0;
   for (let i = 0; i < username.length; i++) hash = username.charCodeAt(i) + ((hash << 5) - hash);
   return colors[Math.abs(hash) % colors.length];
@@ -1397,7 +1397,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
           <div style={{ flex: 1, paddingBottom: 4 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
               <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 17, fontFamily: "var(--font-display)", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{capName(displayName)}</div>
-              {profile?.is_pro && <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" style={{ flexShrink: 0, filter: "drop-shadow(0 0 4px rgba(232,176,32,0.8))", animation: "proShine 1.2s ease-out forwards", marginLeft: -4 }}><defs><radialGradient id="goldStar" cx="38%" cy="32%" r="65%"><stop offset="0%" stopColor="#fffaaa"/><stop offset="35%" stopColor="#f5c430"/><stop offset="100%" stopColor="#8a5500"/></radialGradient><style>{`@keyframes proShine { 0% { filter: drop-shadow(0 0 2px rgba(232,176,32,0.3)); transform: scale(0.8) rotate(-180deg); opacity: 0; } 60% { filter: drop-shadow(0 0 8px rgba(232,176,32,1)); transform: scale(1.15) rotate(10deg); opacity: 1; } 100% { filter: drop-shadow(0 0 4px rgba(232,176,32,0.8)); transform: scale(1) rotate(0deg); opacity: 1; } }`}</style></defs><path d="M11.051 7.616a1 1 0 0 1 1.909.024l.737 1.452a1 1 0 0 0 .737.535l1.634.256a1 1 0 0 1 .588 1.806l-1.172 1.168a1 1 0 0 0-.282.866l.259 1.613a1 1 0 0 1-1.541 1.134l-1.465-.75a1 1 0 0 0-.912 0l-1.465.75a1 1 0 0 1-1.539-1.133l.258-1.613a1 1 0 0 0-.282-.867l-1.156-1.152a1 1 0 0 1 .572-1.822l1.633-.256a1 1 0 0 0 .737-.535z" fill="url(#goldStar)"/></svg>}
+              {profile?.is_pro && <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" style={{ flexShrink: 0, filter: "drop-shadow(0 0 4px rgba(232,176,32,0.8))", animation: "proShine 1.2s ease-out forwards", marginLeft: -4 }}><defs><radialGradient id="goldStar" cx="38%" cy="32%" r="65%"><stop offset="0%" stopColor="#fffaaa" /><stop offset="35%" stopColor="#f5c430" /><stop offset="100%" stopColor="#8a5500" /></radialGradient><style>{`@keyframes proShine { 0% { filter: drop-shadow(0 0 2px rgba(232,176,32,0.3)); transform: scale(0.8) rotate(-180deg); opacity: 0; } 60% { filter: drop-shadow(0 0 8px rgba(232,176,32,1)); transform: scale(1.15) rotate(10deg); opacity: 1; } 100% { filter: drop-shadow(0 0 4px rgba(232,176,32,0.8)); transform: scale(1) rotate(0deg); opacity: 1; } }`}</style></defs><path d="M11.051 7.616a1 1 0 0 1 1.909.024l.737 1.452a1 1 0 0 0 .737.535l1.634.256a1 1 0 0 1 .588 1.806l-1.172 1.168a1 1 0 0 0-.282.866l.259 1.613a1 1 0 0 1-1.541 1.134l-1.465-.75a1 1 0 0 0-.912 0l-1.465.75a1 1 0 0 1-1.539-1.133l.258-1.613a1 1 0 0 0-.282-.867l-1.156-1.152a1 1 0 0 1 .572-1.822l1.633-.256a1 1 0 0 0 .737-.535z" fill="url(#goldStar)" /></svg>}
             </div>
             <div style={{ display: "flex", gap: 16 }}>
               {[["Posts", posts.length, null], ["Followers", followerCount, "followers"], ["Following", followingCount, "following"]].map(([label, val, type], i) => (
@@ -1530,7 +1530,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
         posts.length === 0 ? (
           <div style={{ textAlign: "center", padding: "48px 24px", minHeight: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
             <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(120,180,80,0.08)", border: "1px solid rgba(120,180,80,0.2)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(120,180,80,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(120,180,80,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
             </div>
             <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15, marginBottom: 6, fontFamily: "var(--font-display)" }}>{isOwnProfile ? "No posts yet" : `${displayName} hasn't posted yet`}</div>
             {isOwnProfile && <div style={{ color: "var(--text3)", fontSize: 13, lineHeight: 1.6 }}>Share your first hunt or catch</div>}
@@ -1785,7 +1785,16 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
           <div style={{ maxWidth: 680, margin: "0 auto", display: "flex", flexDirection: "column", gap: 8 }}>
             {messages.map(m => (
               <div key={m.id} style={{ display: "flex", justifyContent: m.sender_id === user.id ? "flex-end" : "flex-start", flexDirection: "column", alignItems: m.sender_id === user.id ? "flex-end" : "flex-start" }}>
-                {m.image_url ? (
+                {m.shared_post_id ? (
+                  <div onClick={(e) => { e.stopPropagation(); if (window._openPost) window._openPost(m.shared_post_id); }} style={{ maxWidth: "75%", borderRadius: 16, overflow: "hidden", border: "1px solid #1c2a1c", cursor: "pointer", background: "#0e1510" }}>
+                    {m.shared_post_photo && <img src={m.shared_post_photo} style={{ width: "100%", maxHeight: 180, objectFit: "cover", display: "block" }} />}
+                    <div style={{ padding: "10px 12px" }}>
+                      <div style={{ color: "var(--green)", fontWeight: 700, fontSize: 12, marginBottom: 3 }}>{capName(m.shared_post_username)}</div>
+                      {m.shared_post_caption && <div style={{ color: "var(--text2)", fontSize: 12, lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{m.shared_post_caption}</div>}
+                      <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 6 }}>Tap to view post</div>
+                    </div>
+                  </div>
+                ) : m.image_url ? (
                   <img src={m.image_url} style={{ maxWidth: "70%", borderRadius: 12, maxHeight: 200, objectFit: "cover" }} />
                 ) : m.pin_lat ? (
                   <div style={{ background: "linear-gradient(135deg, rgba(45,90,27,0.3), rgba(30,64,16,0.25))", border: "1px solid var(--border-accent)", borderRadius: 16, padding: "14px 16px", maxWidth: "75%", backdropFilter: "blur(8px)" }}>
@@ -1812,6 +1821,7 @@ function MessagesTab({ user, openSignIn, supabase, onUnreadChange }) {
                         if (m.sender_id !== user.id) return;
                         const ageMinutes = (Date.now() - new Date(m.created_at)) / 60000;
                         if (ageMinutes > 5) { toast("You can only delete messages within 5 minutes of sending.", "error"); return; }
+                        if (!window.confirm("Delete this message?")) return;
                         supabase.from("messages").delete().eq("id", m.id).then(() => { setMessages(prev => prev.filter(msg => msg.id !== m.id)); toast("Message deleted.", "success"); });
                       }}>
                       {m.content}
@@ -2047,6 +2057,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   const [showForm, setShowForm] = useState(false);
   const [confirmDeletePost, setConfirmDeletePost] = useState(null);
   const [sharingPost, setSharingPost] = useState(null);
+  const [shareOptionsPost, setShareOptionsPost] = useState(null);
   const [shareSearch, setShareSearch] = useState("");
   const [shareUsers, setShareUsers] = useState([]);
   const [pullY, setPullY] = useState(0);
@@ -2245,6 +2256,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
       if (data) {
         setFollowingIds(new Set(data.map(f => f.following_id)));
         window._updateFollowing = (id, add) => setFollowingIds(prev => { const n = new Set(prev); add ? n.add(id) : n.delete(id); return n; });
+        window._openPost = (postId) => { setCommunityTab("notifs"); setViewingPost(postId); };
       }
     });
   }, [user]);
@@ -2553,26 +2565,23 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
         )}
         {/* Toggles */}
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <button onClick={() => { if (!user && feedFilter === "all") { openSignIn(); return; } setFeedFilter(feedFilter === "all" ? "following" : "all"); }}
-            style={{
-              padding: "8px 18px", borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: "pointer", border: "1px solid", transition: "all 0.2s",
-              background: feedFilter === "following" ? "linear-gradient(135deg, #2d5a1b, #1e4010)" : "#0e160e",
-              borderColor: feedFilter === "following" ? "#3d7a25" : "#1c2a1c",
-              color: feedFilter === "following" ? "white" : "#4a6a4a",
-              boxShadow: feedFilter === "following" ? "0 4px 16px rgba(45,90,27,0.35)" : "none"
-            }}>
-            {feedFilter === "following" ? "Following" : "All"}
-          </button>
-          <button onClick={() => setSortBy(sortBy === "newest" ? "top" : "newest")}
-            style={{
-              padding: "8px 18px", borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: "pointer", border: "1px solid", transition: "all 0.2s",
-              background: sortBy === "top" ? "linear-gradient(135deg, #3a1a05, #2a1000)" : "#0e160e",
-              borderColor: sortBy === "top" ? "rgba(200,100,20,0.4)" : "#1c2a1c",
-              color: sortBy === "top" ? "#ff9500" : "#4a6a4a",
-              boxShadow: sortBy === "top" ? "0 4px 16px rgba(200,100,20,0.2)" : "none"
-            }}>
-            {sortBy === "top" ? "🔥 Trending" : "✦ New"}
-          </button>
+          <div style={{ display: "flex", background: "#0a110a", border: "1px solid #1c2a1c", borderRadius: 14, padding: 3, gap: 2 }}>
+            {[["all", "For You"], ["following", "Following"], ["top", "Top"]].map(([val, label]) => {
+              const isActive = val === "top" ? sortBy === "top" : feedFilter === val && sortBy !== "top";
+              return (
+                <button key={val} onClick={() => {
+                  if (val === "following" && !user) { openSignIn(); return; }
+                  if (val === "top") { setFeedFilter("all"); setSortBy("top"); }
+                  else { setFeedFilter(val); setSortBy("newest"); }
+                }} style={{
+                  padding: "6px 14px", borderRadius: 11, fontSize: 12, fontWeight: 700, cursor: "pointer", border: "none", transition: "all 0.2s",
+                  background: isActive ? "linear-gradient(135deg, #2d5a1b, #1a3a0e)" : "transparent",
+                  color: isActive ? "white" : "#4a6a4a",
+                  boxShadow: isActive ? "0 2px 8px rgba(45,90,27,0.4)" : "none"
+                }}>{label}</button>
+              );
+            })}
+          </div>
           <div style={{ flex: 1 }} />
           {user && <button onClick={() => { if (showForm) { setShowForm(false); setForm({ species: "", location: "", caption: "", photo: "", pinLat: null, pinLng: null }); } else { setShowForm(true); } }} style={{ width: 32, height: 32, borderRadius: "50%", background: showForm ? "rgba(255,100,100,0.15)" : "linear-gradient(135deg, #2d5a1b, #1e4010)", border: "none", color: "white", fontSize: showForm ? 16 : 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{showForm ? "✕" : "+"}</button>}
         </div>
@@ -2635,6 +2644,22 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
 
       {communityTab === "feed" && !viewingProfile && loading && <div style={{ minHeight: 300 }} />}
 
+      {shareOptionsPost && createPortal(
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 999999, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={() => setShareOptionsPost(null)}>
+          <div style={{ background: "#0e1510", border: "1px solid #1c2a1c", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 480, padding: "20px 16px 36px", display: "flex", flexDirection: "column", gap: 12 }} onClick={e => e.stopPropagation()}>
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: "#2a3a2a", margin: "0 auto 8px" }} />
+            <button onClick={() => { setSharingPost(shareOptionsPost); setShareOptionsPost(null); }} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 14, background: "#131f13", border: "1px solid #1c2a1c", cursor: "pointer", color: "white", fontFamily: "var(--font-body)", fontSize: 14, fontWeight: 600 }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4" /><path d="M20 21a8 8 0 1 0-16 0" /><path d="M16 19h6" /><path d="M19 16v6" /></svg>
+              Send to a friend
+            </button>
+            <button onClick={() => { navigator.share ? navigator.share({ title: "Ravlin", text: shareOptionsPost.caption, url: window.location.href }) : toast("Sharing not supported on this device.", "error"); setShareOptionsPost(null); }} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 14, background: "#131f13", border: "1px solid #1c2a1c", cursor: "pointer", color: "white", fontFamily: "var(--font-body)", fontSize: 14, fontWeight: 600 }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
+              Share via...
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
       {sharingPost && createPortal(
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 999999, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={() => { setSharingPost(null); setShareSearch(""); setShareUsers([]); }}>
           <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 760, background: "#0d1a0d", border: "1px solid var(--border)", borderRadius: "20px 20px 0 0", padding: 24, maxHeight: "70vh", display: "flex", flexDirection: "column", gap: 14 }}>
@@ -2659,8 +2684,11 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                     body: JSON.stringify({
                       sender_id: user.id,
                       recipient_id: u.user_id,
-                      content: sharingPost.caption ? `📸 ${sharingPost.caption}` : "📸 Shared a post",
-                      image_url: sharingPost.photo,
+                      content: "📸 Shared a post",
+                      shared_post_id: sharingPost.id,
+                      shared_post_photo: sharingPost.photo,
+                      shared_post_caption: sharingPost.caption,
+                      shared_post_username: sharingPost.username,
                     })
                   });
                   setSharingPost(null); setShareSearch(""); setShareUsers([]);
@@ -2731,8 +2759,8 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                 <span style={{ fontSize: 10, fontWeight: 600, color: "#3a5a3a", background: "#111a11", border: "1px solid #1c2c1c", padding: "3px 8px", borderRadius: 20 }}>
                   {timeAgo(post.created_at)}
                 </span>
-                {(user?.id === post.user_id || user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a") && <button onClick={() => deletePost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.4)", padding: "2px 4px" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /></svg></button>}
-                <button onClick={() => reportPost(post.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#3a5a3a", padding: "2px 4px" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" y1="22" x2="4" y2="15" /></svg></button>
+                {(user?.id === post.user_id || user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a") && <button onClick={() => deletePost(post.id)} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,60,60,0.12)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"} style={{ background: "transparent", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.5)", padding: "4px 6px", borderRadius: 8, transition: "all 0.15s" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /></svg></button>}
+                <button onClick={() => reportPost(post.id)} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,180,0,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"} style={{ background: "transparent", border: "none", cursor: "pointer", color: "rgba(180,140,40,0.6)", padding: "4px 6px", borderRadius: 8, transition: "all 0.15s" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" y1="22" x2="4" y2="15" /></svg></button>
               </div>
             </div>
 
@@ -2768,16 +2796,14 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                 <svg width="22" height="22" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
                 {likeCount > 0 && <span>{likeCount}</span>}
               </button>
-              <button onClick={() => setExpandedComments(prev => { const n = new Set(prev); n.has(post.id) ? n.delete(post.id) : n.add(post.id); return n; })} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: expandedComments.has(post.id) ? "var(--green)" : "#6a8a6a", padding: "4px 0", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>
+              <button onClick={() => setExpandedComments(prev => { if (prev.has(post.id)) return new Set(); return new Set([post.id]); })} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: expandedComments.has(post.id) ? "var(--green)" : "#6a8a6a", padding: "4px 0", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                 {commentCounts[post.id] > 0 && <span>{commentCounts[post.id]}</span>}
               </button>
-              <button onClick={() => setSharingPost(post)} style={{ background: "none", border: "none", cursor: "pointer", color: "#6a8a6a", padding: "4px 0", transition: "all 0.15s" }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4" /><path d="M20 21a8 8 0 1 0-16 0" /><path d="M16 19h6" /><path d="M19 16v6" /></svg>
-              </button>
-              <button onClick={() => navigator.share ? navigator.share({ title: "Ravlin", text: post.caption, url: window.location.href }) : toast("Sharing not supported on this device.", "error")} style={{ background: "none", border: "none", cursor: "pointer", color: "#6a8a6a", padding: "4px 0", transition: "all 0.15s" }}>
+              <button onClick={() => setShareOptionsPost(post)} style={{ background: "none", border: "none", cursor: "pointer", color: "#6a8a6a", padding: "4px 0", transition: "all 0.15s" }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
               </button>
+
               <div style={{ flex: 1 }} />
 
             </div>
@@ -4840,7 +4866,7 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
   const bottomRef = useRef(null);
   const { user, isLoaded } = useUser();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  
+
   const [billingPlan, setBillingPlan] = useState("monthly");
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
@@ -5571,6 +5597,6 @@ export default function App() {
           </div>
         </div>
       )}
-      </>
+    </>
   );
 }

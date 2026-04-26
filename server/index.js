@@ -257,11 +257,11 @@ async function sendPushToUser(userId, payload) {
 }
 
 app.post("/messages/send", async (req, res) => {
-    const { sender_id, recipient_id, content, image_url, pin_lat, pin_lng, pin_name } = req.body;
+    const { sender_id, recipient_id, content, image_url, pin_lat, pin_lng, pin_name, shared_post_id, shared_post_photo, shared_post_caption, shared_post_username } = req.body;
     if (!sender_id || !recipient_id) return res.status(400).json({ error: "Missing fields" });
     const { createClient } = require("@supabase/supabase-js");
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
-    const { data, error } = await supabase.from("messages").insert([{ sender_id, recipient_id, content, image_url, pin_lat, pin_lng, pin_name }]).select().single();
+    const { data, error } = await supabase.from("messages").insert([{ sender_id, recipient_id, content, image_url, pin_lat, pin_lng, pin_name, shared_post_id, shared_post_photo, shared_post_caption, shared_post_username }]).select().single();
     if (error) return res.status(500).json({ error: error.message });
 
     sendPushToUser(recipient_id, {
