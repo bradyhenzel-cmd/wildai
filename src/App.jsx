@@ -3922,7 +3922,7 @@ Use **bold** for key terms. Be specific and practical.`;
 
       const res = await fetch("https://wildai-server.onrender.com/chat", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [{ role: "user", content: prompt }], system: "You are an expert hunting and fishing trip planner with deep knowledge of public lands, tactics, and regulations across all US states. Give specific, practical, actionable trip plans." })
+        body: JSON.stringify({ messages: [{ role: "user", content: prompt }], system: "You are an expert hunting and fishing assistant with deep knowledge of tactics, gear, public lands, weather, and solunar data across all US states. Give specific, practical, actionable advice. Never provide specific regulation details like season dates, bag limits, or license requirements — always direct users to their state wildlife agency for official regulations." })
       });
       const d = await res.json();
       setPlan(d.reply);
