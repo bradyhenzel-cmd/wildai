@@ -2702,10 +2702,10 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
           return (
             <div
               style={{ position: "fixed", inset: 0, zIndex: 999998, background: "#000", display: "flex", flexDirection: "column" }}
-              onTouchStart={e => { e._reelsTouchY = e.touches[0].clientY; e._reelsTouchX = e.touches[0].clientX; }}
+              onTouchStart={e => { window._reelsTouchY = e.touches[0].clientY; window._reelsTouchX = e.touches[0].clientX; }}
               onTouchEnd={e => {
-                const dy = e.changedTouches[0].clientY - e._reelsTouchY;
-                const dx = e.changedTouches[0].clientX - e._reelsTouchX;
+                const dy = e.changedTouches[0].clientY - window._reelsTouchY;
+                const dx = e.changedTouches[0].clientX - window._reelsTouchX;
                 if (Math.abs(dy) > Math.abs(dx)) {
                   if (dy < -60 && reelsIndex < sortedPosts.length - 1) { setReelsIndex(i => i + 1); setReelsComments(false); }
                   else if (dy > 60) { if (reelsIndex > 0) { setReelsIndex(i => i - 1); setReelsComments(false); } else { setReelsIndex(null); setReelsComments(false); } }
