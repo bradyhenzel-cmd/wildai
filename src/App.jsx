@@ -4862,7 +4862,7 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
 
       <div style={{ position: "relative", zIndex: 2, minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px 80px", textAlign: "center" }}>
         <div style={{ background: "rgba(5,10,5,0.25)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.12)", borderTop: "1px solid rgba(255,255,255,0.2)", borderRadius: 28, padding: "40px 32px 32px", width: "100%", maxWidth: 380, position: "relative", overflow: "hidden" }}>
-          <img src="/badge1.png" style={{ width: "100%", height: "100%", objectFit: "contain", opacity: 0.16, position: "absolute", top: "24%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 0, pointerEvents: "none" }} />
+          <img src="/badge1.png" style={{ width: "100%", height: "100%", objectFit: "contain", opacity: 0.16, position: "absolute", top: window.innerWidth < 500 ? "20%" : "24%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 0, pointerEvents: "none" }} />
           <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 8, zIndex: 1 }}>
             <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(42px,8vw,64px)", fontWeight: 700, lineHeight: 1.0, color: "white", letterSpacing: "0.02em", marginBottom: 8 }}>Ravlin</h1>
             <p style={{ color: "rgba(238,245,232,0.6)", fontSize: 13, lineHeight: 1.5, marginBottom: 12, fontFamily: "var(--font-display)", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" }}>Hunt. Fish. Connect.</p>
@@ -4870,9 +4870,9 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
 
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
             {["Private map pins — your spots stay yours", "Personalized weather & solunar data", "Community feed for hunters & anglers"].map((text) => (
-              <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.25)", borderRadius: 12, padding: "10px 14px" }}>
+              <div key={text} style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.25)", borderRadius: 12, padding: "10px 14px" }}>
                 <div style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--green)", flexShrink: 0 }} />
-                <span style={{ color: "rgba(238,245,232,0.75)", fontSize: 13, fontWeight: 500 }}>{text}</span>
+                <span style={{ color: "rgba(238,245,232,0.75)", fontSize: 12, fontWeight: 500 }}>{text}</span>
               </div>
             ))}
           </div>
