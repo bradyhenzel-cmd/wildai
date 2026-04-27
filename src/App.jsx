@@ -2731,7 +2731,6 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
               style={{ width: "100%", padding: "0", borderRadius: 0, fontSize: 14, minHeight: 40, resize: "none", background: "transparent", border: "none", borderBottom: "1px solid rgba(255,255,255,0.06)", color: "var(--text)", fontFamily: "var(--font-body)", outline: "none", boxSizing: "border-box", paddingBottom: 10, lineHeight: 1.6 }}
             />
             <div style={{ display: "flex", gap: 6 }}>
-              <input placeholder="Species" value={form.species} onChange={e => setForm(f => ({ ...f, species: e.target.value }))} style={{ flex: 1, padding: "6px 10px", borderRadius: 20, fontSize: 12, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", minWidth: 0, boxSizing: "border-box" }} />
               <select value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ flex: 1, padding: "6px 10px", borderRadius: 20, fontSize: 12, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: form.location ? "var(--text)" : "var(--text3)", minWidth: 0, boxSizing: "border-box", fontFamily: "var(--font-body)" }}>
                 <option value="">State (optional)</option>
                 {STATES.map(s => <option key={s} value={s}>{s}</option>)}
