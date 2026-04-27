@@ -125,7 +125,7 @@ const SPECIES_ICONS = {
   "Mountain Goat": "🐐", "Bighorn Sheep": "🐏", "Dall Sheep": "🐏", "Desert Bighorn": "🐏",
   "Mouflon Sheep": "🐏",
   // Small game
-  "Rabbit": "🐇", "Cottontail": "🐇", "Jackrabbit": "🐇", "Snowshoe Hare": "🐇", "Hare": "🐇",
+  "Rabbit": "🐇", "Cottontail": "🐇", "Cottontail Rabbit": "🐇", "Jackrabbit": "🐇", "Jack Rabbit": "🐇", "Snowshoe Hare": "🐇", "Hare": "🐇",
   "Squirrel": "🐿️", "Fox Squirrel": "🐿️", "Gray Squirrel": "🐿️", "Red Squirrel": "🐿️",
   "Prairie Dog": "🐿️", "Groundhog": "🐿️", "Woodchuck": "🐿️",
   // Upland birds
@@ -155,7 +155,7 @@ const SPECIES_ICONS = {
   "Muskie": "🐟", "Muskellunge": "🐟", "Tiger Muskie": "🐟",
   "Catfish": "🐟", "Channel Catfish": "🐟", "Blue Catfish": "🐟", "Flathead Catfish": "🐟",
   "Crappie": "🐟", "Black Crappie": "🐟", "White Crappie": "🐟",
-  "Bluegill": "🐟", "Sunfish": "🐟", "Pumpkinseed": "🐟", "Perch": "🐟", "Yellow Perch": "🐟",
+  "Bluegill": "🐟", "Sunfish": "🐟", "Redear Sunfish": "🐟", "Green Sunfish": "🐟", "Longear Sunfish": "🐟", "Pumpkinseed": "🐟", "Perch": "🐟", "Yellow Perch": "🐟",
   "Salmon": "🐟", "Chinook Salmon": "🐟", "Coho Salmon": "🐟", "Sockeye Salmon": "🐟",
   "King Salmon": "🐟", "Pink Salmon": "🐟", "Chum Salmon": "🐟", "Atlantic Salmon": "🐟",
   "Steelhead": "🐟", "Carp": "🐟", "Common Carp": "🐟", "Grass Carp": "🐟",
