@@ -4862,12 +4862,20 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
 
       <div style={{ position: "relative", zIndex: 2, minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px 80px", textAlign: "center" }}>
         <div style={{ background: "rgba(5,10,5,0.25)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.12)", borderTop: "1px solid rgba(255,255,255,0.2)", borderRadius: 28, padding: "40px 32px 32px", width: "100%", maxWidth: 380, position: "relative", overflow: "hidden" }}>
-          <img src="/badge1.png" style={{ width: "100%", height: "100%", objectFit: "contain", opacity: 0.16, position: "absolute", top: "30%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 0, pointerEvents: "none" }} />
+          <img src="/badge1.png" style={{ width: "100%", height: "100%", objectFit: "contain", opacity: 0.16, position: "absolute", top: "24%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 0, pointerEvents: "none" }} />
           <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 8, zIndex: 1 }}>
             <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(42px,8vw,64px)", fontWeight: 700, lineHeight: 1.0, color: "white", letterSpacing: "0.02em", marginBottom: 8 }}>Ravlin</h1>
             <p style={{ color: "rgba(238,245,232,0.6)", fontSize: 13, lineHeight: 1.5, marginBottom: 12, fontFamily: "var(--font-display)", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" }}>Hunt. Fish. Connect.</p>
           </div>
 
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+            {["Private map pins — your spots stay yours", "Personalized weather & solunar data", "Community feed for hunters & anglers"].map((text) => (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.25)", borderRadius: 12, padding: "10px 14px" }}>
+                <div style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--green)", flexShrink: 0 }} />
+                <span style={{ color: "rgba(238,245,232,0.75)", fontSize: 13, fontWeight: 500 }}>{text}</span>
+              </div>
+            ))}
+          </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <button onClick={() => openSignIn()} style={{ padding: "15px 32px", fontSize: 16, fontWeight: 700, borderRadius: 14, background: "linear-gradient(135deg, #3a7020, #2d5a1a)", border: "1px solid rgba(120,180,80,0.5)", color: "white", cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(120,180,80,0.2)", transition: "transform 0.15s, box-shadow 0.15s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(60,140,30,0.5)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 24px rgba(0,0,0,0.4)"; }} onMouseDown={e => e.currentTarget.style.transform = "scale(0.96)"} onMouseUp={e => e.currentTarget.style.transform = "translateY(-2px)"} onTouchStart={e => e.currentTarget.style.transform = "scale(0.96)"} onTouchEnd={e => { const el = e.currentTarget; el.style.transform = "scale(1.02)"; setTimeout(() => { if (el) el.style.transform = "scale(1)"; }, 150); }}>Sign In / Sign Up</button>
 
