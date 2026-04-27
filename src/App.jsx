@@ -3443,13 +3443,7 @@ function HarvestLogTab({ user, openSignIn, isPro, openPricingModal }) {
     loadSubmitted();
   }, [user]);
 
-  if (!isPro) return (
-    <div className="card" style={{ padding: 40, textAlign: "center" }}>
-      <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Harvest Log is Pro</div>
-      <div style={{ color: "var(--text2)", fontSize: 14, marginBottom: 20 }}>Track every harvest and catch. Upgrade to Pro to unlock.</div>
-      <button onClick={openPricingModal} className="btn-gold" style={{ padding: "12px 28px", fontSize: 14, borderRadius: "var(--radius-sm)" }}>Upgrade to Pro →</button>
-    </div>
-  );
+  
   if (!user) return (
     <div className="card" style={{ padding: 40, textAlign: "center" }}>
       <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Sign In to Use Harvest Log</div>
