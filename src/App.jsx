@@ -5133,7 +5133,7 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
   const [gpsState, setGpsState] = useState("");
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   const [messages, setMessages] = useState([
-    { role: "assistant", content: `Hey, I'm Ravlin — your hunting and fishing assistant${selectedState ? ` for ${selectedState}` : ""}. Ask me anything about gear, tactics, seasons, regulations, or trip planning. If you want location-specific advice, make sure your location is set in the Weather tab. What are you after?`, animate: false },
+    { role: "assistant", content: `Hey, I'm Ravlin${selectedState ? ` — your ${selectedState} hunting & fishing assistant` : ""}. Ask me anything about tactics, gear, or conditions. For regulations, the Regs tab links directly to your state's official site. What are you after?`, animate: false },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -5169,11 +5169,12 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
     const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone;
     setIsIOS(ios);
     if (localStorage.getItem("ravlin_install_dismissed")) return;
-    if (ios) { setShowInstallBanner(true); return; }
-    const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); setShowInstallBanner(true); };
+    if (!user) return;
+    const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); setTimeout(() => setShowInstallBanner(true), 3000); };
+    if (ios) { setTimeout(() => setShowInstallBanner(true), 3000); return; }
     window.addEventListener("beforeinstallprompt", handler);
     return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, []);
+  }, [user]);
 
   const handleInstall = async () => {
     if (deferredPrompt) {
@@ -5391,18 +5392,19 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 
       <div style={{ flex: 1, padding: 20, paddingBottom: 80, maxWidth: 760, width: "100%", margin: "0 auto", display: "flex", flexDirection: "column", gap: 16, position: "relative" }}>
 
-        {showInstallBanner && !window.navigator.standalone && (
-          <div style={{ background: "linear-gradient(135deg, rgba(120,180,80,0.12), rgba(80,140,50,0.08))", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 13 }}>Add Ravlin to your home screen</div>
-              {isIOS
-                ? <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>Tap <strong style={{ color: "var(--text2)" }}>Share ⬆</strong> → <strong style={{ color: "var(--text2)" }}>Add to Home Screen</strong></div>
-                : <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>Install for the best experience</div>}
+        {showInstallBanner && !window.navigator.standalone && createPortal(
+          <div style={{ position: "fixed", inset: 0, zIndex: 999999, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backdropFilter: "blur(8px)" }}>
+            <div style={{ background: "#0e1a0e", border: "1px solid rgba(120,180,80,0.3)", borderRadius: 20, padding: 28, maxWidth: 320, width: "100%", textAlign: "center", boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}>
+              <img src="/badge1.png" style={{ width: 80, height: 80, objectFit: "contain", marginBottom: 16, opacity: 0.9 }} />
+              <div style={{ color: "white", fontWeight: 700, fontSize: 18, fontFamily: "var(--font-display)", marginBottom: 8 }}>Add Ravlin to your Home Screen</div>
+              <div style={{ color: "rgba(238,245,232,0.6)", fontSize: 13, lineHeight: 1.6, marginBottom: 24 }}>
+                {isIOS ? <>Tap <strong style={{ color: "var(--green)" }}>Share ⬆</strong> then <strong style={{ color: "var(--green)" }}>Add to Home Screen</strong> for the best experience.</> : "Install Ravlin for the best experience — faster, fullscreen, and works like a native app."}
+              </div>
+              {!isIOS && <button onClick={handleInstall} style={{ width: "100%", padding: "13px", borderRadius: 14, background: "linear-gradient(135deg, #3a7020, #2d5a1a)", border: "1px solid rgba(120,180,80,0.5)", color: "white", fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: "var(--font-body)", marginBottom: 10 }}>Install App</button>}
+              <button onClick={() => { setShowInstallBanner(false); localStorage.setItem("ravlin_install_dismissed", "1"); }} style={{ background: "none", border: "none", color: "rgba(238,245,232,0.35)", cursor: "pointer", fontSize: 13, fontFamily: "var(--font-body)" }}>Maybe later</button>
             </div>
-            {!isIOS && <button onClick={handleInstall} className="btn-primary" style={{ padding: "6px 14px", fontSize: 12, flexShrink: 0 }}>Install</button>}
-            <button onClick={() => { setShowInstallBanner(false); localStorage.setItem("ravlin_install_dismissed", "1"); }} style={{ background: "none", border: "none", color: "var(--text3)", cursor: "pointer", fontSize: 16, padding: 0, flexShrink: 0 }}>✕</button>
-          </div>
+          </div>,
+          document.body
         )}
 
 
