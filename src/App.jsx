@@ -3081,41 +3081,57 @@ function PostDetailPage({ postId, user, openSignIn, onBack, onViewUser }) {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5" /><path d="M12 19l-7-7 7-7" /></svg>
           Back
         </button>
-        <div style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)", background: "#0e1510" }}>
-          <div style={{ padding: "14px 16px 10px", display: "flex", alignItems: "center", gap: 12 }}>
-            <div onClick={() => onViewUser(post.user_id)} style={{ width: 44, height: 44, borderRadius: 14, background: `linear-gradient(135deg, ${avatarColor(post.username)[0]}, ${avatarColor(post.username)[1]})`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", boxShadow: "0 0 0 2px #78b450" }}>
-              {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "white", fontWeight: 700, fontSize: 17 }}>{(post.username || "H")[0].toUpperCase()}</span>}
+        <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid rgba(255,255,255,0.06)", background: "#0e1510", boxShadow: "0 4px 20px rgba(0,0,0,0.4)" }}>
+          {post.photo ? (
+            <div style={{ position: "relative", overflow: "hidden", borderRadius: "16px 16px 0 0" }}>
+              <img src={post.photo} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "blur(20px)", transform: "scale(1.1)", opacity: 0.6 }} />
+              <img src={post.photo} style={{ position: "relative", width: "100%", maxHeight: 400, objectFit: "contain", display: "block", zIndex: 1 }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 30%, transparent 55%, rgba(0,0,0,0.75) 100%)", zIndex: 2, pointerEvents: "none" }} />
+              <div style={{ position: "absolute", top: 12, left: 12, right: 52, display: "flex", alignItems: "center", gap: 10, zIndex: 3 }}>
+                <div onClick={() => onViewUser(post.user_id)} style={{ width: 40, height: 40, borderRadius: 12, background: `linear-gradient(135deg, ${avatarColor(post.username)[0]}, ${avatarColor(post.username)[1]})`, overflow: "hidden", cursor: "pointer", flexShrink: 0, boxShadow: "0 0 0 2px rgba(120,180,80,0.9)" }}>
+                  {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "white", fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontFamily: "var(--font-display)" }}>{(post.username || "H")[0].toUpperCase()}</span>}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <span onClick={() => onViewUser(post.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "block", textShadow: "0 1px 6px rgba(0,0,0,0.9)" }}>{capName(post.username)}</span>
+                  <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 10 }}>{post.state}</span>
+                </div>
+                <span style={{ fontSize: 9, fontWeight: 600, color: "rgba(255,255,255,0.5)", background: "rgba(0,0,0,0.4)", padding: "3px 8px", borderRadius: 20, backdropFilter: "blur(6px)", flexShrink: 0 }}>{timeAgo(post.created_at)}</span>
+              </div>
+              <div style={{ position: "absolute", right: 12, bottom: 16, display: "flex", flexDirection: "column", alignItems: "center", gap: 16, zIndex: 3 }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                  <button onClick={(e) => { toggleLike(); const svg = e.currentTarget.querySelector("svg"); svg.classList.remove("like-pop"); void svg.offsetWidth; svg.classList.add("like-pop"); }} style={{ background: "none", border: "none", cursor: "pointer", color: isLiked ? "#f43f5e" : "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))" }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                  </button>
+                  <span style={{ color: "white", fontSize: 10, fontWeight: 700, textShadow: "0 1px 4px rgba(0,0,0,0.9)", height: 14, display: "block" }}>{likeCount > 0 ? likeCount : ""}</span>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                  <span style={{ color: "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))" }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                  </span>
+                  <span style={{ color: "white", fontSize: 10, fontWeight: 700, textShadow: "0 1px 4px rgba(0,0,0,0.9)", height: 14, display: "block" }}>{commentCount > 0 ? commentCount : ""}</span>
+                </div>
+              </div>
+              {post.species && <span style={{ position: "absolute", bottom: 16, left: 12, fontSize: 11, fontWeight: 700, padding: "5px 10px", borderRadius: 10, background: "rgba(45,90,27,0.85)", border: "1px solid rgba(61,122,37,0.6)", color: "white", zIndex: 3 }}>{post.species}</span>}
             </div>
-            <div style={{ flex: 1 }}>
-              <span onClick={() => onViewUser(post.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", display: "block" }}>{capName(post.username)}</span>
-              <span style={{ color: "#4a6a4a", fontSize: 11 }}>{post.state}</span>
-            </div>
-            <span style={{ fontSize: 10, fontWeight: 600, color: "#3a5a3a", background: "#111a11", border: "1px solid #1c2c1c", padding: "3px 8px", borderRadius: 20 }}>{timeAgo(post.created_at)}</span>
-          </div>
-          {post.photo && (
-            <div style={{ position: "relative" }}>
-              <img src={post.photo} style={{ width: "100%", maxHeight: 340, objectFit: "cover", display: "block" }} />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(13,20,13,0.85) 0%, transparent 50%)" }} />
-              {post.species && <span style={{ position: "absolute", bottom: 10, left: 10, fontSize: 11, fontWeight: 700, padding: "5px 10px", borderRadius: 10, background: "rgba(45,90,27,0.85)", border: "1px solid rgba(61,122,37,0.6)", color: "white" }}>{post.species}</span>}
+          ) : (
+            <div style={{ padding: "14px 16px 10px", display: "flex", alignItems: "center", gap: 12 }}>
+              <div onClick={() => onViewUser(post.user_id)} style={{ width: 44, height: 44, borderRadius: 14, background: `linear-gradient(135deg, ${avatarColor(post.username)[0]}, ${avatarColor(post.username)[1]})`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", boxShadow: "0 0 0 2px #78b450" }}>
+                {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "white", fontWeight: 700, fontSize: 17 }}>{(post.username || "H")[0].toUpperCase()}</span>}
+              </div>
+              <div style={{ flex: 1 }}>
+                <span onClick={() => onViewUser(post.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", display: "block" }}>{capName(post.username)}</span>
+                <span style={{ color: "#4a6a4a", fontSize: 11 }}>{post.state}</span>
+              </div>
+              <span style={{ fontSize: 10, fontWeight: 600, color: "#3a5a3a", background: "#111a11", border: "1px solid #1c2c1c", padding: "3px 8px", borderRadius: 20 }}>{timeAgo(post.created_at)}</span>
             </div>
           )}
           {post.caption && (
-            <div style={{ padding: "10px 16px 6px" }}>
+            <div style={{ padding: "10px 16px 14px" }}>
               <p style={{ color: "#b8ccb8", fontSize: 13, lineHeight: 1.55, margin: 0 }}>
                 <span style={{ fontWeight: 700, color: "white" }}>{capName(post.username)}</span> {post.caption}
               </p>
             </div>
           )}
-          <div style={{ padding: "8px 14px 14px", display: "flex", alignItems: "center", gap: 14 }}>
-            <button onClick={(e) => { toggleLike(); const svg = e.currentTarget.querySelector("svg"); svg.classList.remove("like-pop"); void svg.offsetWidth; svg.classList.add("like-pop"); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: isLiked ? "#f43f5e" : "#6a8a6a", padding: "4px 0", fontSize: 13, fontWeight: 600 }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-              {likeCount > 0 && likeCount}
-            </button>
-            <span style={{ color: "#6a8a6a", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-              {commentCount > 0 && commentCount}
-            </span>
-          </div>
         </div>
         <div style={{ marginTop: 12, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)", background: "#0e1510" }}>
           <PostComments postId={postId} postOwnerId={post.user_id} user={user} openSignIn={openSignIn} onCommentAdded={(delta = 1) => setCommentCount(c => c + delta)} onViewUser={onViewUser} />
