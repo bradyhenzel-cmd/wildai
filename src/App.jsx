@@ -2084,8 +2084,16 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   const reelsRef = React.useRef(null);
   const reelsLocked = React.useRef(false);
   useEffect(() => {
+    if (reelsIndex === null) {
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      return;
+    }
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.width = "100%";
     const el = reelsRef.current;
-    if (!el || reelsIndex === null) return;
+    if (!el) return;
     let startY = 0, startX = 0, dragging = false;
     const onStart = (e) => {
       if (reelsLocked.current) return;
@@ -2120,7 +2128,14 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
     el.addEventListener("touchstart", onStart, { passive: true });
     el.addEventListener("touchmove", onMove, { passive: false });
     el.addEventListener("touchend", onEnd, { passive: true });
-    return () => { el.removeEventListener("touchstart", onStart); el.removeEventListener("touchmove", onMove); el.removeEventListener("touchend", onEnd); };
+    return () => {
+      el.removeEventListener("touchstart", onStart);
+      el.removeEventListener("touchmove", onMove);
+      el.removeEventListener("touchend", onEnd);
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+    };
   }, [reelsIndex, posts.length]);
   const timeAgo = (date) => {
     const diff = (Date.now() - new Date(date)) / 1000;
