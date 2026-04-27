@@ -2080,6 +2080,48 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   const [expandedCaptions, setExpandedCaptions] = useState(new Set());
   const [reelsIndex, setReelsIndex] = useState(null);
   const [reelsComments, setReelsComments] = useState(false);
+  const [reelsDragY, setReelsDragY] = useState(0);
+  const reelsRef = React.useRef(null);
+  const reelsLocked = React.useRef(false);
+  useEffect(() => {
+    const el = reelsRef.current;
+    if (!el || reelsIndex === null) return;
+    let startY = 0, startX = 0, dragging = false;
+    const onStart = (e) => {
+      if (reelsLocked.current) return;
+      startY = e.touches[0].clientY; startX = e.touches[0].clientX; dragging = true;
+    };
+    const onMove = (e) => {
+      if (!dragging || reelsLocked.current) return;
+      const dy = e.touches[0].clientY - startY;
+      const dx = e.touches[0].clientX - startX;
+      if (Math.abs(dy) > Math.abs(dx)) { e.preventDefault(); setReelsDragY(dy); }
+    };
+    const onEnd = (e) => {
+      if (!dragging || reelsLocked.current) return;
+      dragging = false;
+      const dy = e.changedTouches[0].clientY - startY;
+      const dx = e.changedTouches[0].clientX - startX;
+      setReelsDragY(0);
+      if (Math.abs(dy) > Math.abs(dx)) {
+        if (dy < -60 && reelsIndex < posts.length - 1) {
+          reelsLocked.current = true;
+          setReelsIndex(i => i + 1); setReelsComments(false);
+          setTimeout(() => { reelsLocked.current = false; }, 400);
+        } else if (dy > 60 && reelsIndex > 0) {
+          reelsLocked.current = true;
+          setReelsIndex(i => i - 1); setReelsComments(false);
+          setTimeout(() => { reelsLocked.current = false; }, 400);
+        } else if (dy > 100 && reelsIndex === 0) {
+          setReelsIndex(null); setReelsComments(false);
+        }
+      }
+    };
+    el.addEventListener("touchstart", onStart, { passive: true });
+    el.addEventListener("touchmove", onMove, { passive: false });
+    el.addEventListener("touchend", onEnd, { passive: true });
+    return () => { el.removeEventListener("touchstart", onStart); el.removeEventListener("touchmove", onMove); el.removeEventListener("touchend", onEnd); };
+  }, [reelsIndex, posts.length]);
   const timeAgo = (date) => {
     const diff = (Date.now() - new Date(date)) / 1000;
     if (diff < 60) return "just now";
@@ -2695,25 +2737,16 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
 
       {reelsIndex !== null && createPortal(
         (() => {
-          const post = sortedPosts[reelsIndex];
-          if (!post) return null;
-          const isLiked = likedPostIds.has(post.id);
-          const likeCount = likeCounts[post.id] || 0;
-          return (
-            <div
-              style={{ position: "fixed", inset: 0, zIndex: 999998, background: "#000", display: "flex", flexDirection: "column" }}
-              onTouchStart={e => { window._reelsTouchY = e.touches[0].clientY; window._reelsTouchX = e.touches[0].clientX; }}
-              onTouchEnd={e => {
-                const dy = e.changedTouches[0].clientY - window._reelsTouchY;
-                const dx = e.changedTouches[0].clientX - window._reelsTouchX;
-                if (Math.abs(dy) > Math.abs(dx)) {
-                  if (dy < -60 && reelsIndex < sortedPosts.length - 1) { setReelsIndex(i => i + 1); setReelsComments(false); }
-                  else if (dy > 60) { if (reelsIndex > 0) { setReelsIndex(i => i - 1); setReelsComments(false); } else { setReelsIndex(null); setReelsComments(false); } }
-                }
-              }}
-            >
+          const renderReelsPost = (idx) => {
+            const p = sortedPosts[idx];
+            if (!p) return <div style={{ width: "100%", height: "100vh", background: "#000" }} />;
+            const pLiked = likedPostIds.has(p.id);
+            const pLikeCount = likeCounts[p.id] || 0;
+            const post = p; const isLiked = pLiked; const likeCount = pLikeCount;
+            return (
+              <div key={p.id} style={{ width: "100%", height: "100vh", position: "relative", overflow: "hidden", flexShrink: 0 }}>
               {/* Photo fullscreen */}
-              <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+              <div style={{ position: "absolute", inset: 0 }}>
                 {post.photo && <img src={post.photo} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "blur(20px)", transform: "scale(1.1)", opacity: 0.6 }} />}
                 {post.photo && <img src={post.photo} style={{ position: "relative", width: "100%", height: "100%", objectFit: "contain", zIndex: 1 }} />}
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 25%, transparent 50%, rgba(0,0,0,0.75) 100%)", zIndex: 2, pointerEvents: "none" }} />
@@ -2777,6 +2810,19 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                     </div>
                   </div>
                 </div>
+              </div>
+            );
+          };
+          const post = sortedPosts[reelsIndex];
+          if (!post) return null;
+          return (
+            <div ref={reelsRef} style={{ position: "fixed", inset: 0, zIndex: 999998, background: "#000", overflow: "hidden" }}>
+              <div style={{ display: "flex", flexDirection: "column", transform: `translateY(calc(${-reelsIndex * 100}vh + ${reelsDragY * 0.5}px))`, transition: reelsDragY === 0 ? "transform 0.4s cubic-bezier(0.32,0.72,0,1)" : "none", willChange: "transform" }}>
+                {sortedPosts.map((_, i) => {
+                  if (Math.abs(i - reelsIndex) > 1) return <div key={i} style={{ width: "100%", height: "100vh", flexShrink: 0, background: "#000" }} />;
+                  return renderReelsPost(i);
+                })}
+              </div>
               {reelsComments && (
                 <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "62%", background: "rgba(10,16,10,0.97)", borderRadius: "20px 20px 0 0", border: "1px solid #1c2a1c", backdropFilter: "blur(12px)", display: "flex", flexDirection: "column", animation: "slideUp 0.35s cubic-bezier(0.32, 0.72, 0, 1)" }}>
                   <div style={{ width: 36, height: 4, borderRadius: 2, background: "#2a3a2a", margin: "12px auto 0" }} />
