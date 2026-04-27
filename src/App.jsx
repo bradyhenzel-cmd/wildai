@@ -94,9 +94,18 @@ const STATE_COORDS = {
 
 const SPECIES_ICONS = {
   // Deer family
-  "Elk": "🦌", "Whitetail Deer": "🦌", "Mule Deer": "🦌", "Moose": "🦌", "Antelope": "🦌",
-  "Pronghorn": "🦌", "Pronghorn Antelope": "🦌", "Caribou": "🦌", "Bison": "🦬", "Buffalo": "🦬",
-  "Sitka Deer": "🦌", "Axis Deer": "🦌", "Fallow Deer": "🦌", "Whitetail": "🦌",
+  "Elk": "🦌", "Whitetail Deer": "🦌", "Mule Deer": "🦌", "Moose": "🫎", "Antelope": "🐂",
+  "Pronghorn": "🐂", "Pronghorn Antelope": "🐂", "Caribou": "🦌", "Bison": "🦬", "Buffalo": "🦬",
+  "Sitka Deer": "🦌", "Sitka Blacktail Deer": "🦌", "Sitka Black-tailed Deer": "🦌", "Axis Deer": "🦌", "Fallow Deer": "🦌", "Whitetail": "🦌", "White-tailed Deer": "🦌", "Black-tailed Deer": "🦌",
+  "Musk Ox": "🐃", "Muskox": "🐃",
+  "Sharptail Grouse": "🐦", "Sharp-tail Grouse": "🐦", "Sharptailed Grouse": "🐦",
+  "Hun": "🐦", "Huns": "🐦", "Partridge": "🐦",
+  "Merganser": "🦆", "Common Merganser": "🦆", "Hooded Merganser": "🦆", "Red-breasted Merganser": "🦆",
+  "Long-tailed Duck": "🦆", "Harlequin Duck": "🦆", "Scoter": "🦆", "White-winged Scoter": "🦆",
+  "Sandhill Crane": "🦢", "Crane": "🦢",
+  "Alligator": "🐊", "American Alligator": "🐊",
+  "Wild Pig": "🐗", "Aoudad": "🐏", "Barbary Sheep": "🐏",
+  "Flounder (Fresh)": "🐟", "Saugeye": "🐟",
   // Bears
   "Bear": "🐻", "Black Bear": "🐻", "Brown Bear": "🐻", "Grizzly Bear": "🐻", "Grizzly": "🐻",
   "Polar Bear": "🐻‍❄️",
@@ -132,7 +141,8 @@ const SPECIES_ICONS = {
   // Waterfowl
   "Duck": "🦆", "Mallard": "🦆", "Teal": "🦆", "Wood Duck": "🦆", "Pintail": "🦆",
   "Widgeon": "🦆", "Canvasback": "🦆", "Redhead": "🦆", "Scaup": "🦆", "Bufflehead": "🦆",
-  "Gadwall": "🦆", "Shoveler": "🦆", "Ring-necked Duck": "🦆", "Eider": "🦆",
+  "Gadwall": "🦆", "Shoveler": "🦆", "Ring-necked Duck": "🦆", "Eider": "🦆", "Sea Duck": "🦆",
+  "Merganser": "🦆", "Long-tailed Duck": "🦆", "Harlequin Duck": "🦆", "Scoter": "🦆",
   "Goose": "🪿", "Canada Goose": "🪿", "Snow Goose": "🪿", "White-fronted Goose": "🪿",
   "Ross's Goose": "🪿", "Brant": "🪿", "Waterfowl": "🦆",
   // Freshwater fish
@@ -150,7 +160,7 @@ const SPECIES_ICONS = {
   "King Salmon": "🐟", "Pink Salmon": "🐟", "Chum Salmon": "🐟", "Atlantic Salmon": "🐟",
   "Steelhead": "🐟", "Carp": "🐟", "Common Carp": "🐟", "Grass Carp": "🐟",
   "Drum": "🐟", "Freshwater Drum": "🐟", "Bowfin": "🐟", "Gar": "🐟", "Alligator Gar": "🐟",
-  "Burbot": "🐟", "Kokanee": "🐟", "Cisco": "🐟", "Whitefish": "🐟", "Grayling": "🐟",
+  "Burbot": "🐟", "Kokanee": "🐟", "Kokanee Salmon": "🐟", "Cisco": "🐟", "Whitefish": "🐟", "Mountain Whitefish": "🐟", "Grayling": "🐟", "Arctic Grayling": "🐟", "Arctic Char": "🐟", "Dolly Varden": "🐟", "Sheefish": "🐟", "Inconnu": "🐟", "Sablefish": "🐠",
   "Sturgeon": "🐟", "White Sturgeon": "🐟", "Paddlefish": "🐟", "Saugeye": "🐟",
   "Cod": "🐟", "Atlantic Cod": "🐟", "Pacific Cod": "🐟", "Pollock": "🐟",
   // Saltwater fish
@@ -169,7 +179,7 @@ const SPECIES_ICONS = {
   "Sailfish": "🐠", "Barracuda": "🐠", "Yellowtail": "🐠",
   // Shellfish
   "Crab": "🦀", "Dungeness Crab": "🦀", "Blue Crab": "🦀", "King Crab": "🦀", "Snow Crab": "🦀",
-  "Lobster": "🦞", "Spiny Lobster": "🦞", "Shrimp": "🍤", "Oyster": "🦪", "Clam": "🦪",
+  "Lobster": "🦞", "Spiny Lobster": "🦞", "Shrimp": "🦐", "Oyster": "🦪", "Clam": "🦪",
   "Scallop": "🦪", "Mussel": "🦪",
 };
 const SPECIES = [
@@ -2684,58 +2694,53 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
         </div>
       </>}
 
-      {(communityTab === "feed" || communityTab === "profile") && !viewingProfile && showForm && (
-        <div className="fade-in" style={{ background: "#0e1510", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, overflow: "hidden", marginBottom: 4 }}>
-          {/* Photo area */}
-          <label style={{ display: "block", cursor: "pointer", position: "relative" }}>
-            <input type="file" accept="image/*" style={{ display: "none" }} onChange={async e => {
-              const file = e.target.files[0];
-              if (!file) return;
-              const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
-              toast("Uploading photo...", "info");
-              const stripped = await stripExif(file);
-              const { data, error } = await supabase.storage.from("post-photos").upload(fileName, stripped, { contentType: "image/jpeg" });
-              if (error) { toast("Photo upload failed. Try again.", "error"); return; }
-              const { data: urlData } = supabase.storage.from("post-photos").getPublicUrl(fileName);
-              setForm(f => ({ ...f, photo: urlData.publicUrl }));
-              toast("Photo added!", "success");
-            }} />
-            {form.photo ? (
-              <div style={{ position: "relative" }}>
-                <img src={form.photo} style={{ width: "100%", maxHeight: 300, objectFit: "cover", display: "block" }} />
-                <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.6)", borderRadius: 20, padding: "4px 10px", fontSize: 12, color: "white", backdropFilter: "blur(8px)" }}>Change photo</div>
-              </div>
-            ) : (
-              <div style={{ height: 120, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
-                <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 13 }}>Add a photo</span>
-              </div>
-            )}
-          </label>
-
-          {/* Fields */}
-          <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
-            <textarea
-              placeholder="Share your experience..."
-              value={form.caption}
-              onChange={e => setForm(f => ({ ...f, caption: e.target.value.slice(0, 500) }))}
-              style={{ width: "100%", padding: "0", borderRadius: 0, fontSize: 14, minHeight: 40, resize: "none", background: "transparent", border: "none", borderBottom: "1px solid rgba(255,255,255,0.06)", color: "var(--text)", fontFamily: "var(--font-body)", outline: "none", boxSizing: "border-box", paddingBottom: 10, lineHeight: 1.6 }}
-            />
-            <div style={{ display: "flex", gap: 6 }}>
-              <select value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ flex: 1, padding: "6px 10px", borderRadius: 20, fontSize: 12, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: form.location ? "var(--text)" : "var(--text3)", minWidth: 0, boxSizing: "border-box", fontFamily: "var(--font-body)" }}>
+      {(communityTab === "feed" || communityTab === "profile") && !viewingProfile && showForm && createPortal(
+        <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "#0e1510", display: "flex", flexDirection: "column" }} onClick={() => { setShowForm(false); setForm({ species: "", location: "", caption: "", photo: "", pinLat: null, pinLng: null }); }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#0e1510", width: "100%", height: "100%", overflowY: "auto", display: "flex", flexDirection: "column", animation: "slideUp 0.3s cubic-bezier(0.32,0.72,0,1)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 10px" }}>
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: "#2a3a2a", position: "absolute", left: "50%", transform: "translateX(-50%)", top: 12 }} />
+              <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 15, fontFamily: "var(--font-display)" }}>New Post</span>
+              <button onClick={() => { setShowForm(false); setForm({ species: "", location: "", caption: "", photo: "", pinLat: null, pinLng: null }); }} style={{ background: "rgba(255,255,255,0.06)", border: "none", color: "var(--text2)", width: 28, height: 28, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
+            </div>
+            <label style={{ display: "block", cursor: "pointer", position: "relative" }}>
+              <input type="file" accept="image/*" style={{ display: "none" }} onChange={async e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
+                toast("Uploading photo...", "info");
+                const stripped = await stripExif(file);
+                const { data, error } = await supabase.storage.from("post-photos").upload(fileName, stripped, { contentType: "image/jpeg" });
+                if (error) { toast("Photo upload failed. Try again.", "error"); return; }
+                const { data: urlData } = supabase.storage.from("post-photos").getPublicUrl(fileName);
+                setForm(f => ({ ...f, photo: urlData.publicUrl }));
+                toast("Photo added!", "success");
+              }} />
+              {form.photo ? (
+                <div style={{ position: "relative" }}>
+                  <img src={form.photo} style={{ width: "100%", maxHeight: 320, objectFit: "cover", display: "block" }} />
+                  <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.6)", borderRadius: 20, padding: "4px 10px", fontSize: 12, color: "white", backdropFilter: "blur(8px)" }}>Change photo</div>
+                </div>
+              ) : (
+                <div style={{ height: 160, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(255,255,255,0.02)", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
+                  <span style={{ color: "rgba(255,255,255,0.25)", fontSize: 13 }}>Tap to add a photo</span>
+                </div>
+              )}
+            </label>
+            <div style={{ padding: "14px 16px 36px", display: "flex", flexDirection: "column", gap: 12 }}>
+              <textarea placeholder="Share your experience..." value={form.caption} onChange={e => setForm(f => ({ ...f, caption: e.target.value.slice(0, 500) }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 14, minHeight: 80, resize: "none", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", outline: "none", boxSizing: "border-box", lineHeight: 1.6 }} />
+              <select value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "#0e1510", border: "1px solid rgba(255,255,255,0.08)", color: form.location ? "var(--text)" : "rgba(255,255,255,0.3)", fontFamily: "var(--font-body)", boxSizing: "border-box" }}>
                 <option value="">State (optional)</option>
                 {STATES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{ flex: 1 }} />
               {error && <span style={{ color: "var(--amber)", fontSize: 12 }}>{error}</span>}
-              <button onClick={() => { if (!form.photo || !form.caption) { if (!form.photo && !form.caption) { toast("Please add a photo and description.", "error"); } else if (!form.photo) { toast("Please add a photo to your post.", "error"); } else { toast("Please add a description to your post.", "error"); } return; } submitPost(); }} disabled={submitting} className="btn-primary" style={{ padding: "9px 20px", fontSize: 13, borderRadius: 20, opacity: submitting ? 0.5 : (!form.photo || !form.caption) ? 0.7 : 1 }}>
-                {submitting ? "Posting..." : "Share"}
+              <button onClick={() => { if (!form.photo || !form.caption) { if (!form.photo && !form.caption) { toast("Please add a photo and description.", "error"); } else if (!form.photo) { toast("Please add a photo to your post.", "error"); } else { toast("Please add a description to your post.", "error"); } return; } submitPost(); }} disabled={submitting} className="btn-primary" style={{ width: "100%", padding: "13px", fontSize: 14, fontWeight: 700, borderRadius: 12, opacity: submitting ? 0.5 : (!form.photo || !form.caption) ? 0.7 : 1 }}>
+                {submitting ? "Posting..." : "Share Post"}
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {communityTab === "feed" && !viewingProfile && loading && <div style={{ minHeight: 300 }} />}
@@ -3367,6 +3372,7 @@ function HarvestLogTab({ user, openSignIn, isPro, openPricingModal }) {
   const [form, setForm] = useState({ type: "hunting", species: "", date: "", location: "", state: "", size: "", weight: "", notes: "", photo: "" });
   const [submittedIds, setSubmittedIds] = useState(new Set());
   const [submittingTrophy, setSubmittingTrophy] = useState(null);
+  const [selectedEntry, setSelectedEntry] = useState(null);
 
   const loadEntries = async () => {
     if (!user) { setLoadingEntries(false); return; }
@@ -3453,90 +3459,80 @@ function HarvestLogTab({ user, openSignIn, isPro, openPricingModal }) {
   );
 
   return (
-    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
-          <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, fontFamily: "var(--font-display)" }}>Harvest Log</div>
-          <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 2 }}>{entries.length} entries</div>
-        </div>
-        <button onClick={() => setShowForm(s => !s)} className="btn-primary" style={{ padding: "9px 18px", fontSize: 13 }}>
-          {showForm ? "Cancel" : "+ Log Entry"}
-        </button>
-      </div>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-        {["all", "hunting", "fishing"].map(f => (
-          <button key={f} onClick={() => setLogFilter(f)} className={`nav-tab ${logFilter === f ? "active" : "inactive"}`} style={{ padding: "6px 14px", fontSize: 12 }}>
-            {f === "all" ? "All" : f === "hunting" ? "🎯 Hunting" : "🎣 Fishing"}
-          </button>
-        ))}
-        <button onClick={() => setLogSort(s => s === "newest" ? "oldest" : "newest")} className="btn-ghost" style={{ padding: "6px 14px", fontSize: 12, marginLeft: "auto" }}>
-          {logSort === "newest" ? "↓ Newest" : "↑ Oldest"}
-        </button>
+    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {/* Header */}
+      <div style={{ textAlign: "center", paddingBottom: 4 }}>
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", color: "var(--green)", textTransform: "uppercase", marginBottom: 4 }}>My Log</div>
+        <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 28, fontFamily: "var(--font-display)", letterSpacing: "-0.3px", lineHeight: 1 }}>Harvest Log</div>
+        <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 6 }}>{entries.length} {entries.length === 1 ? "entry" : "entries"}</div>
       </div>
 
-      {showForm && (
-        <div className="card fade-in" style={{ padding: 20 }}>
-          <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 14 }}>NEW ENTRY</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
-            <div>
-              <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>TYPE</div>
-              <div style={{ display: "flex", gap: 6 }}>
-                {["hunting", "fishing"].map(t => (
-                  <button key={t} onClick={() => setForm(f => ({ ...f, type: t }))} className={`nav-tab ${form.type === t ? "active" : "inactive"}`} style={{ padding: "5px 12px", fontSize: 11, flex: 1 }}>
-                    {t === "hunting" ? "🎯" : "🎣"} {t}
+      {/* Filter row */}
+      <div style={{ display: "flex", background: "#0e160e", border: "1px solid #192019", borderRadius: 14, padding: 3 }}>
+        {[["all","All",<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>],["hunting","Hunt",<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>],["fishing","Fish",<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10"/><path d="M20.414 8.586 22 7"/><circle cx="19" cy="10" r="2"/></svg>]].map(([val,label,icon]) => {
+          const active = logFilter === val;
+          return <button key={val} onClick={() => setLogFilter(val)} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "8px 0", fontSize: 11, fontWeight: 700, borderRadius: 11, border: "none", cursor: "pointer", transition: "all 0.2s", background: active ? "linear-gradient(135deg,#2d5a1b,#1e4010)" : "transparent", color: active ? "white" : "#4a6a4a", boxShadow: active ? "0 2px 8px rgba(45,90,27,0.5)" : "none", fontFamily: "var(--font-body)" }}>{icon}{label}</button>;
+        })}
+      </div>
+
+      <button onClick={() => setShowForm(true)} style={{ width: "100%", padding: "11px", borderRadius: 14, border: "1px dashed rgba(120,180,80,0.3)", background: "rgba(120,180,80,0.04)", color: "var(--green)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Log New Entry
+      </button>
+      
+
+      {showForm && createPortal(
+        <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "#0e1510", display: "flex", flexDirection: "column" }}>
+          <div style={{ background: "#0e1510", width: "100%", height: "100%", overflowY: "auto", display: "flex", flexDirection: "column", animation: "slideUp 0.3s cubic-bezier(0.32,0.72,0,1)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 10px" }}>
+              <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 15, fontFamily: "var(--font-display)" }}>New Entry</span>
+              <button onClick={() => setShowForm(false)} style={{ background: "rgba(255,255,255,0.06)", border: "none", color: "var(--text2)", width: 28, height: 28, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
+            </div>
+            <label style={{ display: "block", cursor: "pointer", position: "relative", marginTop: 12 }}>
+              <input type="file" accept="image/*" onChange={e => { const file = e.target.files[0]; if (!file) return; setForm(f => ({ ...f, photoFile: file, photo: URL.createObjectURL(file) })); }} style={{ display: "none" }} />
+              {form.photo ? (
+                <div style={{ position: "relative" }}>
+                  <img src={form.photo} style={{ width: "100%", maxHeight: 240, objectFit: "cover", display: "block" }} />
+                  <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.6)", borderRadius: 20, padding: "4px 10px", fontSize: 11, color: "white" }}>Change</div>
+                </div>
+              ) : (
+                <div style={{ height: 100, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(255,255,255,0.02)", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  <span style={{ color: "rgba(255,255,255,0.22)", fontSize: 12 }}>Tap to add a photo</span>
+                </div>
+              )}
+            </label>
+            <div style={{ padding: "14px 16px 36px", display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: 3 }}>
+                {[["hunting","Hunting",<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>],["fishing","Fishing",<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10"/><path d="M20.414 8.586 22 7"/><circle cx="19" cy="10" r="2"/></svg>]].map(([val,label,icon]) => (
+                  <button key={val} onClick={() => setForm(f => ({ ...f, type: val }))} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "8px 0", fontSize: 12, fontWeight: 700, borderRadius: 9, border: "none", cursor: "pointer", transition: "all 0.2s", background: form.type === val ? "linear-gradient(135deg,#2d5a1b,#1e4010)" : "transparent", color: form.type === val ? "white" : "#4a6a4a", fontFamily: "var(--font-body)" }}>
+                    {icon}{label}
                   </button>
                 ))}
               </div>
-            </div>
-            <div>
-              <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>DATE *</div>
-              <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
-            </div>
-            <div>
-              <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>SPECIES *</div>
-              <input placeholder="e.g. Whitetail Deer" value={form.species} onChange={e => setForm(f => ({ ...f, species: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
-            </div>
-            <div>
-              <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>LOCATION</div>
-              <input placeholder="e.g. Flathead NF" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
-            </div>
-            <div>
-              <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>STATE</div>
-              <select value={form.state} onChange={e => setForm(f => ({ ...f, state: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }}>
-                <option value="">Select state...</option>
+              <input placeholder="Species *" value={form.species} onChange={e => setForm(f => ({ ...f, species: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
+              <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
+              <input placeholder="Location" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
+              <select value={form.state} onChange={e => setForm(f => ({ ...f, state: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "#0e1510", border: "1px solid rgba(255,255,255,0.08)", color: form.state ? "var(--text)" : "rgba(255,255,255,0.3)", fontFamily: "var(--font-body)", boxSizing: "border-box" }}>
+                <option value="">State (optional)</option>
                 {STATES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
+              <div style={{ display: "flex", gap: 8 }}>
+                <input placeholder="Weight (lbs)" value={form.weight} onChange={e => setForm(f => ({ ...f, weight: e.target.value }))} style={{ flex: 1, minWidth: 0, padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
+                <input placeholder={form.type === "fishing" ? "Length (in)" : "Antlers/Score"} value={form.size} onChange={e => setForm(f => ({ ...f, size: e.target.value }))} style={{ flex: 1, minWidth: 0, padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
+              </div>
+              <textarea placeholder="Weather conditions, tactics used, memorable details..." value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, minHeight: 70, resize: "none", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "rgba(212,147,10,0.06)", border: "1px solid rgba(212,147,10,0.15)", borderRadius: 10 }}>
+                <span>🏆</span>
+                <span style={{ color: "var(--amber)", fontSize: 12 }}>Fill out all fields and add a photo to submit to the Trophy Board.</span>
+              </div>
+              <button onClick={save} disabled={!form.species || !form.date} className="btn-primary" style={{ width: "100%", padding: "13px", fontSize: 14, fontWeight: 700, borderRadius: 12, opacity: (!form.species || !form.date) ? 0.5 : 1 }}>Save Entry</button>
             </div>
-            <div>
-              <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>{form.type === "fishing" ? "LENGTH (in)" : "ANTLERS/SCORE"}</div>
-              <input placeholder={form.type === "fishing" ? "e.g. 18" : "e.g. 8-point"} value={form.size} onChange={e => setForm(f => ({ ...f, size: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
-            </div>
-            <div>
-              <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>WEIGHT (lbs)</div>
-              <input placeholder="e.g. 185" value={form.weight} onChange={e => setForm(f => ({ ...f, weight: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
-            </div>
           </div>
-          <div style={{ marginBottom: 10 }}>
-            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>PHOTO</div>
-            <input type="file" accept="image/*" onChange={e => {
-              const file = e.target.files[0];
-              if (!file) return;
-              setForm(f => ({ ...f, photoFile: file, photo: URL.createObjectURL(file) }));
-            }} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text2)" }} />
-            {form.photo && <img src={form.photo} style={{ marginTop: 8, width: "100%", borderRadius: "var(--radius-sm)", maxHeight: 200, objectFit: "cover" }} />}
-          </div>
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>NOTES</div>
-            <textarea placeholder="Weather conditions, tactics used, memorable details..." value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} style={{ width: "100%", padding: "7px 10px", borderRadius: "var(--radius-sm)", fontSize: 13, minHeight: 70, resize: "vertical", background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-body)" }} />
-          </div>
-          <div style={{ padding: "10px 14px", background: "rgba(212,147,10,0.08)", border: "1px solid rgba(212,147,10,0.2)", borderRadius: "var(--radius-sm)", marginBottom: 10 }}>
-            <p style={{ color: "var(--amber)", fontSize: 12, margin: 0, lineHeight: 1.6 }}>🏆 To submit to the Trophy Board, fill out all fields and include a photo.</p>
-          </div>
-          <button onClick={save} disabled={!form.species || !form.date} className="btn-primary" style={{ width: "100%", padding: "10px", fontSize: 14, opacity: (!form.species || !form.date) ? 0.5 : 1 }}>
-            Save Entry
-          </button>
-        </div>
+        </div>,
+        document.body
       )}
+            
 
       {loadingEntries && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)" }} className="pulse">Loading your log...</div>}
 
@@ -3548,35 +3544,71 @@ function HarvestLogTab({ user, openSignIn, isPro, openPricingModal }) {
         </div>
       )}
 
-      {[...entries]
-        .filter(e => logFilter === "all" || e.type === logFilter)
-        .sort((a, b) => logSort === "newest" ? new Date(b.created_at) - new Date(a.created_at) : new Date(a.created_at) - new Date(b.created_at))
-        .map(e => (
-          <div key={e.id} className="card fade-in" style={{ padding: "16px 20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 18 }}>{e.type === "hunting" ? "🎯" : "🎣"}</span>
-                  <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>{e.species}</span>
-                  <span style={{ color: "var(--text3)", fontSize: 12 }}>{new Date(e.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+      {/* 3-col grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 4, marginTop: 4 }}>
+        {[...entries]
+          .filter(e => logFilter === "all" || e.type === logFilter)
+          .sort((a, b) => logSort === "newest" ? new Date(b.date) - new Date(a.date) : new Date(a.date) - new Date(b.date))
+          .map(e => (
+            <div key={e.id} onClick={() => setSelectedEntry(e)} style={{ position: "relative", aspectRatio: "1", overflow: "hidden", borderRadius: 8, cursor: "pointer", background: "#1a2a1a" }}>
+              {e.photo
+                ? <img src={e.photo} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)" }}>
+                    {e.type === "hunting"
+                      ? <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>
+                      : <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10"/><path d="M20.414 8.586 22 7"/><circle cx="19" cy="10" r="2"/></svg>}
+                  </div>
+              }
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 6px 5px", background: "linear-gradient(transparent, rgba(0,0,0,0.75))" }}>
+                <div style={{ color: "rgba(255,255,255,0.85)", fontSize: 9, fontWeight: 600, textAlign: "center", lineHeight: 1.2 }}>{new Date(e.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit" })}</div>
+              </div>
+            </div>
+          ))}
+      </div>
+
+      {/* Detail modal */}
+      {selectedEntry && (() => {
+        const e = selectedEntry;
+        return (
+          <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(0,0,0,0.92)", display: "flex", flexDirection: "column", overflow: "auto" }} onClick={() => setSelectedEntry(null)}>
+            <div onClick={ev => ev.stopPropagation()} style={{ background: "#0e1510", borderRadius: "20px 20px 0 0", marginTop: "auto", maxHeight: "92vh", overflow: "auto", display: "flex", flexDirection: "column" }}>
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: "#2a3a2a", margin: "12px auto 0", flexShrink: 0 }} />
+              {e.photo && <img src={e.photo} style={{ width: "100%", objectFit: "contain", display: "block", background: "#000", maxHeight: "55vh" }} />}
+              <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,#2d5a1b,#1e4010)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)" }}>
+                      {e.type === "hunting"
+                        ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>
+                        : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10"/><path d="M20.414 8.586 22 7"/><circle cx="19" cy="10" r="2"/></svg>}
+                    </div>
+                    <div>
+                      <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16 }}>{e.species}</div>
+                      <div style={{ color: "var(--text3)", fontSize: 12 }}>{new Date(e.date + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</div>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={() => { remove(e.id); setSelectedEntry(null); }} style={{ background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.2)", color: "rgba(255,100,100,0.8)", padding: "6px 12px", borderRadius: 20, fontSize: 12, cursor: "pointer", fontFamily: "var(--font-body)" }}>Delete</button>
+                    <button onClick={() => setSelectedEntry(null)} className="btn-ghost" style={{ padding: "6px 12px", fontSize: 12 }}>Close</button>
+                  </div>
                 </div>
-                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: e.notes ? 8 : 0 }}>
-                  {e.location && <span style={{ color: "var(--text2)", fontSize: 12 }}>📍 {e.location}</span>}
-                  {e.weight && <span style={{ color: "var(--text2)", fontSize: 12 }}>⚖️ {e.weight} lbs</span>}
-                  {e.size && <span style={{ color: "var(--text2)", fontSize: 12 }}>📏 {e.size}</span>}
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {e.location && <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", color: "var(--text2)", fontSize: 12 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>{e.location}</span>}
+                  {e.state && <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", color: "var(--text2)", fontSize: 12 }}>{e.state}</span>}
+                  {e.weight && <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", color: "var(--text2)", fontSize: 12 }}>⚖️ {e.weight} lbs</span>}
+                  {e.size && <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", color: "var(--text2)", fontSize: 12 }}>📏 {e.size}</span>}
                 </div>
-                {e.notes && <div style={{ color: "var(--text3)", fontSize: 12, lineHeight: 1.6 }}>{e.notes}</div>}
-                {e.photo && <img src={e.photo} style={{ marginTop: 10, width: "100%", borderRadius: "var(--radius-sm)", maxHeight: 380, objectFit: "contain", background: "rgba(0,0,0,0.3)" }} />}
+                {e.notes && <div style={{ color: "var(--text2)", fontSize: 13, lineHeight: 1.6 }}>{e.notes}</div>}
                 {e.photo && (
-                  <button onClick={() => submitToTrophyBoard(e)} disabled={submittedIds.has(e.id) || submittingTrophy === e.id} style={{ marginTop: 10, background: submittedIds.has(e.id) ? "var(--green-dim)" : "linear-gradient(135deg,rgba(212,147,10,0.15),rgba(180,120,5,0.1))", border: `1px solid ${submittedIds.has(e.id) ? "var(--border-accent)" : "rgba(212,147,10,0.3)"}`, color: submittedIds.has(e.id) ? "var(--green)" : "var(--amber)", padding: "7px 16px", borderRadius: "var(--radius-sm)", fontSize: 12, fontWeight: 600, cursor: submittedIds.has(e.id) ? "default" : "pointer", fontFamily: "var(--font-body)" }}>
+                  <button onClick={() => submitToTrophyBoard(e)} disabled={submittedIds.has(e.id) || submittingTrophy === e.id} style={{ alignSelf: "flex-start", background: submittedIds.has(e.id) ? "var(--green-dim)" : "linear-gradient(135deg,rgba(212,147,10,0.15),rgba(180,120,5,0.1))", border: `1px solid ${submittedIds.has(e.id) ? "var(--border-accent)" : "rgba(212,147,10,0.3)"}`, color: submittedIds.has(e.id) ? "var(--green)" : "var(--amber)", padding: "7px 16px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: submittedIds.has(e.id) ? "default" : "pointer", fontFamily: "var(--font-body)" }}>
                     {submittedIds.has(e.id) ? "✓ On Trophy Board" : submittingTrophy === e.id ? "Submitting..." : "🏆 Submit to Trophy Board"}
                   </button>
                 )}
               </div>
-              <button onClick={() => remove(e.id)} className="btn-ghost" style={{ padding: "4px 10px", fontSize: 12, flexShrink: 0, color: "rgba(255,100,100,0.7)" }}>✕</button>
             </div>
           </div>
-        ))}
+        );
+      })()}
     </div>
   );
 }
@@ -5265,7 +5297,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
     const loadSpecies = async () => {
       try {
         // Check Supabase cache first
-        const { data: cached } = await supabase.from("species_cache").select("species").eq("state", selectedState).single();
+        const { data: cached } = await supabase.from("species_cache").select("species").eq("state", selectedState).maybeSingle();
         if (cached) {
           setStateSpecies(cached.species);
           speciesTabCache.current[cacheKey] = cached.species;
@@ -5275,7 +5307,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         // Not cached — call API
         const res = await fetch("https://wildai-server.onrender.com/chat", {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: [{ role: "user", content: `Return ONLY a JSON array of objects for the 30 most commonly hunted and fished species in ${selectedState}. Each object must have: name (string), type ("hunting" or "fishing"), desc (string, max 5 words). Do NOT include any emoji characters. No markdown, no explanation, just the JSON array.` }], system: "Return only a valid JSON array. No emoji. No markdown. No explanation." })
+          body: JSON.stringify({ messages: [{ role: "user", content: `Return ONLY a JSON array of exactly 30 species for ${selectedState}, ranked #1 to #30 by actual hunter and angler participation numbers — most popular first. The mix of hunting vs fishing should naturally reflect what ${selectedState} is genuinely known for. Only include species with real open seasons and significant participation. Each object must have: name (string, use common name), type ("hunting" or "fishing"), desc (string, max 6 words describing habitat or key trait). No commercial-only species, no rare or exotic species, no random padding. No emoji, no markdown, no explanation, just the raw JSON array.` }], system: "Return only a valid JSON array ranked by popularity. No emoji. No markdown. No explanation. No code fences." })
         });
         const d = await res.json();
         const text = d.reply.replace(/```json|```/g, "").trim();
@@ -5283,7 +5315,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         setStateSpecies(parsed);
         speciesTabCache.current[cacheKey] = parsed;
         // Save to Supabase cache
-        await supabase.from("species_cache").insert({ state: selectedState, species: parsed });
+        await supabase.from("species_cache").upsert({ state: selectedState, species: parsed }, { onConflict: "state" });
       } catch {
         setStateSpecies([]);
       }
@@ -5529,11 +5561,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           </>
         )}
 
-        {!["chat", "more", "map", "community"].includes(tab) && !(tab === "gear" && selectedChecklist) && (
-          <button onClick={() => setTab("more")} style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", color: "var(--text3)", fontSize: 13, cursor: "pointer", padding: "0 0 8px 0", fontFamily: "var(--font-body)", transition: "color 0.2s" }} onMouseEnter={e => e.currentTarget.style.color = "var(--text)"} onMouseLeave={e => e.currentTarget.style.color = "var(--text3)"}>
-            ← Back
-          </button>
-        )}
+        
 
         {tab === "weather" && (
           <div className="fade-in">
@@ -5550,36 +5578,42 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         {tab === "licenses" && <LicensesTab selectedState={selectedState} />}
         {tab === "trip" && <TripPlannerTab selectedState={selectedState} user={user} isPro={isPro} hitLimit={hitLimit} messageCount={messageCount} setMessageCount={setMessageCount} onUpgrade={() => { if (!user) { openSignIn(); return; } openPricingModal(); }} />}
         {tab === "species" && (
-          <div className="fade-in">
+          <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {/* Header */}
+            <div style={{ textAlign: "center", paddingTop: 4 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", color: "var(--green)", textTransform: "uppercase", marginBottom: 4 }}>{selectedState || "Species"}</div>
+              <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 28, fontFamily: "var(--font-display)", letterSpacing: "-0.3px", lineHeight: 1 }}>Species Guide</div>
+              <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 5 }}>Tap any species to get AI tips</div>
+            </div>
+
             {!selectedState ? (
               <div className="card" style={{ padding: 40, textAlign: "center" }}>
                 <div style={{ fontSize: 48, marginBottom: 16 }}>🎯</div>
                 <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Select Your State</div>
-                <div style={{ color: "var(--text2)", fontSize: 14 }}>Go back home and choose your state to see available species.</div>
+                <div style={{ color: "var(--text2)", fontSize: 14 }}>Choose your state to see available species.</div>
               </div>
             ) : (
               <>
-                <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 12 }}>Don't see your species? Ask the AI in the Chat tab →</div>
-                <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-                  {["all", "hunting", "fishing"].map(f => (
-                    <button key={f} onClick={() => setSpeciesFilter(f)} className={`nav-tab ${speciesFilter === f ? "active" : "inactive"}`} style={{ padding: "7px 18px", fontSize: 12 }}>
-                      {f === "all" ? "All" : f === "hunting" ? "🎯 Hunting" : "🎣 Fishing"}
-                    </button>
-                  ))}
+                {/* Filter toggle */}
+                <div style={{ display: "flex", background: "#0e160e", border: "1px solid #192019", borderRadius: 14, padding: 3 }}>
+                  {[["all","All",<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>],["hunting","Hunting",<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>],["fishing","Fishing",<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10"/><path d="M20.414 8.586 22 7"/><circle cx="19" cy="10" r="2"/></svg>]].map(([val,label,icon]) => {
+                    const active = speciesFilter === val;
+                    return <button key={val} onClick={() => setSpeciesFilter(val)} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "8px 0", fontSize: 11, fontWeight: 700, borderRadius: 11, border: "none", cursor: "pointer", transition: "all 0.2s", background: active ? "linear-gradient(135deg,#2d5a1b,#1e4010)" : "transparent", color: active ? "white" : "#4a6a4a", boxShadow: active ? "0 2px 8px rgba(45,90,27,0.5)" : "none", fontFamily: "var(--font-body)" }}>{icon}{label}</button>;
+                  })}
                 </div>
+
                 {loadingStateSpecies && (
                   <div style={{ textAlign: "center", padding: 40, color: "var(--text3)", fontSize: 14 }} className="pulse">Loading {selectedState} species...</div>
                 )}
                 {!loadingStateSpecies && (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(160px,1fr))", gap: 12 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
                     {(stateSpecies.length > 0 ? stateSpecies : SPECIES)
                       .filter(s => speciesFilter === "all" || s.type === speciesFilter)
                       .map(s => (
-                        <button key={s.name} onClick={() => { sendMessage(`Give me a complete guide for ${s.name} — best tactics, gear, timing, and ${selectedState ? selectedState + " specific " : ""}tips.`); setTab("chat"); }} className="card" style={{ padding: "20px 16px", textAlign: "center", cursor: "pointer", border: "1px solid var(--border)" }}>
-                          <div style={{ fontSize: 32, marginBottom: 10 }}>{SPECIES_ICONS[s.name] || (s.type === "hunting" ? "🦌" : "🐟")}</div>
-                          <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{s.name}</div>
-                          <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 10 }}>{s.desc}</div>
-                          <span className={`tag tag-${s.type === "hunting" ? "hunt" : "fish"}`}>{s.type}</span>
+                        <button key={s.name} onClick={() => { sendMessage(`Give me a complete guide for ${s.name} — best tactics, gear, timing, and ${selectedState ? selectedState + " specific " : ""}tips.`); setTab("chat"); }} style={{ padding: "16px 8px", textAlign: "center", cursor: "pointer", background: "#0e1510", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                          <div style={{ fontSize: 28 }}>{SPECIES_ICONS[s.name] || (s.type === "hunting" ? "🦌" : "🐟")}</div>
+                          <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 11, lineHeight: 1.3 }}>{s.name}</div>
+                          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", padding: "2px 7px", borderRadius: 20, background: s.type === "hunting" ? "rgba(212,147,10,0.15)" : "rgba(80,140,220,0.12)", color: s.type === "hunting" ? "var(--amber)" : "#7ab0e0" }}>{s.type.toUpperCase()}</span>
                         </button>
                       ))}
                   </div>
