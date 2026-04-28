@@ -3522,7 +3522,34 @@ function HarvestLogTab({ user, openSignIn, isPro, openPricingModal }) {
                 ))}
               </div>
               <input placeholder="Species *" value={form.species} onChange={e => setForm(f => ({ ...f, species: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
-              <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
+              {/Mobi|Android/i.test(navigator.userAgent) ? (
+                <div style={{ display: "flex", gap: 6 }}>
+                  {(() => {
+                    const parts = form.date ? form.date.split("-") : ["", "", ""];
+                    const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+                    const days = Array.from({length: 31}, (_, i) => i + 1);
+                    const years = Array.from({length: 30}, (_, i) => new Date().getFullYear() - i);
+                    const selStyle = { flex: 1, padding: "11px 8px", borderRadius: 12, fontSize: 13, background: "#0e1510", border: "1px solid rgba(255,255,255,0.1)", color: "var(--text)", fontFamily: "var(--font-body)", cursor: "pointer", appearance: "none", WebkitAppearance: "none", textAlign: "center" };
+                    const update = (idx, val) => { const p = form.date ? form.date.split("-") : [new Date().getFullYear().toString(), "01", "01"]; p[idx] = val; setForm(f => ({ ...f, date: p.join("-") })); };
+                    return <>
+                      <select value={parts[1] || ""} onChange={e => update(1, e.target.value)} style={selStyle}>
+                        <option value="" disabled>Month</option>
+                        {months.map((m, i) => <option key={m} value={String(i+1).padStart(2,"0")}>{m}</option>)}
+                      </select>
+                      <select value={parts[2] || ""} onChange={e => update(2, e.target.value)} style={{...selStyle, flex: 0.6}}>
+                        <option value="" disabled>Day</option>
+                        {days.map(d => <option key={d} value={String(d).padStart(2,"0")}>{d}</option>)}
+                      </select>
+                      <select value={parts[0] || ""} onChange={e => update(0, e.target.value)} style={{...selStyle, flex: 0.8}}>
+                        <option value="" disabled>Year</option>
+                        {years.map(y => <option key={y} value={String(y)}>{y}</option>)}
+                      </select>
+                    </>;
+                  })()}
+                </div>
+              ) : (
+                <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} style={{ width: "100%", padding: "11px 14px", borderRadius: 12, fontSize: 14, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: form.date ? "var(--text)" : "rgba(255,255,255,0.35)", fontFamily: "var(--font-body)", boxSizing: "border-box", cursor: "pointer" }} />
+              )}
               <input placeholder="Location" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
               <select value={form.state} onChange={e => setForm(f => ({ ...f, state: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "#0e1510", border: "1px solid rgba(255,255,255,0.08)", color: form.state ? "var(--text)" : "rgba(255,255,255,0.3)", fontFamily: "var(--font-body)", boxSizing: "border-box" }}>
                 <option value="">State (optional)</option>
