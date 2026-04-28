@@ -3521,7 +3521,7 @@ function HarvestLogTab({ user, openSignIn, isPro, openPricingModal }) {
                   </button>
                 ))}
               </div>
-              <input placeholder="Species *" value={form.species} onChange={e => setForm(f => ({ ...f, species: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
+              <input placeholder="Species *" maxLength={50} value={form.species} onChange={e => setForm(f => ({ ...f, species: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
               {/Mobi|Android/i.test(navigator.userAgent) ? (
                 <div style={{ display: "flex", gap: 6 }}>
                   {(() => {
@@ -3550,16 +3550,16 @@ function HarvestLogTab({ user, openSignIn, isPro, openPricingModal }) {
               ) : (
                 <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} style={{ width: "100%", padding: "11px 14px", borderRadius: 12, fontSize: 14, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: form.date ? "var(--text)" : "rgba(255,255,255,0.35)", fontFamily: "var(--font-body)", boxSizing: "border-box", cursor: "pointer" }} />
               )}
-              <input placeholder="Location" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
+              <input placeholder="Location" maxLength={100} value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
               <select value={form.state} onChange={e => setForm(f => ({ ...f, state: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "#0e1510", border: "1px solid rgba(255,255,255,0.08)", color: form.state ? "var(--text)" : "rgba(255,255,255,0.3)", fontFamily: "var(--font-body)", boxSizing: "border-box" }}>
                 <option value="">State (optional)</option>
                 {STATES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
               <div style={{ display: "flex", gap: 8 }}>
-                <input placeholder="Weight (lbs)" value={form.weight} onChange={e => setForm(f => ({ ...f, weight: e.target.value }))} style={{ flex: 1, minWidth: 0, padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
-                <input placeholder={form.type === "fishing" ? "Length (in)" : "Antlers/Score"} value={form.size} onChange={e => setForm(f => ({ ...f, size: e.target.value }))} style={{ flex: 1, minWidth: 0, padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
+                <input placeholder="Weight (lbs)" maxLength={8} value={form.weight} onChange={e => setForm(f => ({ ...f, weight: e.target.value }))} style={{ flex: 1, minWidth: 0, padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
+                <input placeholder={form.type === "fishing" ? "Length (in)" : "Antlers/Score"} maxLength={30} value={form.size} onChange={e => setForm(f => ({ ...f, size: e.target.value }))} style={{ flex: 1, minWidth: 0, padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
               </div>
-              <textarea placeholder="Weather conditions, tactics used, memorable details..." value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, minHeight: 70, resize: "none", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
+              <textarea placeholder="Weather conditions, tactics used, memorable details..." maxLength={500} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, minHeight: 70, resize: "none", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "rgba(212,147,10,0.06)", border: "1px solid rgba(212,147,10,0.15)", borderRadius: 10 }}>
                 <span>🏆</span>
                 <span style={{ color: "var(--amber)", fontSize: 12 }}>Fill out all fields and add a photo to submit to the Trophy Board.</span>
@@ -3608,37 +3608,51 @@ function HarvestLogTab({ user, openSignIn, isPro, openPricingModal }) {
       {selectedEntry && (() => {
         const e = selectedEntry;
         return (
-          <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(0,0,0,0.92)", display: "flex", flexDirection: "column", overflow: "auto" }} onClick={() => setSelectedEntry(null)}>
-            <div onClick={ev => ev.stopPropagation()} style={{ background: "#0e1510", borderRadius: "20px 20px 0 0", marginTop: "auto", maxHeight: "92vh", overflow: "auto", display: "flex", flexDirection: "column" }}>
-              <div style={{ width: 36, height: 4, borderRadius: 2, background: "#2a3a2a", margin: "12px auto 0", flexShrink: 0 }} />
-              {e.photo && <img src={e.photo} style={{ width: "100%", objectFit: "contain", display: "block", background: "#000", maxHeight: "55vh" }} />}
-              <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,#2d5a1b,#1e4010)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)" }}>
-                      {e.type === "hunting"
-                        ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="22" x2="18" y1="12" y2="12" /><line x1="6" x2="2" y1="12" y2="12" /><line x1="12" x2="12" y1="6" y2="2" /><line x1="12" x2="12" y1="22" y2="18" /></svg>
-                        : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10" /><path d="M20.414 8.586 22 7" /><circle cx="19" cy="10" r="2" /></svg>}
-                    </div>
-                    <div>
-                      <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16 }}>{e.species}</div>
-                      <div style={{ color: "var(--text3)", fontSize: 12 }}>{new Date(e.date + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</div>
-                    </div>
+          <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(0,0,0,0.92)", display: "flex", flexDirection: "column" }} onClick={() => setSelectedEntry(null)}>
+            <div onClick={ev => ev.stopPropagation()} style={{ background: "#0a0f0a", width: "100%", height: "100%", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+
+              {/* Header bar */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 16px 12px", flexShrink: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg,#2d5a1b,#1e4010)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", flexShrink: 0 }}>
+                    {e.type === "hunting"
+                      ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>
+                      : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10"/><path d="M20.414 8.586 22 7"/><circle cx="19" cy="10" r="2"/></svg>}
                   </div>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={() => { remove(e.id); setSelectedEntry(null); }} style={{ background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.2)", color: "rgba(255,100,100,0.8)", padding: "6px 12px", borderRadius: 20, fontSize: 12, cursor: "pointer", fontFamily: "var(--font-body)" }}>Delete</button>
-                    <button onClick={() => setSelectedEntry(null)} className="btn-ghost" style={{ padding: "6px 12px", fontSize: 12 }}>Close</button>
+                  <div>
+                    <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, lineHeight: 1.2 }}>{e.species}</div>
+                    <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>{new Date(e.date + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</div>
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  {e.location && <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", color: "var(--text2)", fontSize: 12 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>{e.location}</span>}
-                  {e.state && <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", color: "var(--text2)", fontSize: 12 }}>{e.state}</span>}
-                  {e.weight && <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", color: "var(--text2)", fontSize: 12 }}>⚖️ {e.weight} lbs</span>}
-                  {e.size && <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", color: "var(--text2)", fontSize: 12 }}>📏 {e.size}</span>}
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <button onClick={() => { remove(e.id); setSelectedEntry(null); }} style={{ background: "none", border: "none", color: "rgba(255,100,100,0.5)", fontSize: 12, cursor: "pointer", fontFamily: "var(--font-body)", padding: "4px 8px" }}>Delete</button>
+                  <button onClick={() => setSelectedEntry(null)} style={{ background: "rgba(255,255,255,0.06)", border: "none", color: "var(--text2)", width: 28, height: 28, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
                 </div>
-                {e.notes && <div style={{ color: "var(--text2)", fontSize: 13, lineHeight: 1.6 }}>{e.notes}</div>}
+              </div>
+
+              {/* Full photo — uncropped, full width */}
+              {e.photo && (
+                <img src={e.photo} style={{ width: "100%", display: "block", objectFit: "contain", background: "#000", flexShrink: 0 }} />
+              )}
+
+              {/* Info */}
+              <div style={{ padding: "16px 16px 36px", display: "flex", flexDirection: "column", gap: 12 }}>
+                {/* Stat pills */}
+                {(e.location || e.state || e.weight || e.size) && (
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    {e.location && <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 12px", borderRadius: 20, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", color: "var(--text2)", fontSize: 12 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>{e.location}</span>}
+                    {e.state && <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 12px", borderRadius: 20, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", color: "var(--text2)", fontSize: 12 }}>{e.state}</span>}
+                    {e.weight && <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 12px", borderRadius: 20, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", color: "var(--text2)", fontSize: 12 }}>⚖️ {e.weight} lbs</span>}
+                    {e.size && <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 12px", borderRadius: 20, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", color: "var(--text2)", fontSize: 12 }}>📏 {e.size}</span>}
+                  </div>
+                )}
+
+                {/* Notes */}
+                {e.notes && <div style={{ color: "var(--text2)", fontSize: 14, lineHeight: 1.7 }}>{e.notes}</div>}
+
+                {/* Trophy board */}
                 {e.photo && (
-                  <button onClick={() => submitToTrophyBoard(e)} disabled={submittedIds.has(e.id) || submittingTrophy === e.id} style={{ alignSelf: "flex-start", background: submittedIds.has(e.id) ? "var(--green-dim)" : "linear-gradient(135deg,rgba(212,147,10,0.15),rgba(180,120,5,0.1))", border: `1px solid ${submittedIds.has(e.id) ? "var(--border-accent)" : "rgba(212,147,10,0.3)"}`, color: submittedIds.has(e.id) ? "var(--green)" : "var(--amber)", padding: "7px 16px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: submittedIds.has(e.id) ? "default" : "pointer", fontFamily: "var(--font-body)" }}>
+                  <button onClick={() => submitToTrophyBoard(e)} disabled={submittedIds.has(e.id) || submittingTrophy === e.id} style={{ alignSelf: "flex-start", background: submittedIds.has(e.id) ? "var(--green-dim)" : "linear-gradient(135deg,rgba(212,147,10,0.15),rgba(180,120,5,0.1))", border: `1px solid ${submittedIds.has(e.id) ? "var(--border-accent)" : "rgba(212,147,10,0.3)"}`, color: submittedIds.has(e.id) ? "var(--green)" : "var(--amber)", padding: "9px 18px", borderRadius: 20, fontSize: 13, fontWeight: 600, cursor: submittedIds.has(e.id) ? "default" : "pointer", fontFamily: "var(--font-body)" }}>
                     {submittedIds.has(e.id) ? "✓ On Trophy Board" : submittingTrophy === e.id ? "Submitting..." : "🏆 Submit to Trophy Board"}
                   </button>
                 )}
@@ -4123,7 +4137,7 @@ Use **bold** for key terms. Be specific and practical.`;
       {!plan && !loading && (
         <div style={{ textAlign: "center", padding: 32, color: "var(--text3)", fontSize: 14 }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🧭</div>
-          Fill in your trip details above and hit Generate — AI will build you a complete personalized trip plan
+          Fill in your trip details above and hit Generate 
         </div>
       )}
     </div>
@@ -4166,7 +4180,7 @@ function LicensesTab({ selectedState }) {
         </a>
       </div>
       {false && <div style={{ padding: "16px 20px", background: "var(--green-dim)", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)" }}>
-        <p style={{ color: "var(--green)", fontSize: 13, lineHeight: 1.7 }}>💬 Have a specific regulation question? Ask the AI in the Chat tab for more detailed info.</p>
+        <p style={{ color: "var(--green)", fontSize: 13, lineHeight: 1.7 }}>💬 Have a specific regulation question? Ask Ravlin in the Guide tab for more detailed info.</p>
         {STATE_WILDLIFE_AGENCIES[selectedState] && (
           <a href={STATE_WILDLIFE_AGENCIES[selectedState].hunting} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontSize: 13, fontWeight: 600, display: "inline-block", marginTop: 8 }}>
             Visit {STATE_WILDLIFE_AGENCIES[selectedState].name} for official regulations →
@@ -4607,7 +4621,7 @@ function RegulationsTab({ selectedState, currentUser }) {
       )}
 
       {false && <div style={{ padding: "16px 20px", background: "var(--green-dim)", border: "1px solid var(--border-accent)", borderRadius: "var(--radius)" }}>
-        <p style={{ color: "var(--green)", fontSize: 13, lineHeight: 1.7 }}>💬 Have a specific regulation question? Ask the AI in the Chat tab for more detailed info.</p>
+        <p style={{ color: "var(--green)", fontSize: 13, lineHeight: 1.7 }}>💬 Have a specific regulation question? Ask Ravlin in the Guide tab for more detailed info.</p>
       </div>}
     </div>
   );
@@ -4928,17 +4942,17 @@ function LandingPage({ onStart, onSignIn, onGuest, selectedState, setSelectedSta
 
       <div style={{ position: "relative", zIndex: 2, minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px 80px", textAlign: "center" }}>
         <div style={{ background: "rgba(5,10,5,0.25)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.12)", borderTop: "1px solid rgba(255,255,255,0.2)", borderRadius: 28, padding: "40px 32px 32px", width: "100%", maxWidth: 380, position: "relative", overflow: "hidden" }}>
-          <img src="/badge1.png" style={{ width: "100%", height: "100%", objectFit: "contain", opacity: 0.16, position: "absolute", top: window.innerWidth < 500 ? "20%" : "24%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 0, pointerEvents: "none" }} />
+          <img src="/badge1.png" style={{ width: "100%", height: "100%", objectFit: "contain", opacity: 0.16, position: "absolute", top: window.innerWidth < 500 ? "18%" : "22%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 0, pointerEvents: "none" }} />
           <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 8, zIndex: 1 }}>
             <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(42px,8vw,64px)", fontWeight: 700, lineHeight: 1.0, color: "white", letterSpacing: "0.02em", marginBottom: 8 }}>Ravlin</h1>
             <p style={{ color: "rgba(238,245,232,0.6)", fontSize: 13, lineHeight: 1.5, marginBottom: 12, fontFamily: "var(--font-display)", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" }}>Hunt. Fish. Connect.</p>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
-            {["Private map pins — your spots stay yours", "Personalized weather & solunar data", "Community feed for hunters & anglers"].map((text) => (
-              <div key={text} style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.25)", borderRadius: 12, padding: "10px 14px" }}>
+          <div style={{ marginBottom: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+            {["Your spots stay private — always", "Get answers for your exact state", "Weather, solunar & species guides", "Drop private pins on your best spots", "Community for hunters & anglers"].map((text) => (
+              <div key={text} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--green)", flexShrink: 0 }} />
-                <span style={{ color: "rgba(238,245,232,0.75)", fontSize: 12, fontWeight: 500 }}>{text}</span>
+                <span style={{ color: "rgba(238,245,232,0.7)", fontSize: 13, fontWeight: 400, lineHeight: 1.4 }}>{text}</span>
               </div>
             ))}
           </div>
@@ -5161,7 +5175,7 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
 }
 
 function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSelectedState, onTerms, messagesUnread, setMessagesUnread, notifUnread, setNotifUnread, openPricingModal, isGuest, onSignIn }) {
-  const [tab, setTab] = useState("community");
+  const [tab, setTab] = useState("more");
   const [weather, setWeather] = useState(null);
   const [locationName, setLocationName] = useState("");
 
@@ -5196,7 +5210,10 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
           }
           await fetchWeather();
         } catch { }
-      });
+        setDetectingLocation(false);
+      }, () => setDetectingLocation(false));
+    } else {
+      setDetectingLocation(false);
     }
     const interval = setInterval(fetchWeather, 10 * 60 * 1000);
     return () => clearInterval(interval);
@@ -5225,6 +5242,7 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [detectingLocation, setDetectingLocation] = useState(() => !localStorage.getItem("wildai_selected_state") && !selectedState);
   const { openSignIn: _openSignIn } = useClerk();
   const openSignIn = () => { _openSignIn({ afterSignInUrl: window.location.href, afterSignUpUrl: window.location.href }); };
   useEffect(() => { window._triggerSignIn = openSignIn; return () => { window._triggerSignIn = null; }; }, [openSignIn]);
@@ -5429,33 +5447,36 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
       </header>
 
       {/* BOTTOM NAV */}
-      <div className="bottom-nav" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, background: "rgba(5,10,5,0.92)", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "stretch", height: 64, backdropFilter: "blur(24px)", boxShadow: "0 -4px 24px rgba(0,0,0,0.4), 0 -1px 0 rgba(120,180,80,0.08)" }}>
+      <div className="bottom-nav" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, background: "rgba(8,12,8,0.97)", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "stretch", height: 68, backdropFilter: "blur(24px)" }}>
         {(() => {
-          const tabs = ["community", "map", "chat", "more"];
+          const tabs = ["more", "map", "chat", "community"];
           const activeIndex = tabs.indexOf(tab);
           return <>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, pointerEvents: "none" }}>
-              <div style={{ position: "absolute", top: 0, height: 2, width: 28, borderRadius: "0 0 2px 2px", background: "var(--green)", boxShadow: "0 0 8px rgba(120,180,80,0.9)", left: `calc(${activeIndex} * 25% + 12.5% - 14px)`, transition: "left 0.25s cubic-bezier(0.4, 0, 0.2, 1)" }} />
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2.5, pointerEvents: "none" }}>
+              <div style={{ position: "absolute", top: 0, height: 2.5, width: 36, borderRadius: "0 0 3px 3px", background: "var(--green)", boxShadow: "0 0 12px rgba(120,200,80,1)", left: `calc(${activeIndex} * 25% + 12.5% - 18px)`, transition: "left 0.25s cubic-bezier(0.4, 0, 0.2, 1)" }} />
             </div>
             <div style={{ display: "flex", flex: 1 }}>
               {[
-                { id: "community", label: "Community", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg> },
-                { id: "map", label: "Map", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" /><line x1="9" y1="3" x2="9" y2="18" /><line x1="15" y1="6" x2="15" y2="21" /></svg> },
-                { id: "chat", label: "Chat", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> },
-                { id: "more", label: "Tools", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="2" /><rect x="14" y="3" width="7" height="7" rx="2" /><rect x="14" y="14" width="7" height="7" rx="2" /><rect x="3" y="14" width="7" height="7" rx="2" /></svg> },
-              ].map(t => (
-                <button key={t.id} onClick={() => { setTab(t.id); setShowMore(false); if (t.id === "map" && !sessionStorage.getItem("ravlin_map_privacy_seen")) { window._showMapPrivacy?.(); } }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, background: "none", border: "none", cursor: "pointer", color: tab === t.id ? "var(--green)" : "var(--text3)", transition: "color 0.2s" }}>
-                  <div style={{ position: "relative" }}>
-                    {t.svg}
-                    {t.id === "community" && (messagesUnread + notifUnread) > 0 && (
-                      <div style={{ position: "absolute", top: -3, right: -3, background: "#f43f5e", borderRadius: "50%", minWidth: 13, height: 13, fontSize: 8, fontWeight: 700, color: "white", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 2px" }}>
-                        {(messagesUnread + notifUnread) > 9 ? "9+" : messagesUnread + notifUnread}
-                      </div>
-                    )}
-                  </div>
-                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.04em" }}>{t.label}</span>
-                </button>
-              ))}
+                { id: "more", label: "Tools", svg: (active) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="2" /><rect x="14" y="3" width="7" height="7" rx="2" /><rect x="14" y="14" width="7" height="7" rx="2" /><rect x="3" y="14" width="7" height="7" rx="2" /></svg> },
+                { id: "map", label: "Map", svg: (active) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" /><line x1="9" y1="3" x2="9" y2="18" /><line x1="15" y1="6" x2="15" y2="21" /></svg> },
+                { id: "chat", label: "Guide", svg: (active) => <div style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", transform: active ? "translateY(-6px)" : "none", transition: "transform 0.2s cubic-bezier(0.34,1.56,0.64,1)" }}><img src="/deer-shield.png" style={{ width: active ? 64 : 60, height: active ? 64 : 60, objectFit: "contain", opacity: active ? 1 : 0.4, filter: active ? "none" : "grayscale(100%) brightness(1.5)", transition: "all 0.2s cubic-bezier(0.34,1.56,0.64,1)" }} />{active && <span style={{ position: "absolute", bottom: 5, left: "50%", transform: "translateX(-50%)", fontSize: 11, fontWeight: 700, color: "var(--green)", letterSpacing: "0.03em", whiteSpace: "nowrap", textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}>Guide</span>}</div> },
+                { id: "community", label: "Community", svg: (active) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg> },
+              ].map(t => {
+                const active = tab === t.id;
+                return (
+                  <button key={t.id} onClick={() => { setTab(t.id); setShowMore(false); if (t.id === "map" && !sessionStorage.getItem("ravlin_map_privacy_seen")) { window._showMapPrivacy?.(); } }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, background: "none", border: "none", cursor: "pointer", color: active ? "var(--green)" : "rgba(255,255,255,0.35)", transition: "color 0.2s" }}>
+                    <div style={{ position: "relative", transform: active && t.id !== "chat" ? "scale(1.2) translateY(-3px)" : "scale(1)", transition: "transform 0.2s cubic-bezier(0.34,1.56,0.64,1)" }}>
+                      {t.svg(active)}
+                      {t.id === "community" && (messagesUnread + notifUnread) > 0 && (
+                        <div style={{ position: "absolute", top: -3, right: -3, background: "#f43f5e", borderRadius: "50%", minWidth: 13, height: 13, fontSize: 8, fontWeight: 700, color: "white", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 2px" }}>
+                          {(messagesUnread + notifUnread) > 9 ? "9+" : messagesUnread + notifUnread}
+                        </div>
+                      )}
+                    </div>
+                    {active && t.id !== "chat" && <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.03em" }}>{t.label}</span>}
+                  </button>
+                );
+              })}
             </div>
           </>;
         })()}
@@ -5635,7 +5656,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
             <div style={{ textAlign: "center", paddingTop: 4 }}>
               <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", color: "var(--green)", textTransform: "uppercase", marginBottom: 4 }}>{selectedState || "Species"}</div>
               <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 28, fontFamily: "var(--font-display)", letterSpacing: "-0.3px", lineHeight: 1 }}>Species Guide</div>
-              <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 5 }}>Tap any species to get AI tips</div>
+              <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 5 }}>Tap any species to get guided tips</div>
             </div>
 
             {!selectedState ? (
@@ -5721,17 +5742,21 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div style={{ padding: "14px 16px", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ color: "var(--text2)", fontSize: 13, fontWeight: 600, flexShrink: 0 }}>Your State</div>
-              <select value={selectedState} onChange={e => setSelectedState(e.target.value)} style={{ flex: 1, padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 14 }}>
-                <option value="">Select state...</option>
-                {STATES.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
+              {detectingLocation && !selectedState ? (
+                <div style={{ flex: 1, padding: "8px 12px", fontSize: 14, color: "var(--text3)", fontStyle: "italic" }}>Detecting location...</div>
+              ) : (
+                <select value={selectedState} onChange={e => setSelectedState(e.target.value)} style={{ flex: 1, padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 14 }}>
+                  <option value="">Select state...</option>
+                  {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              )}
             </div>
             <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 4 }}>TOOLS & FEATURES</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               {[
                 { id: "species", label: "Species", desc: "Hunting & fishing guides", accent: "#2d5a1b", color: "#6dba4a", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="22" y1="12" x2="18" y2="12" /><line x1="6" y1="12" x2="2" y2="12" /><line x1="12" y1="6" x2="12" y2="2" /><line x1="12" y1="22" x2="12" y2="18" /></svg> },
                 { id: "regs", label: "Regulations", desc: "State-specific rules", accent: "#1a3a5c", color: "#4a8fd4", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg> },
-                { id: "trip", label: "Trip Planner", desc: "AI-generated plans", accent: "#2a1a5c", color: "#a78bfa", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg> },
+                { id: "trip", label: "Trip Planner", desc: "Personalized plans", accent: "#2a1a5c", color: "#a78bfa", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg> },
                 { id: "gear", label: "Gear", desc: "Pack checklists", accent: "#5c2a0a", color: "#fb923c", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" /></svg> },
                 { id: "licenses", label: "Licenses", desc: "Buy state licenses", accent: "#0a4a3a", color: "#34d399", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></svg> },
                 { id: "harvest", label: "Harvest Log", desc: "Track your catches", accent: "#1a3a10", color: "#a3e635", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg> },
@@ -5970,9 +5995,9 @@ export default function App() {
         {page === "terms" && <TermsPage onBack={() => setPage(prevPage === "chat" ? "chat" : "landing")} />}
         {page === "landing" && <LandingPage onStart={() => goTo("chat")} onSignIn={() => { window._triggerSignIn?.(); }} onGuest={() => { localStorage.setItem("wildai_guest", "true"); setIsGuest(true); goTo("chat"); }} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} />}
         {page === "onboarding" && <OnboardingPage user={user} onComplete={() => goTo("chat")} setSelectedState={handleSetSelectedState} />}
-        {page === "chat" && <ChatPage onBack={() => { localStorage.removeItem("wildai_selected_state"); setSelectedState(""); goTo("landing"); }} messageCount={messageCount} setMessageCount={setMessageCount} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} messagesUnread={messagesUnread} setMessagesUnread={setMessagesUnread} notifUnread={notifUnread} setNotifUnread={setNotifUnread} openPricingModal={() => setShowPricingModal(true)} isGuest={isGuest} onSignIn={() => { localStorage.removeItem("wildai_guest"); setIsGuest(false); window._triggerSignIn?.(); }} />}
+        {page === "chat" && <ChatPage onBack={() => { localStorage.removeItem("wildai_selected_state"); setSelectedState(""); goTo("landing"); }} messageCount={messageCount} setMessageCount={setMessageCount} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} messagesUnread={messagesUnread} setMessagesUnread={setMessagesUnread} notifUnread={notifUnread} setNotifUnread={setNotifUnread} openPricingModal={requireSignInForPro} isGuest={isGuest} onSignIn={() => { localStorage.removeItem("wildai_guest"); setIsGuest(false); window._triggerSignIn?.(); }} />}
       </ErrorBoundary>
-      {showPricingModal && (
+      {showPricingModal && user && (
         <div style={{ position: "fixed", inset: 0, zIndex: 99999999, background: "rgba(0,0,0,0.92)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setShowPricingModal(false)}>
           <div style={{ background: "#070e07", borderRadius: 24, padding: 24, width: "100%", maxWidth: 480, maxHeight: "90dvh", overflowY: "auto", position: "relative" }} onClick={e => e.stopPropagation()}>
             <button onClick={() => setShowPricingModal(false)} style={{ position: "absolute", top: 16, right: 16, background: "none", border: "none", color: "var(--text3)", fontSize: 20, cursor: "pointer", zIndex: 1 }}>✕</button>
