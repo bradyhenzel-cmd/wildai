@@ -378,6 +378,7 @@ const FireSVG = ({ style: s = {} }) => (
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
   * { box-sizing:border-box; margin:0; padding:0; word-break:break-word; overflow-wrap:break-word; }
+  .cl-rootBox, .cl-modalBackdrop, .cl-modalContent, [data-clerk-modal], #clerk-modal { z-index: 999999999 !important; }
   :root {
     --bg:#050505; --bg2:#0a0a0a;
     --card:rgba(255,255,255,0.02); --card-hover:rgba(255,255,255,0.05);
@@ -1215,7 +1216,7 @@ function MapTab({ selectedState, user, onSharePin, isPro, onPinAdded }) {
 }
 
 // ─── USER PROFILE ─────────────────────────────────────────────────────────────
-function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, onMessage, onPost, onBlock }) {
+function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, onMessage, onPost, onBlock, isGuest }) {
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [followerCount, setFollowerCount] = useState(0);
@@ -1306,7 +1307,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
   };
 
   const toggleFollow = async () => {
-    if (!currentUser) { openSignIn(); return; }
+    if (!currentUser || isGuest) { openSignIn(); return; }
     if (isFollowing) {
       await supabase.from("follows").delete().eq("follower_id", currentUser.id).eq("following_id", userId);
       setIsFollowing(false);
@@ -1450,7 +1451,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
             <button onClick={toggleFollow} className={isFollowing ? "btn-ghost" : "btn-primary"} style={{ flex: 1, padding: "8px 0", fontSize: 13, borderRadius: 20 }}>
               {isFollowing ? "Following" : "Follow"}
             </button>
-            <button onClick={() => onMessage?.(userId)} className="btn-ghost" style={{ flex: 1, padding: "8px 0", fontSize: 13, borderRadius: 20 }}>Message</button>
+            <button onClick={() => { if (!currentUser) { openSignIn(); return; } onMessage?.(userId); }} className="btn-ghost" style={{ flex: 1, padding: "8px 0", fontSize: 13, borderRadius: 20 }}>Message</button>
           </div>
         )}
         {isOwnProfile && (
@@ -1460,7 +1461,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
         {!isOwnProfile && (
           <div style={{ display: "flex", gap: 12 }}>
             <button onClick={async () => {
-              if (!currentUser) { openSignIn(); return; }
+              if (!currentUser || isGuest) { openSignIn(); return; }
               const { data: existing } = await supabase.from("reported_users").select("id").eq("user_id", userId).eq("reported_by", currentUser.id).single();
               if (existing) { toast("You've already reported this user."); return; }
               await supabase.from("reported_users").insert({ user_id: userId, reported_by: currentUser.id });
@@ -1487,7 +1488,7 @@ function UserProfilePage({ userId, currentUser, onBack, openSignIn, onViewUser, 
               document.body
             )}
             <button onClick={async () => {
-              if (!currentUser) { openSignIn(); return; }
+              if (!currentUser || isGuest) { openSignIn(); return; }
               if (isBlocked) {
                 await supabase.from("blocked_users").delete().eq("blocker_id", currentUser.id).eq("blocked_id", userId);
                 setIsBlocked(false);
@@ -2079,7 +2080,7 @@ function PinPicker({ user, onSelect }) {
   );
 }
 
-function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSetUnread, externalSetNotifUnread }) {
+function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSetUnread, externalSetNotifUnread, isGuest }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -2370,7 +2371,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
   }, [user]);
 
   const toggleLike = async (post) => {
-    if (!user) { openSignIn(); return; }
+    if (!user || isGuest) { openSignIn(); return; }
     const liked = likedPostIds.has(post.id);
     if (liked) {
       await supabase.from("likes").delete().eq("post_id", post.id).eq("user_id", user.id);
@@ -2658,6 +2659,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
             <UserProfilePage
               userId={viewingProfile}
               currentUser={user}
+              isGuest={isGuest}
               onBack={() => setViewingProfile(null)}
               openSignIn={openSignIn}
               onViewUser={(id) => setViewingProfile(id)}
@@ -2669,7 +2671,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
         document.body
       )}
       {communityTab === "feed" && !viewingProfile && <>
-        
+
         {/* Toggles */}
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <div style={{ display: "flex", background: "#0a110a", border: "1px solid #1c2a1c", borderRadius: 14, padding: 3, gap: 2 }}>
@@ -2696,13 +2698,15 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
 
       {(communityTab === "feed" || communityTab === "profile") && !viewingProfile && showForm && createPortal(
         <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "#0e1510", display: "flex", flexDirection: "column" }} onClick={() => { setShowForm(false); setForm({ species: "", location: "", caption: "", photo: "", pinLat: null, pinLng: null }); }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: "#0e1510", width: "100%", height: "100%", overflowY: "auto", display: "flex", flexDirection: "column", animation: "slideUp 0.3s cubic-bezier(0.32,0.72,0,1)" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 10px" }}>
-              <div style={{ width: 36, height: 4, borderRadius: 2, background: "#2a3a2a", position: "absolute", left: "50%", transform: "translateX(-50%)", top: 12 }} />
-              <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 15, fontFamily: "var(--font-display)" }}>New Post</span>
-              <button onClick={() => { setShowForm(false); setForm({ species: "", location: "", caption: "", photo: "", pinLat: null, pinLng: null }); }} style={{ background: "rgba(255,255,255,0.06)", border: "none", color: "var(--text2)", width: 28, height: 28, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#0e1510", width: "100%", height: "100%", display: "flex", flexDirection: "column", animation: "slideUp 0.3s cubic-bezier(0.32,0.72,0,1)" }}>
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 16px 12px", flexShrink: 0 }}>
+              <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, fontFamily: "var(--font-display)" }}>New Post</span>
+              <button onClick={() => { setShowForm(false); setForm({ species: "", location: "", caption: "", photo: "", pinLat: null, pinLng: null }); }} style={{ background: "none", border: "none", color: "var(--text3)", cursor: "pointer", fontSize: 13, fontFamily: "var(--font-body)", fontWeight: 600, padding: "4px 8px" }}>Cancel</button>
             </div>
-            <label style={{ display: "block", cursor: "pointer", position: "relative" }}>
+
+            {/* Photo — grows to fill space */}
+            <label style={{ display: "block", cursor: "pointer", position: "relative", margin: "0 16px", borderRadius: 16, overflow: "hidden", flex: 1 }}>
               <input type="file" accept="image/*" style={{ display: "none" }} onChange={async e => {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -2716,25 +2720,32 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                 toast("Photo added!", "success");
               }} />
               {form.photo ? (
-                <div style={{ position: "relative" }}>
-                  <img src={form.photo} style={{ width: "100%", maxHeight: 320, objectFit: "cover", display: "block" }} />
-                  <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.6)", borderRadius: 20, padding: "4px 10px", fontSize: 12, color: "white", backdropFilter: "blur(8px)" }}>Change photo</div>
+                <div style={{ position: "relative", height: "100%" }}>
+                  <img src={form.photo} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                  <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.55)", borderRadius: 20, padding: "4px 12px", fontSize: 12, color: "white", backdropFilter: "blur(8px)" }}>Change</div>
                 </div>
               ) : (
-                <div style={{ height: 160, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(255,255,255,0.02)", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
-                  <span style={{ color: "rgba(255,255,255,0.25)", fontSize: 13 }}>Tap to add a photo</span>
+                <div style={{ height: "100%", minHeight: 260, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, background: "linear-gradient(135deg, rgba(45,90,27,0.12), rgba(30,64,16,0.06))", border: "1.5px dashed rgba(120,180,80,0.2)", borderRadius: 16 }}>
+                  <div style={{ width: 60, height: 60, borderRadius: 16, background: "rgba(120,180,80,0.08)", border: "1px solid rgba(120,180,80,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(120,180,80,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 15, fontWeight: 600 }}>Add a photo</div>
+                    <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, marginTop: 4 }}>Tap to choose from your library</div>
+                  </div>
                 </div>
               )}
             </label>
-            <div style={{ padding: "14px 16px 36px", display: "flex", flexDirection: "column", gap: 12 }}>
-              <textarea placeholder="Share your experience..." value={form.caption} onChange={e => setForm(f => ({ ...f, caption: e.target.value.slice(0, 500) }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 14, minHeight: 80, resize: "none", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", outline: "none", boxSizing: "border-box", lineHeight: 1.6 }} />
-              <select value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "#0e1510", border: "1px solid rgba(255,255,255,0.08)", color: form.location ? "var(--text)" : "rgba(255,255,255,0.3)", fontFamily: "var(--font-body)", boxSizing: "border-box" }}>
+
+            {/* Fields — pinned to bottom */}
+            <div style={{ padding: "14px 16px 40px", display: "flex", flexDirection: "column", gap: 10, flexShrink: 0 }}>
+              <textarea placeholder="Share your experience..." value={form.caption} onChange={e => setForm(f => ({ ...f, caption: e.target.value.slice(0, 500) }))} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, minHeight: 70, resize: "none", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", outline: "none", boxSizing: "border-box", lineHeight: 1.6 }} />
+              <select value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ width: "100%", padding: "11px 14px", borderRadius: 12, fontSize: 13, background: "#0e1510", border: "1px solid rgba(255,255,255,0.08)", color: form.location ? "var(--text)" : "rgba(255,255,255,0.3)", fontFamily: "var(--font-body)", boxSizing: "border-box" }}>
                 <option value="">State (optional)</option>
                 {STATES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
               {error && <span style={{ color: "var(--amber)", fontSize: 12 }}>{error}</span>}
-              <button onClick={() => { if (!form.photo || !form.caption) { if (!form.photo && !form.caption) { toast("Please add a photo and description.", "error"); } else if (!form.photo) { toast("Please add a photo to your post.", "error"); } else { toast("Please add a description to your post.", "error"); } return; } submitPost(); }} disabled={submitting} className="btn-primary" style={{ width: "100%", padding: "13px", fontSize: 14, fontWeight: 700, borderRadius: 12, opacity: submitting ? 0.5 : (!form.photo || !form.caption) ? 0.7 : 1 }}>
+              <button onClick={() => { if (!form.photo || !form.caption) { if (!form.photo && !form.caption) { toast("Please add a photo and description.", "error"); } else if (!form.photo) { toast("Please add a photo to your post.", "error"); } else { toast("Please add a description to your post.", "error"); } return; } submitPost(); }} disabled={submitting} className="btn-primary" style={{ width: "100%", padding: "14px", fontSize: 14, fontWeight: 700, borderRadius: 14, opacity: submitting ? 0.5 : (!form.photo || !form.caption) ? 0.6 : 1 }}>
                 {submitting ? "Posting..." : "Share Post"}
               </button>
             </div>
@@ -2755,59 +2766,59 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
             const post = p; const isLiked = pLiked; const likeCount = pLikeCount;
             return (
               <div key={p.id} style={{ width: "100%", height: "100vh", position: "relative", overflow: "hidden", flexShrink: 0 }}>
-              {/* Photo fullscreen */}
-              <div style={{ position: "absolute", inset: 0 }}>
-                {post.photo && <img src={post.photo} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "blur(20px)", transform: "scale(1.1)", opacity: 0.6 }} />}
-                {post.photo && <img src={post.photo} style={{ position: "relative", width: "100%", height: "100%", objectFit: "contain", zIndex: 1 }} />}
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 25%, transparent 50%, rgba(0,0,0,0.75) 100%)", zIndex: 2, pointerEvents: "none" }} />
-                {/* Close button */}
-                <button onClick={() => { setReelsIndex(null); setReelsComments(false); }} style={{ position: "absolute", top: 16, left: 16, background: "rgba(0,0,0,0.4)", border: "none", color: "white", width: 36, height: 36, borderRadius: "50%", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(6px)", zIndex: 3 }}>✕</button>
-                {/* Nav arrows */}
+                {/* Photo fullscreen */}
+                <div style={{ position: "absolute", inset: 0 }}>
+                  {post.photo && <img src={post.photo} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "blur(20px)", transform: "scale(1.1)", opacity: 0.6 }} />}
+                  {post.photo && <img src={post.photo} style={{ position: "relative", width: "100%", height: "100%", objectFit: "contain", zIndex: 1 }} />}
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 25%, transparent 50%, rgba(0,0,0,0.75) 100%)", zIndex: 2, pointerEvents: "none" }} />
+                  {/* Close button */}
+                  <button onClick={() => { setReelsIndex(null); setReelsComments(false); }} style={{ position: "absolute", top: 16, left: 16, background: "rgba(0,0,0,0.4)", border: "none", color: "white", width: 36, height: 36, borderRadius: "50%", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(6px)", zIndex: 3 }}>✕</button>
+                  {/* Nav arrows */}
 
-                
-                {/* Three-dot top right */}
-                <div style={{ position: "absolute", top: 16, right: 12, zIndex: 3 }}>
-                  <button onClick={() => setPostMenu(postMenu === post.id ? null : post.id)} style={{ background: "rgba(0,0,0,0.4)", border: "none", cursor: "pointer", color: "white", padding: "6px 8px", borderRadius: 8, backdropFilter: "blur(6px)", lineHeight: 0 }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" /></svg>
-                  </button>
-                  {postMenu === post.id && (
-                    <div style={{ position: "absolute", top: 36, right: 0, background: "rgba(15,22,15,0.97)", border: "1px solid #1c2a1c", borderRadius: 12, overflow: "hidden", minWidth: 150, backdropFilter: "blur(12px)", zIndex: 10 }}>
-                      {(user?.id === post.user_id || user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a") && (
-                        <button onClick={() => { deletePost(post.id); setPostMenu(null); setReelsIndex(null); }} style={{ width: "100%", padding: "12px 16px", background: "none", border: "none", color: "rgba(255,100,100,0.9)", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", display: "flex", alignItems: "center", gap: 10 }}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /></svg>
-                          Delete post
-                        </button>
-                      )}
-                      <button onClick={() => { reportPost(post.id); setPostMenu(null); }} style={{ width: "100%", padding: "12px 16px", background: "none", border: "none", color: "rgba(220,180,60,0.9)", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", display: "flex", alignItems: "center", gap: 10, borderTop: user?.id === post.user_id ? "1px solid #1c2a1c" : "none" }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" y1="22" x2="4" y2="15" /></svg>
+
+                  {/* Three-dot top right */}
+                  <div style={{ position: "absolute", top: 16, right: 12, zIndex: 3 }}>
+                    <button onClick={() => setPostMenu(postMenu === post.id ? null : post.id)} style={{ background: "rgba(0,0,0,0.4)", border: "none", cursor: "pointer", color: "white", padding: "6px 8px", borderRadius: 8, backdropFilter: "blur(6px)", lineHeight: 0 }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" /></svg>
+                    </button>
+                    {postMenu === post.id && (
+                      <div style={{ position: "absolute", top: 36, right: 0, background: "rgba(15,22,15,0.97)", border: "1px solid #1c2a1c", borderRadius: 12, overflow: "hidden", minWidth: 150, backdropFilter: "blur(12px)", zIndex: 10 }}>
+                        {(user?.id === post.user_id || user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a") && (
+                          <button onClick={() => { deletePost(post.id); setPostMenu(null); setReelsIndex(null); }} style={{ width: "100%", padding: "12px 16px", background: "none", border: "none", color: "rgba(255,100,100,0.9)", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", display: "flex", alignItems: "center", gap: 10 }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /></svg>
+                            Delete post
+                          </button>
+                        )}
+                        <button onClick={() => { if (!user || isGuest) { openSignIn(); setPostMenu(null); return; } reportPost(post.id); setPostMenu(null); }} style={{ width: "100%", padding: "12px 16px", background: "none", border: "none", color: "rgba(220,180,60,0.9)", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", display: "flex", alignItems: "center", gap: 10, borderTop: user?.id === post.user_id ? "1px solid #1c2a1c" : "none" }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" y1="22" x2="4" y2="15" /></svg>
                           Report post
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Vertical action buttons */}
+                  <div style={{ position: "absolute", right: 12, bottom: reelsComments ? "64%" : 80, display: "flex", flexDirection: "column", alignItems: "center", gap: 20, transition: "bottom 0.3s", zIndex: 3 }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                      <button onClick={(e) => { toggleLike(post); const svg = e.currentTarget.querySelector('svg'); svg.classList.remove('like-pop'); void svg.offsetWidth; svg.classList.add('like-pop'); }} style={{ background: "none", border: "none", cursor: "pointer", color: isLiked ? "#f43f5e" : "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))" }}>
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
                       </button>
+                      <span style={{ color: "white", fontSize: 11, fontWeight: 700, textShadow: "0 1px 4px rgba(0,0,0,0.9)", height: 14, display: "block", textAlign: "center" }}>{likeCount > 0 ? likeCount : ""}</span>
                     </div>
-                  )}
-                </div>
-
-                {/* Vertical action buttons */}
-                <div style={{ position: "absolute", right: 12, bottom: reelsComments ? "64%" : 80, display: "flex", flexDirection: "column", alignItems: "center", gap: 20, transition: "bottom 0.3s", zIndex: 3 }}>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-                    <button onClick={(e) => { toggleLike(post); const svg = e.currentTarget.querySelector('svg'); svg.classList.remove('like-pop'); void svg.offsetWidth; svg.classList.add('like-pop'); }} style={{ background: "none", border: "none", cursor: "pointer", color: isLiked ? "#f43f5e" : "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))" }}>
-                      <svg width="30" height="30" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                      <button onClick={() => { if (!user || isGuest) { openSignIn(); return; } setReelsComments(c => !c); }} style={{ background: "none", border: "none", cursor: "pointer", color: reelsComments ? "var(--green)" : "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))" }}>
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                      </button>
+                      <span style={{ color: "white", fontSize: 11, fontWeight: 700, textShadow: "0 1px 4px rgba(0,0,0,0.9)", height: 14, display: "block", textAlign: "center" }}>{commentCounts[post.id] > 0 ? commentCounts[post.id] : ""}</span>
+                    </div>
+                    <button onClick={() => { if (!user || isGuest) { openSignIn(); return; } setShareOptionsPost(post); }} style={{ background: "none", border: "none", cursor: "pointer", color: "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))" }}>
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
                     </button>
-                    <span style={{ color: "white", fontSize: 11, fontWeight: 700, textShadow: "0 1px 4px rgba(0,0,0,0.9)", height: 14, display: "block", textAlign: "center" }}>{likeCount > 0 ? likeCount : ""}</span>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-                    <button onClick={() => setReelsComments(c => !c)} style={{ background: "none", border: "none", cursor: "pointer", color: reelsComments ? "var(--green)" : "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))" }}>
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-                    </button>
-                    <span style={{ color: "white", fontSize: 11, fontWeight: 700, textShadow: "0 1px 4px rgba(0,0,0,0.9)", height: 14, display: "block", textAlign: "center" }}>{commentCounts[post.id] > 0 ? commentCounts[post.id] : ""}</span>
-                  </div>
-                  <button onClick={() => { setShareOptionsPost(post); }} style={{ background: "none", border: "none", cursor: "pointer", color: "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))" }}>
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
-                  </button>
-                </div>
 
-              </div>
-              {/* Comments slide-up sheet */}
-              {/* Time ago bottom left */}
+                </div>
+                {/* Comments slide-up sheet */}
+                {/* Time ago bottom left */}
                 <div style={{ position: "absolute", bottom: 80, left: 16, display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.35)", backdropFilter: "blur(10px)", padding: "8px 12px 8px 8px", borderRadius: 20, zIndex: 3 }}>
                   <div onClick={() => { setViewingProfile(post.user_id); setReelsIndex(null); }} style={{ width: 38, height: 38, borderRadius: 12, background: `linear-gradient(135deg, ${avatarColor(post.username)[0]}, ${avatarColor(post.username)[1]})`, overflow: "hidden", cursor: "pointer", flexShrink: 0, boxShadow: "0 0 0 2px rgba(120,180,80,0.9)" }}>
                     {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "white", fontWeight: 700, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontFamily: "var(--font-display)" }}>{(post.username || "H")[0].toUpperCase()}</span>}
@@ -2816,7 +2827,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                     <span style={{ fontSize: 13, fontWeight: 700, color: "white", textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}>{capName(post.username)}</span>
                     <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                       <span style={{ fontSize: 10, color: "rgba(255,255,255,0.65)" }}>{timeAgo(post.created_at)}</span>
-                      {post.state && <><span style={{ color: "rgba(255,255,255,0.3)", fontSize: 10 }}>·</span><span style={{ fontSize: 10, color: "rgba(255,255,255,0.65)", display: "flex", alignItems: "center", gap: 3 }}><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#78b450" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>{post.state}</span></>}
+                      {post.state && <><span style={{ color: "rgba(255,255,255,0.3)", fontSize: 10 }}>·</span><span style={{ fontSize: 10, color: "rgba(255,255,255,0.65)", display: "flex", alignItems: "center", gap: 3 }}><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#78b450" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>{post.state}</span></>}
                     </div>
                   </div>
                 </div>
@@ -2983,7 +2994,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                           Delete post
                         </button>
                       )}
-                      <button onClick={() => { reportPost(post.id); setPostMenu(null); }} style={{ width: "100%", padding: "12px 16px", background: "none", border: "none", color: "rgba(220,180,60,0.9)", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", display: "flex", alignItems: "center", gap: 10, borderTop: user?.id === post.user_id ? "1px solid #1c2a1c" : "none" }}>
+                      <button onClick={() => { if (!user || isGuest) { openSignIn(); setPostMenu(null); return; } reportPost(post.id); setPostMenu(null); }} style={{ width: "100%", padding: "12px 16px", background: "none", border: "none", color: "rgba(220,180,60,0.9)", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", fontFamily: "var(--font-body)", display: "flex", alignItems: "center", gap: 10, borderTop: user?.id === post.user_id ? "1px solid #1c2a1c" : "none" }}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" y1="22" x2="4" y2="15" /></svg>
                         Report post
                       </button>
@@ -2999,12 +3010,12 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                     <span style={{ color: "white", fontSize: 10, fontWeight: 700, textShadow: "0 1px 4px rgba(0,0,0,0.9)", marginTop: 3, minHeight: 14 }}>{likeCount > 0 ? likeCount : ""}</span>
                   </div>
                   <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
-                    <button onClick={() => setExpandedComments(prev => { if (prev.has(post.id)) return new Set(); return new Set([post.id]); })} style={{ background: "none", border: "none", cursor: "pointer", color: expandedComments.has(post.id) ? "var(--green)" : "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))", transition: "all 0.15s" }}>
+                    <button onClick={() => { if (!user || isGuest) { openSignIn(); return; } setExpandedComments(prev => { if (prev.has(post.id)) return new Set(); return new Set([post.id]); }); }} style={{ background: "none", border: "none", cursor: "pointer", color: expandedComments.has(post.id) ? "var(--green)" : "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))", transition: "all 0.15s" }}>
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                     </button>
                     <span style={{ color: "white", fontSize: 10, fontWeight: 700, textShadow: "0 1px 4px rgba(0,0,0,0.9)", marginTop: 3, minHeight: 14 }}>{commentCounts[post.id] > 0 ? commentCounts[post.id] : ""}</span>
                   </div>
-                  <button onClick={() => setShareOptionsPost(post)} style={{ background: "none", border: "none", cursor: "pointer", color: "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))", transition: "all 0.15s" }}>
+                  <button onClick={() => { if (!user || isGuest) { openSignIn(); return; } setShareOptionsPost(post); }} style={{ background: "none", border: "none", cursor: "pointer", color: "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))", transition: "all 0.15s" }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
                   </button>
                 </div>
@@ -3035,7 +3046,7 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                   <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                     <span style={{ fontSize: 10, fontWeight: 600, color: "#3a5a3a", background: "#111a11", border: "1px solid #1c2c1c", padding: "3px 8px", borderRadius: 20 }}>{timeAgo(post.created_at)}</span>
                     {(user?.id === post.user_id || user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a") && <button onClick={() => deletePost(post.id)} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,60,60,0.12)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"} style={{ background: "transparent", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.5)", padding: "4px 6px", borderRadius: 8, transition: "all 0.15s" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /></svg></button>}
-                    <button onClick={() => reportPost(post.id)} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,180,0,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"} style={{ background: "transparent", border: "none", cursor: "pointer", color: "rgba(180,140,40,0.6)", padding: "4px 6px", borderRadius: 8, transition: "all 0.15s" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" y1="22" x2="4" y2="15" /></svg></button>
+                    <button onClick={() => { if (!user || isGuest) { openSignIn(); return; } reportPost(post.id); }} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,180,0,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"} style={{ background: "transparent", border: "none", cursor: "pointer", color: "rgba(180,140,40,0.6)", padding: "4px 6px", borderRadius: 8, transition: "all 0.15s" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" y1="22" x2="4" y2="15" /></svg></button>
                   </div>
                 </div>
                 {post.species && <div style={{ padding: "0 16px 6px" }}><span style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 10, background: "rgba(45,90,27,0.5)", border: "1px solid rgba(61,122,37,0.4)", color: "var(--green)", display: "inline-block" }}>{post.species}</span></div>}
@@ -3044,11 +3055,11 @@ function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSet
                     <svg width="22" height="22" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
                     {likeCount > 0 && <span>{likeCount}</span>}
                   </button>
-                  <button onClick={() => setExpandedComments(prev => { if (prev.has(post.id)) return new Set(); return new Set([post.id]); })} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: expandedComments.has(post.id) ? "var(--green)" : "#6a8a6a", padding: "4px 0", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>
+                  <button onClick={() => { if (!user || isGuest) { openSignIn(); return; } setExpandedComments(prev => { if (prev.has(post.id)) return new Set(); return new Set([post.id]); }); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: expandedComments.has(post.id) ? "var(--green)" : "#6a8a6a", padding: "4px 0", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                     {commentCounts[post.id] > 0 && <span>{commentCounts[post.id]}</span>}
                   </button>
-                  <button onClick={() => setShareOptionsPost(post)} style={{ background: "none", border: "none", cursor: "pointer", color: "#6a8a6a", padding: "4px 0", transition: "all 0.15s" }}>
+                  <button onClick={() => { if (!user || isGuest) { openSignIn(); return; } setShareOptionsPost(post); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#6a8a6a", padding: "4px 0", transition: "all 0.15s" }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
                   </button>
                   <div style={{ flex: 1 }} />
@@ -3149,7 +3160,7 @@ function PostDetailPage({ postId, user, openSignIn, onBack, onViewUser }) {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <span onClick={() => onViewUser(post.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "block", textShadow: "0 1px 6px rgba(0,0,0,0.9)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{capName(post.username)}</span>
-                  <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 10, display: "flex", alignItems: "center", gap: 3 }}><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#78b450" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>{post.state}</span>
+                  <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 10, display: "flex", alignItems: "center", gap: 3 }}><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#78b450" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>{post.state}</span>
                 </div>
               </div>
               <div style={{ position: "absolute", right: 12, bottom: 20, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, zIndex: 3 }}>
@@ -3302,64 +3313,64 @@ function PostComments({ postId, postOwnerId, user, openSignIn, onCommentAdded, o
     const expanded = expandedReplies.has(c.id);
     return (
       <div style={{ display: "flex", gap: 10, marginBottom: isReply ? 6 : 14, alignItems: "flex-start", paddingLeft: isReply ? 34 : 0 }}>
-      <div style={{ width: isReply ? 22 : 30, height: isReply ? 22 : 30, borderRadius: "50%", background: `linear-gradient(135deg, ${avatarColor(c.username)[0]}, ${avatarColor(c.username)[1]})`, flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px rgba(120,180,80,0.5)" }}>
-        {avatars[c.user_id] ? <img src={avatars[c.user_id]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: isReply ? 9 : 11 }}>{(c.username || "H")[0].toUpperCase()}</div>}
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ textAlign: "left" }}>
-          <span onClick={() => onViewUser?.(c.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 13, cursor: onViewUser ? "pointer" : "default" }}>{capName(c.username || "Hunter")}</span>
-          <span style={{ color: "rgba(238,245,232,0.65)", fontSize: 13, lineHeight: 1.5 }}>{" "}{c.content}</span>
+        <div style={{ width: isReply ? 22 : 30, height: isReply ? 22 : 30, borderRadius: "50%", background: `linear-gradient(135deg, ${avatarColor(c.username)[0]}, ${avatarColor(c.username)[1]})`, flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px rgba(120,180,80,0.5)" }}>
+          {avatars[c.user_id] ? <img src={avatars[c.user_id]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: isReply ? 9 : 11 }}>{(c.username || "H")[0].toUpperCase()}</div>}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 5, paddingLeft: 4 }}>
-          <span style={{ color: "rgba(255,255,255,0.2)", fontSize: 10 }}>{timeAgo(c.created_at)}</span>
-          {!isReply && <button onClick={() => { setReplyTo({ id: c.id, username: c.username }); setText(`@${c.username} `); inputRef.current?.focus(); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>Reply</button>}
-          <button onClick={() => toggleCommentLike(c.id)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 3, color: liked ? "#f43f5e" : "rgba(255,255,255,0.2)", padding: 0 }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill={liked ? "#f43f5e" : "none"} stroke={liked ? "#f43f5e" : "currentColor"} strokeWidth="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-            {likeCount > 0 && <span style={{ fontSize: 10, fontWeight: 600, color: liked ? "#f43f5e" : "rgba(255,255,255,0.3)" }}>{likeCount}</span>}
-          </button>
-          {(user?.id === c.user_id || user?.id === postOwnerId) && <button onClick={() => deleteComment(c.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.3)", fontSize: 10, padding: 0, fontFamily: "var(--font-body)" }}>Delete</button>}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ textAlign: "left" }}>
+            <span onClick={() => onViewUser?.(c.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 13, cursor: onViewUser ? "pointer" : "default" }}>{capName(c.username || "Hunter")}</span>
+            <span style={{ color: "rgba(238,245,232,0.65)", fontSize: 13, lineHeight: 1.5 }}>{" "}{c.content}</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 5, paddingLeft: 4 }}>
+            <span style={{ color: "rgba(255,255,255,0.2)", fontSize: 10 }}>{timeAgo(c.created_at)}</span>
+            {!isReply && <button onClick={() => { setReplyTo({ id: c.id, username: c.username }); setText(`@${c.username} `); inputRef.current?.focus(); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>Reply</button>}
+            <button onClick={() => toggleCommentLike(c.id)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 3, color: liked ? "#f43f5e" : "rgba(255,255,255,0.2)", padding: 0 }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill={liked ? "#f43f5e" : "none"} stroke={liked ? "#f43f5e" : "currentColor"} strokeWidth="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+              {likeCount > 0 && <span style={{ fontSize: 10, fontWeight: 600, color: liked ? "#f43f5e" : "rgba(255,255,255,0.3)" }}>{likeCount}</span>}
+            </button>
+            {(user?.id === c.user_id || user?.id === postOwnerId) && <button onClick={() => deleteComment(c.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.3)", fontSize: 10, padding: 0, fontFamily: "var(--font-body)" }}>Delete</button>}
+          </div>
+          {!isReply && replyList.length > 0 && (
+            <button onClick={() => setExpandedReplies(prev => { const n = new Set(prev); n.has(c.id) ? n.delete(c.id) : n.add(c.id); return n; })} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: 10, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font-body)", padding: "4px 0 0 4px", display: "flex", alignItems: "center", gap: 4 }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points={expanded ? "18 15 12 9 6 15" : "6 9 12 15 18 9"} /></svg>
+              {expanded ? "Hide replies" : `${replyList.length} repl${replyList.length === 1 ? "y" : "ies"}`}
+            </button>
+          )}
+          {!isReply && expanded && replyList.map(r => <CommentRow key={r.id} c={r} isReply />)}
         </div>
-        {!isReply && replyList.length > 0 && (
-          <button onClick={() => setExpandedReplies(prev => { const n = new Set(prev); n.has(c.id) ? n.delete(c.id) : n.add(c.id); return n; })} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: 10, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font-body)", padding: "4px 0 0 4px", display: "flex", alignItems: "center", gap: 4 }}>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points={expanded ? "18 15 12 9 6 15" : "6 9 12 15 18 9"} /></svg>
-            {expanded ? "Hide replies" : `${replyList.length} repl${replyList.length === 1 ? "y" : "ies"}`}
-          </button>
-        )}
-        {!isReply && expanded && replyList.map(r => <CommentRow key={r.id} c={r} isReply />)}
       </div>
-    </div>
     );
   };
 
   return (
     <div style={{ padding: "16px 16px 4px", background: "rgba(0,0,0,0.15)", display: "flex", flexDirection: "column", gap: 8 }}>
-    {loading && <div style={{ color: "var(--text3)", fontSize: 12, paddingBottom: 8 }} className="pulse">Loading...</div>}
-    {topLevel.map(c => <CommentRow key={c.id} c={c} />)}
-    {topLevel.length === 0 && !loading && <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 12 }}>No comments yet</div>}
-    {replyTo && (
-      <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 8px", background: "var(--green-dim)", borderRadius: 8, marginBottom: 6 }}>
-        <span style={{ color: "var(--green)", fontSize: 11 }}>Replying to {capName(replyTo.username)}</span>
-        <button onClick={() => { setReplyTo(null); setText(""); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 12, cursor: "pointer", marginLeft: "auto" }}>✕</button>
+      {loading && <div style={{ color: "var(--text3)", fontSize: 12, paddingBottom: 8 }} className="pulse">Loading...</div>}
+      {topLevel.map(c => <CommentRow key={c.id} c={c} />)}
+      {topLevel.length === 0 && !loading && <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 12 }}>No comments yet</div>}
+      {replyTo && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 8px", background: "var(--green-dim)", borderRadius: 8, marginBottom: 6 }}>
+          <span style={{ color: "var(--green)", fontSize: 11 }}>Replying to {capName(replyTo.username)}</span>
+          <button onClick={() => { setReplyTo(null); setText(""); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 12, cursor: "pointer", marginLeft: "auto" }}>✕</button>
+        </div>
+      )}
+      <div style={{ display: "flex", gap: 8, alignItems: "center", paddingBottom: 12, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
+        <div style={{ width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg, ${avatarColor(user?.username)[0]}, ${avatarColor(user?.username)[1]})`, flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px #78b450", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: 10 }}>
+          {avatars[user?.id] ? <img src={avatars[user?.id]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : user?.imageUrl ? <img src={user.imageUrl} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (user?.username || user?.firstName || "?")[0].toUpperCase()}
+        </div>
+        <input
+          ref={inputRef}
+          placeholder={replyTo ? `Reply to ${capName(replyTo.username)}...` : "Add a comment..."}
+          value={text}
+          onChange={e => setText(e.target.value.slice(0, 300))}
+          onKeyDown={e => { if (e.key === "Enter") submit(); }}
+          style={{ flex: 1, padding: "9px 16px", borderRadius: 24, fontSize: 13, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", outline: "none" }}
+        />
+        <button onClick={submit} disabled={!text.trim() || submitting} style={{ background: text.trim() ? "var(--green)" : "transparent", border: "none", cursor: "pointer", color: text.trim() ? "white" : "var(--text3)", padding: "7px 8px", borderRadius: "50%", transition: "all 0.15s", lineHeight: 0 }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
+        </button>
       </div>
-    )}
-    <div style={{ display: "flex", gap: 8, alignItems: "center", paddingBottom: 12, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
-      <div style={{ width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg, ${avatarColor(user?.username)[0]}, ${avatarColor(user?.username)[1]})`, flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px #78b450", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: 10 }}>
-        {avatars[user?.id] ? <img src={avatars[user?.id]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : user?.imageUrl ? <img src={user.imageUrl} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (user?.username || user?.firstName || "?")[0].toUpperCase()}
-      </div>
-      <input
-        ref={inputRef}
-        placeholder={replyTo ? `Reply to ${capName(replyTo.username)}...` : "Add a comment..."}
-        value={text}
-        onChange={e => setText(e.target.value.slice(0, 300))}
-        onKeyDown={e => { if (e.key === "Enter") submit(); }}
-        style={{ flex: 1, padding: "9px 16px", borderRadius: 24, fontSize: 13, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", outline: "none" }}
-      />
-      <button onClick={submit} disabled={!text.trim() || submitting} style={{ background: text.trim() ? "var(--green)" : "transparent", border: "none", cursor: "pointer", color: text.trim() ? "white" : "var(--text3)", padding: "7px 8px", borderRadius: "50%", transition: "all 0.15s", lineHeight: 0 }}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
-      </button>
     </div>
-  </div>
-);
+  );
 }
 
 // ─── HARVEST LOG TAB ──────────────────────────────────────────────────────────
@@ -3449,7 +3460,7 @@ function HarvestLogTab({ user, openSignIn, isPro, openPricingModal }) {
     loadSubmitted();
   }, [user]);
 
-  
+
   if (!user) return (
     <div className="card" style={{ padding: 40, textAlign: "center" }}>
       <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Sign In to Use Harvest Log</div>
@@ -3469,17 +3480,17 @@ function HarvestLogTab({ user, openSignIn, isPro, openPricingModal }) {
 
       {/* Filter row */}
       <div style={{ display: "flex", background: "#0e160e", border: "1px solid #192019", borderRadius: 14, padding: 3 }}>
-        {[["all","All",<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>],["hunting","Hunt",<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>],["fishing","Fish",<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10"/><path d="M20.414 8.586 22 7"/><circle cx="19" cy="10" r="2"/></svg>]].map(([val,label,icon]) => {
+        {[["all", "All", <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>], ["hunting", "Hunt", <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="22" x2="18" y1="12" y2="12" /><line x1="6" x2="2" y1="12" y2="12" /><line x1="12" x2="12" y1="6" y2="2" /><line x1="12" x2="12" y1="22" y2="18" /></svg>], ["fishing", "Fish", <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10" /><path d="M20.414 8.586 22 7" /><circle cx="19" cy="10" r="2" /></svg>]].map(([val, label, icon]) => {
           const active = logFilter === val;
           return <button key={val} onClick={() => setLogFilter(val)} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "8px 0", fontSize: 11, fontWeight: 700, borderRadius: 11, border: "none", cursor: "pointer", transition: "all 0.2s", background: active ? "linear-gradient(135deg,#2d5a1b,#1e4010)" : "transparent", color: active ? "white" : "#4a6a4a", boxShadow: active ? "0 2px 8px rgba(45,90,27,0.5)" : "none", fontFamily: "var(--font-body)" }}>{icon}{label}</button>;
         })}
       </div>
 
       <button onClick={() => setShowForm(true)} style={{ width: "100%", padding: "11px", borderRadius: 14, border: "1px dashed rgba(120,180,80,0.3)", background: "rgba(120,180,80,0.04)", color: "var(--green)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
         Log New Entry
       </button>
-      
+
 
       {showForm && createPortal(
         <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "#0e1510", display: "flex", flexDirection: "column" }}>
@@ -3497,14 +3508,14 @@ function HarvestLogTab({ user, openSignIn, isPro, openPricingModal }) {
                 </div>
               ) : (
                 <div style={{ height: 100, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(255,255,255,0.02)", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
                   <span style={{ color: "rgba(255,255,255,0.22)", fontSize: 12 }}>Tap to add a photo</span>
                 </div>
               )}
             </label>
             <div style={{ padding: "14px 16px 36px", display: "flex", flexDirection: "column", gap: 10 }}>
               <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: 3 }}>
-                {[["hunting","Hunting",<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>],["fishing","Fishing",<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10"/><path d="M20.414 8.586 22 7"/><circle cx="19" cy="10" r="2"/></svg>]].map(([val,label,icon]) => (
+                {[["hunting", "Hunting", <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="22" x2="18" y1="12" y2="12" /><line x1="6" x2="2" y1="12" y2="12" /><line x1="12" x2="12" y1="6" y2="2" /><line x1="12" x2="12" y1="22" y2="18" /></svg>], ["fishing", "Fishing", <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10" /><path d="M20.414 8.586 22 7" /><circle cx="19" cy="10" r="2" /></svg>]].map(([val, label, icon]) => (
                   <button key={val} onClick={() => setForm(f => ({ ...f, type: val }))} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "8px 0", fontSize: 12, fontWeight: 700, borderRadius: 9, border: "none", cursor: "pointer", transition: "all 0.2s", background: form.type === val ? "linear-gradient(135deg,#2d5a1b,#1e4010)" : "transparent", color: form.type === val ? "white" : "#4a6a4a", fontFamily: "var(--font-body)" }}>
                     {icon}{label}
                   </button>
@@ -3532,7 +3543,7 @@ function HarvestLogTab({ user, openSignIn, isPro, openPricingModal }) {
         </div>,
         document.body
       )}
-            
+
 
       {loadingEntries && <div style={{ textAlign: "center", padding: 40, color: "var(--text3)" }} className="pulse">Loading your log...</div>}
 
@@ -3554,10 +3565,10 @@ function HarvestLogTab({ user, openSignIn, isPro, openPricingModal }) {
               {e.photo
                 ? <img src={e.photo} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                 : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)" }}>
-                    {e.type === "hunting"
-                      ? <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>
-                      : <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10"/><path d="M20.414 8.586 22 7"/><circle cx="19" cy="10" r="2"/></svg>}
-                  </div>
+                  {e.type === "hunting"
+                    ? <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="22" x2="18" y1="12" y2="12" /><line x1="6" x2="2" y1="12" y2="12" /><line x1="12" x2="12" y1="6" y2="2" /><line x1="12" x2="12" y1="22" y2="18" /></svg>
+                    : <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10" /><path d="M20.414 8.586 22 7" /><circle cx="19" cy="10" r="2" /></svg>}
+                </div>
               }
               <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 6px 5px", background: "linear-gradient(transparent, rgba(0,0,0,0.75))" }}>
                 <div style={{ color: "rgba(255,255,255,0.85)", fontSize: 9, fontWeight: 600, textAlign: "center", lineHeight: 1.2 }}>{new Date(e.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit" })}</div>
@@ -3579,8 +3590,8 @@ function HarvestLogTab({ user, openSignIn, isPro, openPricingModal }) {
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,#2d5a1b,#1e4010)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)" }}>
                       {e.type === "hunting"
-                        ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>
-                        : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10"/><path d="M20.414 8.586 22 7"/><circle cx="19" cy="10" r="2"/></svg>}
+                        ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="22" x2="18" y1="12" y2="12" /><line x1="6" x2="2" y1="12" y2="12" /><line x1="12" x2="12" y1="6" y2="2" /><line x1="12" x2="12" y1="22" y2="18" /></svg>
+                        : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10" /><path d="M20.414 8.586 22 7" /><circle cx="19" cy="10" r="2" /></svg>}
                     </div>
                     <div>
                       <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16 }}>{e.species}</div>
@@ -3593,7 +3604,7 @@ function HarvestLogTab({ user, openSignIn, isPro, openPricingModal }) {
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  {e.location && <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", color: "var(--text2)", fontSize: 12 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>{e.location}</span>}
+                  {e.location && <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", color: "var(--text2)", fontSize: 12 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>{e.location}</span>}
                   {e.state && <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", color: "var(--text2)", fontSize: 12 }}>{e.state}</span>}
                   {e.weight && <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", color: "var(--text2)", fontSize: 12 }}>⚖️ {e.weight} lbs</span>}
                   {e.size && <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", color: "var(--text2)", fontSize: 12 }}>📏 {e.size}</span>}
@@ -3897,7 +3908,7 @@ function BallisticsTab() {
 }
 
 // ─── TRIP PLANNER TAB ─────────────────────────────────────────────────────────
-function TripPlannerTab({ selectedState, user, isPro, hitLimit, messageCount, setMessageCount, onUpgrade }) {
+function TripPlannerTab({ selectedState, user, isPro, hitLimit, messageCount, setMessageCount, onUpgrade, isGuest }) {
   const [activityType, setActivityType] = useState("hunting");
   const [description, setDescription] = useState("");
   const [duration, setDuration] = useState("3");
@@ -3982,9 +3993,11 @@ Use **bold** for key terms. Be specific and practical.`;
 
   if (!isPro) return (
     <div className="card" style={{ padding: 40, textAlign: "center" }}>
+      <div style={{ fontSize: 36, marginBottom: 12 }}>🗺️</div>
       <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Trip Planner is Pro</div>
-      <div style={{ color: "var(--text2)", fontSize: 14, marginBottom: 20 }}>Generate AI-powered personalized trip plans. Upgrade to Pro to unlock.</div>
-      <button onClick={onUpgrade} className="btn-gold" style={{ padding: "12px 28px", fontSize: 14, borderRadius: "var(--radius-sm)" }}>Upgrade to Pro →</button>
+      <div style={{ color: "var(--text2)", fontSize: 14, marginBottom: 20 }}>Generate personalized trip plans for any state.</div>
+      {!isGuest && <button onClick={onUpgrade} className="btn-gold" style={{ padding: "12px 28px", fontSize: 14, borderRadius: "var(--radius-sm)" }}>Upgrade to Pro →</button>}
+      {isGuest && <button onClick={onUpgrade} className="btn-primary" style={{ padding: "12px 28px", fontSize: 14, borderRadius: "var(--radius-sm)" }}>Sign Up to Unlock →</button>}
     </div>
   );
   return (
@@ -4860,7 +4873,7 @@ function HeatmapLanding({ onReady }) {
 }
 
 // ─── LANDING PAGE ─────────────────────────────────────────────────────────────
-function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTerms }) {
+function LandingPage({ onStart, onSignIn, onGuest, selectedState, setSelectedState, onTerms }) {
   const { openSignIn } = useClerk();
 
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -4904,6 +4917,13 @@ function LandingPage({ onStart, onSignIn, selectedState, setSelectedState, onTer
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <button onClick={() => openSignIn()} style={{ padding: "15px 32px", fontSize: 16, fontWeight: 700, borderRadius: 14, background: "linear-gradient(135deg, #3a7020, #2d5a1a)", border: "1px solid rgba(120,180,80,0.5)", color: "white", cursor: "pointer", fontFamily: "var(--font-body)", boxShadow: "0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(120,180,80,0.2)", transition: "transform 0.15s, box-shadow 0.15s" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(60,140,30,0.5)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 24px rgba(0,0,0,0.4)"; }} onMouseDown={e => e.currentTarget.style.transform = "scale(0.96)"} onMouseUp={e => e.currentTarget.style.transform = "translateY(-2px)"} onTouchStart={e => e.currentTarget.style.transform = "scale(0.96)"} onTouchEnd={e => { const el = e.currentTarget; el.style.transform = "scale(1.02)"; setTimeout(() => { if (el) el.style.transform = "scale(1)"; }, 150); }}>Sign In / Sign Up</button>
+
+            <button
+              onClick={onGuest}
+              style={{ padding: "12px 24px", fontSize: 14, fontWeight: 600, borderRadius: 14, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(238,245,232,0.82)", cursor: "pointer", fontFamily: "var(--font-body)" }}
+            >
+              Continue as Guest
+            </button>
 
           </div>
           <button onClick={onTerms} style={{ background: "none", border: "none", color: "rgba(238,245,232,0.15)", fontSize: 11, cursor: "pointer", fontFamily: "var(--font-body)", marginTop: 16 }}>Terms & Conditions</button>
@@ -5113,7 +5133,7 @@ function OnboardingPage({ user, onComplete, setSelectedState }) {
   );
 }
 
-function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSelectedState, onTerms, messagesUnread, setMessagesUnread, notifUnread, setNotifUnread, openPricingModal }) {
+function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSelectedState, onTerms, messagesUnread, setMessagesUnread, notifUnread, setNotifUnread, openPricingModal, isGuest, onSignIn }) {
   const [tab, setTab] = useState("community");
   const [weather, setWeather] = useState(null);
   const [locationName, setLocationName] = useState("");
@@ -5178,10 +5198,12 @@ function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSel
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
-  const { openSignIn } = useClerk();
+  const { openSignIn: _openSignIn } = useClerk();
+  const openSignIn = () => { _openSignIn({ afterSignInUrl: window.location.href, afterSignUpUrl: window.location.href }); };
   useEffect(() => { window._triggerSignIn = openSignIn; return () => { window._triggerSignIn = null; }; }, [openSignIn]);
 
   const isPro = user?.publicMetadata?.isPro === true;
+  const openPricingOrSignIn = () => { if (!user || isGuest) { openSignIn(); } else { openPricingModal(); } };
   const hitLimit = !isPro && messageCount >= FREE_LIMIT;
 
   useEffect(() => {
@@ -5352,14 +5374,12 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 
             {isPro ? (
               <div className="mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: "var(--green-dim)", border: "1px solid var(--border-accent)", color: "var(--green)" }}>Pro ✓</div>
-            ) : (
-              <button onClick={() => { if (!user) { openSignIn(); return; } openPricingModal(); }} className="btn-gold mobile-header-badge" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12 }}>
-                Go Pro
-              </button>
-            )}
+            ) : !isGuest ? (
+              <button onClick={() => openPricingModal()} className="btn-gold" style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12 }}>Go Pro</button>
+            ) : null}
           </div>
-          {!user ? (
-            <button onClick={() => openSignIn()} className="btn-primary" style={{ padding: "7px 14px", fontSize: 13 }}>Sign In</button>
+          {!user || isGuest ? (
+            <button onClick={() => openSignIn()} className="btn-primary" style={{ padding: "7px 14px", fontSize: 13 }}>{isGuest ? "Sign Up" : "Sign In"}</button>
           ) : (
             <div style={{ borderRadius: "50%", outline: "2.5px solid var(--green)", outlineOffset: "1px", boxShadow: "0 0 10px rgba(139,195,74,0.25)", display: "inline-flex", lineHeight: 0 }}>
               <UserButton afterSignOutUrl="https://wildai.netlify.app">
@@ -5395,7 +5415,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                 { id: "community", label: "Community", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg> },
                 { id: "map", label: "Map", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" /><line x1="9" y1="3" x2="9" y2="18" /><line x1="15" y1="6" x2="15" y2="21" /></svg> },
                 { id: "chat", label: "Chat", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> },
-                { id: "more", label: "More", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg> },
+                { id: "more", label: "Tools", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="2" /><rect x="14" y="3" width="7" height="7" rx="2" /><rect x="14" y="14" width="7" height="7" rx="2" /><rect x="3" y="14" width="7" height="7" rx="2" /></svg> },
               ].map(t => (
                 <button key={t.id} onClick={() => { setTab(t.id); setShowMore(false); if (t.id === "map" && !sessionStorage.getItem("ravlin_map_privacy_seen")) { window._showMapPrivacy?.(); } }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, background: "none", border: "none", cursor: "pointer", color: tab === t.id ? "var(--green)" : "var(--text3)", transition: "color 0.2s" }}>
                   <div style={{ position: "relative" }}>
@@ -5521,18 +5541,14 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
               {hitLimit && (
                 <div style={{ margin: "0 20px 20px", background: "linear-gradient(160deg, #0d1a0d 0%, #080c08 60%)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, overflow: "hidden", position: "relative" }}>
                   <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 260, height: 120, borderRadius: "50%", background: "radial-gradient(ellipse, rgba(232,176,32,0.18) 0%, transparent 70%)", filter: "blur(20px)", pointerEvents: "none" }} />
-                  <div style={{ position: "absolute", top: 20, right: 20 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(232,176,32,0.12)", border: "1px solid rgba(232,176,32,0.3)", borderRadius: 20, padding: "4px 12px" }}>
-                      <span style={{ color: "#e8b020", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em" }}>⚡ PRO</span>
-                    </div>
-                  </div>
+                  
                   <div style={{ padding: "32px 24px 20px", textAlign: "center" }}>
                     <div style={{ fontFamily: "var(--font-display)", fontSize: 26, color: "#f4f4f0", marginBottom: 8, lineHeight: 1.2, fontWeight: 900 }}>Every season.<br />Every state.<br /><span style={{ color: "#e8b020" }}>Every question.</span></div>
                     <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>You've used your 10 free messages —<br />Ravlin is clearly working for you 🎯</div>
                   </div>
                   <div style={{ margin: "0 24px 16px", height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)" }} />
                   <div style={{ padding: "0 20px 16px" }}>
-                    {["Unlimited AI chat — no message limits", "Unlimited saved map pins", "AI trip planner", "Harvest log & season tracking", "State regulations & official season dates",].map((f, i) => (
+                    {["Unlimited hunting & fishing assistant", "Personalized trip planner", "Harvest log", "Unlimited private map pins", "Pro profile badge", "All future features"].map((f, i) => (
                       <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, background: i % 2 === 0 ? "rgba(255,255,255,0.02)" : "transparent" }}>
                         <div style={{ width: 20, height: 20, borderRadius: "50%", background: "rgba(232,176,32,0.15)", border: "1px solid rgba(232,176,32,0.4)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           <span style={{ color: "#e8b020", fontSize: 10, fontWeight: 700 }}>✓</span>
@@ -5541,9 +5557,18 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                       </div>
                     ))}
                   </div>
-                  <div style={{ padding: "8px 20px 28px" }}>
-                    <stripe-pricing-table pricing-table-id="prctbl_1TQ1qWE7yi7ZXXNUs0Tsz3tx" publishable-key="pk_live_51TLSHhE7yi7ZXXNUtATahGMSzvluem99FP2Daos8zyIlzmTVUOcGQjBvPYqbaxCLHyfHfEVXFt2nff2vAaLKvO0j009ZOXhB2U" client-reference-id={user?.id} />
-                    <div style={{ marginTop: 10, fontSize: 11, color: "rgba(255,255,255,0.18)", textAlign: "center" }}>Cancel anytime · Secure payment via Stripe</div>
+                  <div style={{ padding: "8px 20px 28px", display: "flex", flexDirection: "column", gap: 10 }}>
+                    <div style={{ textAlign: "center", marginBottom: 4 }}>
+                      <span style={{ color: "rgba(232,176,32,0.7)", fontSize: 12, fontWeight: 600 }}>Less than $2/month</span>
+                    </div>
+                    <button onClick={() => openPricingModal()} style={{ width: "100%", padding: "14px", fontSize: 15, fontWeight: 700, borderRadius: 14, border: "none", cursor: "pointer", background: "linear-gradient(135deg, #e8b020, #c8940a)", color: "#000", position: "relative", overflow: "hidden", transition: "all 0.2s", boxShadow: "0 4px 20px rgba(232,176,32,0.4)" }}
+                      onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.02)"; e.currentTarget.style.boxShadow = "0 6px 28px rgba(232,176,32,0.6)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(232,176,32,0.4)"; }}
+                      onMouseDown={e => e.currentTarget.style.transform = "scale(0.98)"}
+                      onMouseUp={e => e.currentTarget.style.transform = "scale(1.02)"}>
+                      Choose Your Plan →
+                    </button>
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.18)", textAlign: "center" }}>Cancel anytime · Secure payment via Stripe</div>
                   </div>
                 </div>
               )}
@@ -5561,7 +5586,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           </>
         )}
 
-        
+
 
         {tab === "weather" && (
           <div className="fade-in">
@@ -5576,7 +5601,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 
         {tab === "regs" && <RegulationsTab selectedState={selectedState} currentUser={user} />}
         {tab === "licenses" && <LicensesTab selectedState={selectedState} />}
-        {tab === "trip" && <TripPlannerTab selectedState={selectedState} user={user} isPro={isPro} hitLimit={hitLimit} messageCount={messageCount} setMessageCount={setMessageCount} onUpgrade={() => { if (!user) { openSignIn(); return; } openPricingModal(); }} />}
+        {tab === "trip" && <TripPlannerTab selectedState={selectedState} user={user} isPro={isPro} hitLimit={hitLimit} messageCount={messageCount} setMessageCount={setMessageCount} isGuest={isGuest} onUpgrade={() => { if (!user || isGuest) { openSignIn(); return; } openPricingModal(); }} />}
         {tab === "species" && (
           <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {/* Header */}
@@ -5596,7 +5621,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
               <>
                 {/* Filter toggle */}
                 <div style={{ display: "flex", background: "#0e160e", border: "1px solid #192019", borderRadius: 14, padding: 3 }}>
-                  {[["all","All",<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>],["hunting","Hunting",<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>],["fishing","Fishing",<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10"/><path d="M20.414 8.586 22 7"/><circle cx="19" cy="10" r="2"/></svg>]].map(([val,label,icon]) => {
+                  {[["all", "All", <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>], ["hunting", "Hunting", <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="22" x2="18" y1="12" y2="12" /><line x1="6" x2="2" y1="12" y2="12" /><line x1="12" x2="12" y1="6" y2="2" /><line x1="12" x2="12" y1="22" y2="18" /></svg>], ["fishing", "Fishing", <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10" /><path d="M20.414 8.586 22 7" /><circle cx="19" cy="10" r="2" /></svg>]].map(([val, label, icon]) => {
                     const active = speciesFilter === val;
                     return <button key={val} onClick={() => setSpeciesFilter(val)} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "8px 0", fontSize: 11, fontWeight: 700, borderRadius: 11, border: "none", cursor: "pointer", transition: "all 0.2s", background: active ? "linear-gradient(135deg,#2d5a1b,#1e4010)" : "transparent", color: active ? "white" : "#4a6a4a", boxShadow: active ? "0 2px 8px rgba(45,90,27,0.5)" : "none", fontFamily: "var(--font-body)" }}>{icon}{label}</button>;
                   })}
@@ -5706,7 +5731,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         {tab === "harvest" && <HarvestLogTab user={user} openSignIn={openSignIn} isPro={isPro} openPricingModal={openPricingModal} />}
         {tab === "ballistics" && <BallisticsTab />}
         {tab === "trophy" && <TrophyBoardTab user={user} openSignIn={openSignIn} selectedState={selectedState} />}
-        {tab === "community" && <CommunityTab selectedState={selectedState} user={user} openSignIn={openSignIn} externalSetUnread={setMessagesUnread} externalSetNotifUnread={setNotifUnread} />}
+        {tab === "community" && <CommunityTab selectedState={selectedState} user={user} openSignIn={openSignIn} externalSetUnread={setMessagesUnread} externalSetNotifUnread={setNotifUnread} isGuest={isGuest} />}
         {tab === "about" && (
           <div className="fade-in card" style={{ padding: 32 }}>
             <div style={{ textAlign: "center", marginBottom: 32 }}>
@@ -5715,7 +5740,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
               <p style={{ color: "var(--green)", fontSize: 14, fontWeight: 500 }}>Built for hunters & anglers, by outdoorsmen</p>
             </div>
             <div style={{ color: "var(--text2)", fontSize: 15, lineHeight: 1.85, display: "flex", flexDirection: "column", gap: 16 }}>
-              <p>Ravlin is an AI-powered hunting and fishing assistant designed to give you the kind of advice you'd get from a seasoned outdoorsman — specific, practical, and straight to the point.</p>
+              <p>Ravlin is an personalized hunting and fishing assistant designed to give you the kind of advice you'd get from a seasoned outdoorsman — specific, practical, and straight to the point.</p>
               <p>Whether you're planning your first elk hunt, figuring out what flies are working on your local river, or need to know the regulations for a new state, Ravlin has you covered.</p>
               <div style={{ padding: "16px 20px", background: "var(--amber-dim)", border: "1px solid rgba(212,147,10,0.2)", borderRadius: "var(--radius-sm)" }}>
                 <p style={{ color: "rgba(212,147,10,0.9)", fontSize: 13, margin: 0 }}>⚠️ Always verify current regulations with your state wildlife agency. Regulations change and Ravlin's information may not always be current.</p>
@@ -5749,14 +5774,34 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 export default function App() {
   const { user, isLoaded } = useUser();
   const { openUserProfile } = useClerk();
-  useEffect(() => { window._clerkOpenProfile = openUserProfile; }, [openUserProfile]);
   const { toasts } = useToast();
   const [page, setPage] = useState("landing");
   const [showPricingModal, setShowPricingModal] = useState(false);
+  const [isGuest, setIsGuest] = useState(() => localStorage.getItem("wildai_guest") === "true");
+
+  useEffect(() => {
+    if (user && isGuest) {
+      setIsGuest(false);
+      localStorage.removeItem("wildai_guest");
+    }
+  }, [user?.id, isGuest]);
+
+  const requireSignInForPro = () => {
+    if (!user) {
+      localStorage.removeItem("wildai_guest");
+      setIsGuest(false);
+      window._triggerSignIn?.();
+      return;
+    }
+    setShowPricingModal(true);
+  };
 
   useEffect(() => {
     if (!isLoaded) return;
-    if (!user) { setPage("landing"); return; }
+    if (!user) {
+      if (!isGuest) setPage("landing");
+      return;
+    }
     supabase.from("profiles").select("selected_state, onboarding_complete").eq("user_id", user.id).single().then(({ data }) => {
       if (data?.selected_state && !localStorage.getItem("wildai_selected_state")) {
         handleSetSelectedState(data.selected_state);
@@ -5771,7 +5816,7 @@ export default function App() {
       supabase.rpc("update_last_seen", { uid: user.id }).then(() => { });
     }, 60000);
     return () => clearInterval(interval);
-  }, [isLoaded, user?.id]);
+  }, [isLoaded, user?.id, isGuest]);
 
   // ─── PUSH NOTIFICATIONS ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -5896,12 +5941,12 @@ export default function App() {
 
       <ErrorBoundary>
         {page === "terms" && <TermsPage onBack={() => setPage(prevPage === "chat" ? "chat" : "landing")} />}
-        {page === "landing" && <LandingPage onStart={() => goTo("chat")} onSignIn={() => { window._triggerSignIn?.(); }} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} />}
+        {page === "landing" && <LandingPage onStart={() => goTo("chat")} onSignIn={() => { window._triggerSignIn?.(); }} onGuest={() => { localStorage.setItem("wildai_guest", "true"); setIsGuest(true); goTo("chat"); }} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} />}
         {page === "onboarding" && <OnboardingPage user={user} onComplete={() => goTo("chat")} setSelectedState={handleSetSelectedState} />}
-        {page === "chat" && <ChatPage onBack={() => { localStorage.removeItem("wildai_selected_state"); setSelectedState(""); goTo("landing"); }} messageCount={messageCount} setMessageCount={setMessageCount} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} messagesUnread={messagesUnread} setMessagesUnread={setMessagesUnread} notifUnread={notifUnread} setNotifUnread={setNotifUnread} openPricingModal={() => setShowPricingModal(true)} />}
+        {page === "chat" && <ChatPage onBack={() => { localStorage.removeItem("wildai_selected_state"); setSelectedState(""); goTo("landing"); }} messageCount={messageCount} setMessageCount={setMessageCount} selectedState={selectedState} setSelectedState={handleSetSelectedState} onTerms={() => goTo("terms")} messagesUnread={messagesUnread} setMessagesUnread={setMessagesUnread} notifUnread={notifUnread} setNotifUnread={setNotifUnread} openPricingModal={() => setShowPricingModal(true)} isGuest={isGuest} onSignIn={() => { localStorage.removeItem("wildai_guest"); setIsGuest(false); window._triggerSignIn?.(); }} />}
       </ErrorBoundary>
       {showPricingModal && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setShowPricingModal(false)}>
+        <div style={{ position: "fixed", inset: 0, zIndex: 99999999, background: "rgba(0,0,0,0.92)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setShowPricingModal(false)}>
           <div style={{ background: "#070e07", borderRadius: 24, padding: 24, width: "100%", maxWidth: 480, maxHeight: "90dvh", overflowY: "auto", position: "relative" }} onClick={e => e.stopPropagation()}>
             <button onClick={() => setShowPricingModal(false)} style={{ position: "absolute", top: 16, right: 16, background: "none", border: "none", color: "var(--text3)", fontSize: 20, cursor: "pointer", zIndex: 1 }}>✕</button>
             <stripe-pricing-table pricing-table-id="prctbl_1TQ1qWE7yi7ZXXNUs0Tsz3tx" publishable-key="pk_live_51TLSHhE7yi7ZXXNUtATahGMSzvluem99FP2Daos8zyIlzmTVUOcGQjBvPYqbaxCLHyfHfEVXFt2nff2vAaLKvO0j009ZOXhB2U" client-reference-id={user?.id} />
