@@ -545,6 +545,8 @@ const css = `
   .custom-marker { background:none !important; border:none !important; }
   .mapboxgl-ctrl-top-right { display: none !important; }
   .mapboxgl-ctrl-bottom-left { display: none !important; }
+  .tab-fade { animation: tabFadeIn 0.25s cubic-bezier(0.16,1,0.3,1) forwards; }
+  @keyframes tabFadeIn { from { opacity: 0; transform: translateY(14px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
   
   @media (max-width: 640px) {
     .mobile-home-btn { padding:5px 10px !important; font-size:12px !important; }
@@ -5679,7 +5681,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
 
         {/* CHAT */}
         {tab === "chat" && (
-          <>
+          <div className="tab-fade">
             {showLocationPrompt && locationPreference === null && (
               <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
                 <div className="fade-in" style={{ background: "linear-gradient(160deg, #0d1a0d, #080c08)", border: "1px solid #1c2a1c", borderRadius: 20, padding: 24, maxWidth: 340, width: "100%" }}>
@@ -5805,7 +5807,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                 </div>
               )}
             </div>
-          </>
+          </div>
         )}
 
 
@@ -5821,9 +5823,9 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           <MapTab selectedState={selectedState} user={user} isPro={isPro} onSharePin={(pin) => { window._sharePinToComm = pin; setTab("community"); }} />
         </div>
 
-        {tab === "regs" && <RegulationsTab selectedState={selectedState} currentUser={user} />}
-        {tab === "licenses" && <LicensesTab selectedState={selectedState} />}
-        {tab === "trip" && <TripPlannerTab selectedState={selectedState} user={user} isPro={isPro} hitLimit={hitLimit} messageCount={messageCount} setMessageCount={setMessageCount} isGuest={isGuest} onUpgrade={() => { if (!user || isGuest) { openSignIn(); return; } openPricingModal(); }} />}
+        {tab === "regs" && <div className="tab-fade"><RegulationsTab selectedState={selectedState} currentUser={user} /></div>}
+        {tab === "licenses" && <div className="tab-fade"><LicensesTab selectedState={selectedState} /></div>}
+        {tab === "trip" && <div className="tab-fade"><TripPlannerTab selectedState={selectedState} user={user} isPro={isPro} hitLimit={hitLimit} messageCount={messageCount} setMessageCount={setMessageCount} isGuest={isGuest} onUpgrade={() => { if (!user || isGuest) { openSignIn(); return; } openPricingModal(); }} /></div>}
         {tab === "species" && (
           <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {/* Header */}
@@ -5953,11 +5955,11 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
             </div>
           </div>
         )}
-        {tab === "admin" && user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a" && <AdminTab user={user} />}
-        {tab === "harvest" && <HarvestLogTab user={user} openSignIn={openSignIn} isPro={isPro} openPricingModal={openPricingModal} />}
-        {tab === "ballistics" && <BallisticsTab />}
-        {tab === "trophy" && <TrophyBoardTab user={user} openSignIn={openSignIn} selectedState={selectedState} />}
-        {tab === "community" && <CommunityTab selectedState={selectedState} user={user} openSignIn={openSignIn} externalSetUnread={setMessagesUnread} externalSetNotifUnread={setNotifUnread} isGuest={isGuest} />}
+        {tab === "admin" && user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a" && <div className="tab-fade"><AdminTab user={user} /></div>}
+        {tab === "harvest" && <div className="tab-fade"><HarvestLogTab user={user} openSignIn={openSignIn} isPro={isPro} openPricingModal={openPricingModal} /></div>}
+        {tab === "ballistics" && <div className="tab-fade"><BallisticsTab /></div>}
+        {tab === "trophy" && <div className="tab-fade"><TrophyBoardTab user={user} openSignIn={openSignIn} selectedState={selectedState} /></div>}
+        {tab === "community" && <div className="tab-fade"><CommunityTab selectedState={selectedState} user={user} openSignIn={openSignIn} externalSetUnread={setMessagesUnread} externalSetNotifUnread={setNotifUnread} isGuest={isGuest} /></div>}
         {tab === "about" && (
           <div className="fade-in card" style={{ padding: 32 }}>
             <div style={{ textAlign: "center", marginBottom: 32 }}>
