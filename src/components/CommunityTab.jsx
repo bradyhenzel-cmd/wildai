@@ -340,14 +340,25 @@ export default function CommunityTab({ selectedState, user, openSignIn, onPinSav
   const toggleLike = async (post) => {
     if (!user || isGuest) { openSignIn(); return; }
     const liked = likedPostIds.has(post.id);
+    // Optimistic update — instant UI response
     if (liked) {
-      await supabase.from("likes").delete().eq("post_id", post.id).eq("user_id", user.id);
       setLikedPostIds(prev => { const n = new Set(prev); n.delete(post.id); return n; });
       setLikeCounts(prev => ({ ...prev, [post.id]: Math.max(0, (prev[post.id] || 1) - 1) }));
+      supabase.from("likes").delete().eq("post_id", post.id).eq("user_id", user.id).then(({ error }) => {
+        if (error) { // revert on fail
+          setLikedPostIds(prev => new Set([...prev, post.id]));
+          setLikeCounts(prev => ({ ...prev, [post.id]: (prev[post.id] || 0) + 1 }));
+        }
+      });
     } else {
-      await supabase.from("likes").insert({ post_id: post.id, user_id: user.id });
       setLikedPostIds(prev => new Set([...prev, post.id]));
       setLikeCounts(prev => ({ ...prev, [post.id]: (prev[post.id] || 0) + 1 }));
+      supabase.from("likes").insert({ post_id: post.id, user_id: user.id }).then(({ error }) => {
+        if (error) { // revert on fail
+          setLikedPostIds(prev => { const n = new Set(prev); n.delete(post.id); return n; });
+          setLikeCounts(prev => ({ ...prev, [post.id]: Math.max(0, (prev[post.id] || 1) - 1) }));
+        }
+      });
       if (post.user_id !== user.id) {
         fetch("https://wildai-server.onrender.com/push/like", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ post_owner_id: post.user_id, liker_username: user.username || user.firstName || "Someone" }) }).catch(() => { });
       }
