@@ -20,11 +20,13 @@ export function PostComments({ postId, postOwnerId, user, openSignIn, onCommentA
     setComments(data || []);
     if (data?.length) {
       const userIds = [...new Set(data.map(c => c.user_id))];
-      const { data: profiles } = await supabase.from("profiles").select("user_id, avatar_url").in("user_id", userIds);
+      const [{ data: profiles }, { data: likes }] = await Promise.all([
+        supabase.from("profiles").select("user_id, avatar_url").in("user_id", userIds),
+        supabase.from("comment_likes").select("comment_id, user_id").in("comment_id", data.map(c => c.id))
+      ]);
       const avatarMap = {};
       (profiles || []).forEach(p => { avatarMap[p.user_id] = p.avatar_url; });
       setAvatars(avatarMap);
-      const { data: likes } = await supabase.from("comment_likes").select("comment_id, user_id").in("comment_id", data.map(c => c.id));
       const likeMap = {};
       (likes || []).forEach(l => {
         if (!likeMap[l.comment_id]) likeMap[l.comment_id] = [];
