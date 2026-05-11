@@ -90,14 +90,14 @@ export default function CommunityTab({ selectedState, user, openSignIn, onPinSav
       const dx = e.changedTouches[0].clientX - startX;
       setReelsDragY(0);
       if (Math.abs(dy) > Math.abs(dx)) {
-        if (dy < -60 && reelsIndex < posts.length - 1) {
+        if (dy < -40 && reelsIndex < posts.length - 1) {
           reelsLocked.current = true;
           setReelsIndex(i => i + 1); setReelsComments(false);
-          setTimeout(() => { reelsLocked.current = false; }, 400);
-        } else if (dy > 60 && reelsIndex > 0) {
+          setTimeout(() => { reelsLocked.current = false; }, 250);
+        } else if (dy > 40 && reelsIndex > 0) {
           reelsLocked.current = true;
           setReelsIndex(i => i - 1); setReelsComments(false);
-          setTimeout(() => { reelsLocked.current = false; }, 400);
+          setTimeout(() => { reelsLocked.current = false; }, 250);
         } else if (dy > 100 && reelsIndex === 0) {
           setReelsIndex(null); setReelsComments(false);
         }
@@ -778,7 +778,7 @@ export default function CommunityTab({ selectedState, user, openSignIn, onPinSav
                   {/* Vertical action buttons */}
                   <div style={{ position: "absolute", right: 12, bottom: reelsComments ? "64%" : 80, display: "flex", flexDirection: "column", alignItems: "center", gap: 20, transition: "bottom 0.3s", zIndex: 3 }}>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-                      <button onClick={(e) => { toggleLike(post); const svg = e.currentTarget.querySelector('svg'); svg.classList.remove('like-pop'); void svg.offsetWidth; svg.classList.add('like-pop'); }} style={{ background: "none", border: "none", cursor: "pointer", color: isLiked ? "#f43f5e" : "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))" }}>
+                      <button onClick={(e) => { toggleLike(post); const svg = e.currentTarget.querySelector('svg'); if (svg) { svg.classList.remove('like-pop'); requestAnimationFrame(() => svg.classList.add('like-pop')); } }} style={{ background: "none", border: "none", cursor: "pointer", color: isLiked ? "#f43f5e" : "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))" }}>
                         <svg width="30" height="30" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
                       </button>
                       <span style={{ color: "white", fontSize: 11, fontWeight: 700, textShadow: "0 1px 4px rgba(0,0,0,0.9)", height: 14, display: "block", textAlign: "center" }}>{likeCount > 0 ? likeCount : ""}</span>
@@ -982,13 +982,13 @@ export default function CommunityTab({ selectedState, user, openSignIn, onPinSav
                 {/* Right side vertical action buttons */}
                 <div style={{ position: "absolute", right: 12, bottom: 16, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
                   <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
-                    <button onClick={(e) => { toggleLike(post); const svg = e.currentTarget.querySelector('svg'); svg.classList.remove('like-pop'); void svg.offsetWidth; svg.classList.add('like-pop'); }} style={{ background: "none", border: "none", cursor: "pointer", color: isLiked ? "#f43f5e" : "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))" }}>
+                    <button onClick={(e) => { toggleLike(post); const svg = e.currentTarget.querySelector('svg'); if (svg) { svg.classList.remove('like-pop'); requestAnimationFrame(() => svg.classList.add('like-pop')); } }} style={{ background: "none", border: "none", cursor: "pointer", color: isLiked ? "#f43f5e" : "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))" }}>
                       <svg width="22" height="22" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
                     </button>
                     <span style={{ color: "white", fontSize: 10, fontWeight: 700, textShadow: "0 1px 4px rgba(0,0,0,0.9)", marginTop: 3, minHeight: 14 }}>{likeCount > 0 ? likeCount : ""}</span>
                   </div>
                   <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
-                    <button onClick={() => { if (!user || isGuest) { openSignIn(); return; } setExpandedComments(prev => { if (prev.has(post.id)) return new Set(); return new Set([post.id]); }); }} style={{ background: "none", border: "none", cursor: "pointer", color: expandedComments.has(post.id) ? "var(--green)" : "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))", transition: "all 0.15s" }}>
+                    <button onClick={() => { if (!user || isGuest) { openSignIn(); return; } setExpandedComments(prev => { const n = new Set(prev); if (n.has(post.id)) { n.delete(post.id); } else { n.add(post.id); } return n; }); }} style={{ background: "none", border: "none", cursor: "pointer", color: expandedComments.has(post.id) ? "var(--green)" : "white", padding: 0, lineHeight: 0, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.8))", transition: "all 0.15s" }}>
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                     </button>
                     <span style={{ color: "white", fontSize: 10, fontWeight: 700, textShadow: "0 1px 4px rgba(0,0,0,0.9)", marginTop: 3, minHeight: 14 }}>{commentCounts[post.id] > 0 ? commentCounts[post.id] : ""}</span>
@@ -1029,11 +1029,11 @@ export default function CommunityTab({ selectedState, user, openSignIn, onPinSav
                 </div>
                 {post.species && <div style={{ padding: "0 16px 6px" }}><span style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 10, background: "rgba(45,90,27,0.5)", border: "1px solid rgba(61,122,37,0.4)", color: "var(--green)", display: "inline-block" }}>{post.species}</span></div>}
                 <div style={{ padding: "8px 14px 12px", display: "flex", alignItems: "center", gap: 14 }}>
-                  <button onClick={(e) => { toggleLike(post); const svg = e.currentTarget.querySelector('svg'); svg.classList.remove('like-pop'); void svg.offsetWidth; svg.classList.add('like-pop'); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: isLiked ? "#f43f5e" : "#6a8a6a", padding: "4px 0", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600 }}>
+                  <button onClick={(e) => { toggleLike(post); const svg = e.currentTarget.querySelector('svg'); if (svg) { svg.classList.remove('like-pop'); requestAnimationFrame(() => svg.classList.add('like-pop')); } }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: isLiked ? "#f43f5e" : "#6a8a6a", padding: "4px 0", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600 }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill={isLiked ? "#f43f5e" : "none"} stroke={isLiked ? "#f43f5e" : "currentColor"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
                     {likeCount > 0 && <span>{likeCount}</span>}
                   </button>
-                  <button onClick={() => { if (!user || isGuest) { openSignIn(); return; } setExpandedComments(prev => { if (prev.has(post.id)) return new Set(); return new Set([post.id]); }); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: expandedComments.has(post.id) ? "var(--green)" : "#6a8a6a", padding: "4px 0", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>
+                  <button onClick={() => { if (!user || isGuest) { openSignIn(); return; } setExpandedComments(prev => { const n = new Set(prev); if (n.has(post.id)) { n.delete(post.id); } else { n.add(post.id); } return n; }); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: expandedComments.has(post.id) ? "var(--green)" : "#6a8a6a", padding: "4px 0", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                     {commentCounts[post.id] > 0 && <span>{commentCounts[post.id]}</span>}
                   </button>
