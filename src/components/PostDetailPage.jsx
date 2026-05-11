@@ -103,40 +103,84 @@ export function PostComments({ postId, postOwnerId, user, openSignIn, onCommentA
     const likeCount = commentLikes[c.id]?.length || 0;
     const replyList = repliesFor(c.id);
     const expanded = expandedReplies.has(c.id);
+    const canDelete = user?.id === c.user_id || user?.id === postOwnerId;
+    const [expanded2, setExpanded2] = useState(false);
+    const TRUNCATE = 120;
+    const long = c.content?.length > TRUNCATE;
+    const displayText = long && !expanded2 ? c.content.slice(0, TRUNCATE) + "…" : c.content;
+
     return (
-      <div style={{ display: "flex", gap: 10, marginBottom: isReply ? 6 : 14, alignItems: "flex-start", paddingLeft: isReply ? 34 : 0 }}>
-        <div style={{ width: isReply ? 22 : 30, height: isReply ? 22 : 30, borderRadius: "50%", background: `linear-gradient(135deg, ${avatarColor(c.username)[0]}, ${avatarColor(c.username)[1]})`, flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px rgba(120,180,80,0.5)" }}>
+      <div style={{ display: "flex", gap: 10, marginBottom: isReply ? 8 : 16, alignItems: "flex-start", paddingLeft: isReply ? 28 : 0 }}>
+        {/* Avatar */}
+        <div onClick={() => onViewUser?.(c.user_id)} className="avatar-img" style={{ width: isReply ? 26 : 32, height: isReply ? 26 : 32, background: `linear-gradient(135deg, ${avatarColor(c.username)[0]}, ${avatarColor(c.username)[1]})`, cursor: "pointer" }}>
           {avatars[c.user_id] ? <img src={avatars[c.user_id]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: isReply ? 9 : 11 }}>{(c.username || "H")[0].toUpperCase()}</div>}
         </div>
+
+        {/* Content */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ textAlign: "left" }}>
-            <span onClick={() => onViewUser?.(c.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 13, cursor: onViewUser ? "pointer" : "default" }}>{capName(c.username || "Hunter")}</span>
-            <span style={{ color: "rgba(238,245,232,0.65)", fontSize: 13, lineHeight: 1.5 }}>{" "}{c.content}</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 5, paddingLeft: 4 }}>
-            <span style={{ color: "rgba(255,255,255,0.2)", fontSize: 10 }}>{timeAgo(c.created_at)}</span>
-            {!isReply && <button onClick={() => { setReplyTo({ id: c.id, username: c.username }); setText(`@${c.username} `); inputRef.current?.focus(); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>Reply</button>}
-            <button onClick={() => toggleCommentLike(c.id)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 3, color: liked ? "#f43f5e" : "rgba(255,255,255,0.2)", padding: 0 }}>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill={liked ? "#f43f5e" : "none"} stroke={liked ? "#f43f5e" : "currentColor"} strokeWidth="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-              {likeCount > 0 && <span style={{ fontSize: 10, fontWeight: 600, color: liked ? "#f43f5e" : "rgba(255,255,255,0.3)" }}>{likeCount}</span>}
+          {/* Name + time + heart row */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+            <span onClick={() => onViewUser?.(c.user_id)} style={{ color: "white", fontWeight: 700, fontSize: 12.5, cursor: onViewUser ? "pointer" : "default", lineHeight: 1 }}>{capName(c.username || "Hunter")}</span>
+            <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 10.5, lineHeight: 1 }}>{timeAgo(c.created_at)}</span>
+            {canDelete && (
+              <button onClick={() => deleteComment(c.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.2)", padding: "0 2px", lineHeight: 0 }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              </button>
+            )}
+            <button onClick={() => toggleCommentLike(c.id)} style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 3, color: liked ? "#f43f5e" : "rgba(255,255,255,0.25)", padding: 0, flexShrink: 0 }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill={liked ? "#f43f5e" : "none"} stroke={liked ? "#f43f5e" : "currentColor"} strokeWidth="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+              {likeCount > 0 && <span style={{ fontSize: 9, fontWeight: 700 }}>{likeCount}</span>}
             </button>
-            {(user?.id === c.user_id || user?.id === postOwnerId) && <button onClick={() => deleteComment(c.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,100,100,0.3)", fontSize: 10, padding: 0, fontFamily: "var(--font-body)" }}>Delete</button>}
           </div>
-          {!isReply && replyList.length > 0 && (
-            <button onClick={() => setExpandedReplies(prev => { const n = new Set(prev); n.has(c.id) ? n.delete(c.id) : n.add(c.id); return n; })} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: 10, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font-body)", padding: "4px 0 0 4px", display: "flex", alignItems: "center", gap: 4 }}>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points={expanded ? "18 15 12 9 6 15" : "6 9 12 15 18 9"} /></svg>
-              {expanded ? "Hide replies" : `${replyList.length} repl${replyList.length === 1 ? "y" : "ies"}`}
-            </button>
+
+          {/* Comment text */}
+          <div style={{ flex: 1, textAlign: "left" }}>
+            <span style={{ color: "rgba(238,245,232,0.8)", fontSize: 13, lineHeight: 1.55 }}>{displayText}</span>
+            {long && !expanded2 && <button onClick={() => setExpanded2(true)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.35)", fontSize: 12, cursor: "pointer", fontFamily: "var(--font-body)", padding: "0 0 0 4px" }}>more</button>}
+          </div>
+
+          {/* Reply + expand row */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 5 }}>
+            {!isReply && replyList.length === 0 && (
+              <button onClick={() => { setReplyTo({ id: c.id, username: c.username }); setText(`@${c.username} `); inputRef.current?.focus(); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.3)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>Reply</button>
+            )}
+            {!isReply && replyList.length > 0 && (
+              <button onClick={() => setExpandedReplies(prev => { const n = new Set(prev); n.has(c.id) ? n.delete(c.id) : n.add(c.id); return n; })} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.3)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0, display: "flex", alignItems: "center", gap: 4 }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ transition: "transform 0.2s", transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}><polyline points="6 9 12 15 18 9" /></svg>
+                {expanded ? "Hide replies" : `${replyList.length} repl${replyList.length === 1 ? "y" : "ies"}`}
+              </button>
+            )}
+            {!isReply && replyList.length > 0 && expanded && (
+              <button onClick={() => { setReplyTo({ id: c.id, username: c.username }); setText(`@${c.username} `); inputRef.current?.focus(); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.3)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>Reply</button>
+            )}
+          </div>
+
+          {/* Replies */}
+          {!isReply && expanded && (
+            <div style={{ marginTop: 8, borderLeft: "1.5px solid rgba(255,255,255,0.08)", paddingLeft: 0 }}>
+              {replyList.map(r => <CommentRow key={r.id} c={r} isReply />)}
+            </div>
           )}
-          {!isReply && expanded && replyList.map(r => <CommentRow key={r.id} c={r} isReply />)}
         </div>
       </div>
     );
   };
 
   return (
-    <div style={{ padding: "16px 16px 4px", background: "rgba(0,0,0,0.15)", display: "flex", flexDirection: "column", gap: 8 }}>
-      {loading && <div style={{ color: "var(--text3)", fontSize: 12, paddingBottom: 8 }} className="pulse">Loading...</div>}
+    <div style={{ padding: "16px 16px 4px", background: "rgba(0,0,0,0.15)" }}>
+      {loading && comments.length === 0 && (
+        <div style={{ paddingBottom: 8 }}>
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{ display: "flex", gap: 10, marginBottom: 14, alignItems: "flex-start" }}>
+              <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, backgroundImage: "linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.05) 75%)", backgroundSize: "200% 100%", animation: `shimmer 1.4s ease-in-out ${i * 0.15}s infinite` }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ height: 9, width: "35%", borderRadius: 6, marginBottom: 7, backgroundImage: "linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.05) 75%)", backgroundSize: "200% 100%", animation: `shimmer 1.4s ease-in-out ${i * 0.15}s infinite` }} />
+                <div style={{ height: 9, width: "72%", borderRadius: 6, backgroundImage: "linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.05) 75%)", backgroundSize: "200% 100%", animation: `shimmer 1.4s ease-in-out ${i * 0.15 + 0.08}s infinite` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       {topLevel.map(c => <CommentRow key={c.id} c={c} />)}
       {topLevel.length === 0 && !loading && <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 12 }}>No comments yet</div>}
       {replyTo && (
@@ -146,7 +190,7 @@ export function PostComments({ postId, postOwnerId, user, openSignIn, onCommentA
         </div>
       )}
       <div style={{ display: "flex", gap: 8, alignItems: "center", paddingBottom: 12, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
-        <div style={{ width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg, ${avatarColor(user?.username)[0]}, ${avatarColor(user?.username)[1]})`, flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 1.5px #78b450", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: 10 }}>
+        <div className="avatar-img" style={{ width: 24, height: 24, background: `linear-gradient(135deg, ${avatarColor(user?.username)[0]}, ${avatarColor(user?.username)[1]})`, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: 10 }}>
           {avatars[user?.id] ? <img src={avatars[user?.id]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : user?.imageUrl ? <img src={user.imageUrl} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (user?.username || user?.firstName || "?")[0].toUpperCase()}
         </div>
         <input
@@ -205,7 +249,27 @@ export default function PostDetailPage({ postId, user, openSignIn, onBack, onVie
     }
   };
 
-  if (loading) return <div style={{ textAlign: "center", padding: 60, color: "var(--text3)" }} className="pulse">Loading...</div>;
+  const shimmerBar = (w, mb = 0, delay = "0s") => ({
+    height: 10, width: w, borderRadius: 6, marginBottom: mb,
+    backgroundImage: "linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.05) 75%)",
+    backgroundSize: "200% 100%",
+    animation: `shimmer 1.4s ease-in-out ${delay} infinite`,
+  });
+  if (loading) return createPortal(
+    <div className="fade-in" style={{ position: "fixed", inset: 0, zIndex: 99999, background: "var(--bg)", overflowY: "auto", padding: "0 0 80px" }}>
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "16px 16px 0" }}>
+        <div style={{ height: 44, marginBottom: 8 }} />
+        <div style={{ borderRadius: 16, overflow: "hidden", background: "#0e1510", border: "1px solid rgba(255,255,255,0.06)" }}>
+          <div style={{ height: 480, backgroundImage: "linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.04) 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s ease-in-out infinite" }} />
+          <div style={{ padding: "14px 16px 20px" }}>
+            <div style={shimmerBar("40%", 10)} />
+            <div style={shimmerBar("75%")} />
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
   if (!post) return <div style={{ textAlign: "center", padding: 60, color: "var(--text3)" }}>Post not found.</div>;
 
   const timeAgo = (date) => {
@@ -230,7 +294,7 @@ export default function PostDetailPage({ postId, user, openSignIn, onBack, onVie
               <img src={post.photo} style={{ position: "relative", width: "100%", height: 480, objectFit: "contain", display: "block", zIndex: 1 }} />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 30%, transparent 50%, rgba(0,0,0,0.7) 100%)", zIndex: 2, pointerEvents: "none" }} />
               <div style={{ position: "absolute", top: 12, left: 12, right: 52, display: "flex", alignItems: "center", gap: 10, zIndex: 3 }}>
-                <div onClick={() => onViewUser(post.user_id)} style={{ width: 40, height: 40, borderRadius: 12, background: `linear-gradient(135deg, ${avatarColor(post.username)[0]}, ${avatarColor(post.username)[1]})`, overflow: "hidden", cursor: "pointer", flexShrink: 0, boxShadow: "0 0 0 2px rgba(120,180,80,0.9)" }}>
+                <div onClick={() => onViewUser(post.user_id)} className="avatar-img" style={{ width: 40, height: 40, background: `linear-gradient(135deg, ${avatarColor(post.username)[0]}, ${avatarColor(post.username)[1]})`, cursor: "pointer" }}>
                   {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "white", fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontFamily: "var(--font-display)" }}>{(post.username || "H")[0].toUpperCase()}</span>}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -261,7 +325,7 @@ export default function PostDetailPage({ postId, user, openSignIn, onBack, onVie
             </div>
           ) : (
             <div style={{ padding: "14px 16px 10px", display: "flex", alignItems: "center", gap: 12 }}>
-              <div onClick={() => onViewUser(post.user_id)} style={{ width: 44, height: 44, borderRadius: 14, background: `linear-gradient(135deg, ${avatarColor(post.username)[0]}, ${avatarColor(post.username)[1]})`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", boxShadow: "0 0 0 2px #78b450" }}>
+              <div onClick={() => onViewUser(post.user_id)} className="avatar-img" style={{ width: 44, height: 44, background: `linear-gradient(135deg, ${avatarColor(post.username)[0]}, ${avatarColor(post.username)[1]})`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                 {post.avatar_url ? <img src={post.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "white", fontWeight: 700, fontSize: 17 }}>{(post.username || "H")[0].toUpperCase()}</span>}
               </div>
               <div style={{ flex: 1 }}>
@@ -279,7 +343,7 @@ export default function PostDetailPage({ postId, user, openSignIn, onBack, onVie
             </div>
           )}
         </div>
-        <div style={{ marginTop: 12, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)", background: "#0e1510" }}>
+        <div className="slide-up" style={{ marginTop: 12, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)", background: "#0e1510", animationDelay: "0.15s" }}>
           <PostComments postId={postId} postOwnerId={post.user_id} user={user} openSignIn={openSignIn} onCommentAdded={(delta = 1) => setCommentCount(c => c + delta)} onViewUser={onViewUser} />
         </div>
       </div>

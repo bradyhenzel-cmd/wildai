@@ -184,7 +184,7 @@ export default function UserProfilePage({ userId, currentUser, onBack, openSignI
           <div style={{ position: "relative", marginTop: -36, flexShrink: 0 }}>
             <label style={{ cursor: isOwnProfile ? "pointer" : "default", display: "block" }}>
               {isOwnProfile && <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => uploadAvatar(e.target.files[0])} />}
-              <div style={{ width: 90, height: 90, borderRadius: 20, background: `linear-gradient(135deg, ${avatarColor(profile?.username)[0]}, ${avatarColor(profile?.username)[1]})`, border: "4px solid #080d08", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", boxShadow: "0 0 0 2.5px var(--green), 0 4px 16px rgba(0,0,0,0.5)" }}>
+              <div className="avatar-img" style={{ width: 90, height: 90, background: `linear-gradient(135deg, ${avatarColor(profile?.username)[0]}, ${avatarColor(profile?.username)[1]})`, border: "4px solid #080d08", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 {uploadingAvatar
                   ? <span style={{ color: "var(--text3)", fontSize: 11 }}>...</span>
                   : profile?.avatar_url
@@ -304,7 +304,7 @@ export default function UserProfilePage({ userId, currentUser, onBack, openSignI
               <div key={u.user_id} onClick={() => { setShowFollowList(null); onViewUser(u.user_id); }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid var(--border)", cursor: "pointer" }}
                 onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: `linear-gradient(135deg, ${avatarColor(u.username)[0]}, ${avatarColor(u.username)[1]})`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0, boxShadow: "0 0 0 2px #78b450" }}>
+                <div className="avatar-img" style={{ width: 40, height: 40, background: `linear-gradient(135deg, ${avatarColor(u.username)[0]}, ${avatarColor(u.username)[1]})`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 16, fontFamily: "var(--font-display)", color: "white", fontWeight: 700 }}>{u.username?.[0]?.toUpperCase()}</span>}
                 </div>
                 <span style={{ color: "var(--text)", fontWeight: 600, fontSize: 14 }}>{capName(u.username)}</span>

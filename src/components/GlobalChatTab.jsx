@@ -43,7 +43,7 @@ export default function GlobalChatTab({ user, openSignIn }) {
           const isMe = user && msg.user_id === user.id;
           return (
             <div key={msg.id} style={{ display: "flex", gap: 8, alignItems: "flex-start", flexDirection: isMe ? "row-reverse" : "row" }}>
-              {!isMe && <div style={{ width: 30, height: 30, borderRadius: "50%", overflow: "hidden", flexShrink: 0, background: "var(--card)" }}>
+              {!isMe && <div className="avatar-img" style={{ width: 30, height: 30, background: "var(--card)" }}>
                 {msg.profiles?.avatar_url ? <img src={msg.profiles.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "var(--text3)" }}>{capName(msg.profiles?.username || "?")[0]}</div>}
               </div>}
               <div style={{ maxWidth: "70%" }}>

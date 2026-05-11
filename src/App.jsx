@@ -53,6 +53,8 @@ const css = `
   @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
   @keyframes likePop { 0%{transform:scale(1)} 30%{transform:scale(1.4)} 60%{transform:scale(0.92)} 80%{transform:scale(1.1)} 100%{transform:scale(1)} }
   .like-pop { animation:likePop 0.45s cubic-bezier(0.36,0.07,0.19,0.97); }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .avatar-img { border-radius:10px; overflow:hidden; box-shadow:0 0 0 1.5px rgba(255,255,255,0.7), 0 0 10px rgba(255,255,255,0.2); flex-shrink:0; object-fit:cover; width:100%; height:100%; }
 
   input, textarea, select { font-size: 16px !important; scroll-margin-bottom: 20px; }
   body.map-fullscreen header, body.map-fullscreen .bottom-nav { display: none !important; }
@@ -181,6 +183,7 @@ const css = `
   .mapboxgl-ctrl-bottom-left { display: none !important; }
   .tab-fade { animation: tabFadeIn 0.25s cubic-bezier(0.16,1,0.3,1) forwards; }
   @keyframes tabFadeIn { from { opacity: 0; transform: translateY(14px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes heartBurstAnim { 0% { opacity: 1; transform: translate(-50%,-50%) scale(0.3); } 40% { opacity: 1; transform: translate(-50%,-50%) scale(1.2); } 70% { opacity: 0.8; transform: translate(-50%,-50%) scale(1); } 100% { opacity: 0; transform: translate(-50%,-60%) scale(0.9); } }
 
   @media (max-width: 640px) {
     .mobile-home-btn { padding:5px 10px !important; font-size:12px !important; }

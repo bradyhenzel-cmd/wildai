@@ -209,7 +209,7 @@ export default function MessagesTab({ user, openSignIn, onUnreadChange }) {
         <div style={{ borderBottom: "1px solid var(--border)", padding: "12px 16px", display: "flex", alignItems: "center", position: "relative", flexShrink: 0 }}>
           <button onClick={() => { setView("inbox"); loadInbox(); document.body.classList.remove("dm-fullscreen"); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text2)", fontSize: 14, padding: 0, flexShrink: 0 }}>← Back</button>
           <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 10, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "var(--green)", flexShrink: 0, overflow: "hidden", boxShadow: "0 0 0 2px #78b450" }}>
+            <div className="avatar-img" style={{ width: 32, height: 32, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "var(--green)" }}>
               {activeThread.avatar ? <img src={activeThread.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : activeThread.username?.[0]?.toUpperCase()}
             </div>
             <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>{capName(activeThread.username)}</span>
@@ -339,7 +339,7 @@ export default function MessagesTab({ user, openSignIn, onUnreadChange }) {
             onTouchEnd={e => { const dx = e.changedTouches[0].clientX - e.currentTarget._startX; if (dx < -40) { e.currentTarget.style.transform = "translateX(-80px)"; } else { e.currentTarget.style.transform = "translateX(0)"; } e.currentTarget.style.transition = "transform 0.2s"; }}>
             <div onClick={() => { openThread(t.otherId, t.username, t.avatar); setInbox(prev => { const updated = prev.map(i => i.otherId === t.otherId ? { ...i, unread: 0 } : i); setTimeout(() => onUnreadChange?.(updated.reduce((sum, i) => sum + (i.unread || 0), 0)), 0); return updated; }); }} style={{ flex: "0 0 100%", background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "12px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }} onMouseEnter={e => e.currentTarget.style.background = "rgba(120,180,80,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "var(--card)"}>
               <div style={{ position: "relative", flexShrink: 0 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "var(--green)", overflow: "hidden", boxShadow: "0 0 0 2px #78b450, 0 0 10px rgba(120,180,80,0.25)" }}>
+                <div className="avatar-img" style={{ width: 40, height: 40, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "var(--green)" }}>
                   {t.avatar ? <img src={t.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : t.username?.[0]?.toUpperCase()}
                 </div>
                 {t.last_seen && (Date.now() - new Date(t.last_seen)) < 5 * 60 * 1000 && (
