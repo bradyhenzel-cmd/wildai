@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 import { useUser, useClerk } from '@clerk/react';
 import { Bell } from "lucide-react";
 import { ErrorBoundary, ToastContainer, useToast } from './utils';
-import { TermsPage } from './components/AdminTab';
+import { TermsPage } from './components/TermsPage';
 import LandingPage from './components/LandingPage';
 import OnboardingPage from './components/OnboardingPage';
 import ChatPage from './components/ChatPage';

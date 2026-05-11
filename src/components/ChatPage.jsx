@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "../supabase";
 import { useUser, UserButton, useClerk } from "@clerk/react";
 import { STATES, SPECIES, SPECIES_ICONS, GEAR_CHECKLISTS, FREE_LIMIT } from "../constants";
 import { TypewriterText, fmtMsg, toast } from "../utils";
-import WeatherWidget from "./WeatherWidget";
-import MapTab from "./MapTab";
-import RegulationsTab from "./RegulationsTab";
-import LicensesTab from "./LicensesTab";
-import TripPlannerTab from "./TripPlannerTab";
-import AdminTab from "./AdminTab";
-import HarvestLogTab from "./HarvestLogTab";
-import BallisticsTab from "./BallisticsTab";
-import TrophyBoardTab from "./TrophyBoardTab";
-import CommunityTab from "./CommunityTab";
+const WeatherWidget = lazy(() => import("./WeatherWidget"));
+const MapTab = lazy(() => import("./MapTab"));
+const RegulationsTab = lazy(() => import("./RegulationsTab"));
+const LicensesTab = lazy(() => import("./LicensesTab"));
+const TripPlannerTab = lazy(() => import("./TripPlannerTab"));
+const AdminTab = lazy(() => import("./AdminTab"));
+const HarvestLogTab = lazy(() => import("./HarvestLogTab"));
+const BallisticsTab = lazy(() => import("./BallisticsTab"));
+const TrophyBoardTab = lazy(() => import("./TrophyBoardTab"));
+const CommunityTab = lazy(() => import("./CommunityTab"));
 
 export default function ChatPage({ onBack, messageCount, setMessageCount, selectedState, setSelectedState, onTerms, messagesUnread, setMessagesUnread, notifUnread, setNotifUnread, openPricingModal, isGuest, onSignIn }) {
   const [tab, setTab] = useState("more");
@@ -84,9 +84,11 @@ export default function ChatPage({ onBack, messageCount, setMessageCount, select
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [detectingLocation, setDetectingLocation] = useState(() => !localStorage.getItem("wildai_selected_state") && !selectedState);
-  const { openSignIn: _openSignIn } = useClerk();
+  const { openSignIn: _openSignIn, openUserProfile } = useClerk();
   const openSignIn = () => { _openSignIn({ afterSignInUrl: window.location.href, afterSignUpUrl: window.location.href }); };
-  useEffect(() => { window._triggerSignIn = openSignIn; return () => { window._triggerSignIn = null; }; }, [openSignIn]);
+  useEffect(() => { window._triggerSignIn = openSignIn; window._clerkOpenProfile = openUserProfile; return () => { window._triggerSignIn = null; window._clerkOpenProfile = null; }; }, [openSignIn, openUserProfile]);
+  const [mapMounted, setMapMounted] = useState(false);
+  useEffect(() => { if (tab === "map") setMapMounted(true); }, [tab]);
 
   const isPro = user?.publicMetadata?.isPro === true;
   const openPricingOrSignIn = () => { if (!user || isGuest) { openSignIn(); } else { openPricingModal(); } };
@@ -463,18 +465,24 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         )}
 
         {tab === "weather" && (
-          <div className="fade-in">
-            <WeatherWidget selectedState={selectedState} weather={weather} setWeather={setWeather} locationName={locationName} setLocationName={setLocationName} />
+          <Suspense fallback={<div style={{ minHeight: 200 }} />}>
+            <div className="fade-in">
+              <WeatherWidget selectedState={selectedState} weather={weather} setWeather={setWeather} locationName={locationName} setLocationName={setLocationName} />
+            </div>
+          </Suspense>
+        )}
+
+        {mapMounted && (
+          <div style={{ display: tab === "map" ? "block" : "none" }} ref={el => { if (el && tab === "map") setTimeout(() => window.dispatchEvent(new Event('resize')), 100); }}>
+            <Suspense fallback={null}>
+              <MapTab selectedState={selectedState} user={user} isPro={isPro} onSharePin={(pin) => { window._sharePinToComm = pin; setTab("community"); }} />
+            </Suspense>
           </div>
         )}
 
-        <div style={{ display: tab === "map" ? "block" : "none" }} ref={el => { if (el && tab === "map") setTimeout(() => window.dispatchEvent(new Event('resize')), 100); }}>
-          <MapTab selectedState={selectedState} user={user} isPro={isPro} onSharePin={(pin) => { window._sharePinToComm = pin; setTab("community"); }} />
-        </div>
-
-        {tab === "regs" && <div className="tab-fade"><RegulationsTab selectedState={selectedState} currentUser={user} /></div>}
-        {tab === "licenses" && <div className="tab-fade"><LicensesTab selectedState={selectedState} /></div>}
-        {tab === "trip" && <div className="tab-fade"><TripPlannerTab selectedState={selectedState} user={user} isPro={isPro} hitLimit={hitLimit} messageCount={messageCount} setMessageCount={setMessageCount} isGuest={isGuest} onUpgrade={() => { if (!user || isGuest) { openSignIn(); return; } openPricingModal(); }} /></div>}
+        {tab === "regs" && <Suspense fallback={<div style={{ minHeight: 200 }} />}><div className="tab-fade"><RegulationsTab selectedState={selectedState} currentUser={user} /></div></Suspense>}
+        {tab === "licenses" && <Suspense fallback={<div style={{ minHeight: 200 }} />}><div className="tab-fade"><LicensesTab selectedState={selectedState} /></div></Suspense>}
+        {tab === "trip" && <Suspense fallback={<div style={{ minHeight: 200 }} />}><div className="tab-fade"><TripPlannerTab selectedState={selectedState} user={user} isPro={isPro} hitLimit={hitLimit} messageCount={messageCount} setMessageCount={setMessageCount} isGuest={isGuest} onUpgrade={() => { if (!user || isGuest) { openSignIn(); return; } openPricingModal(); }} /></div></Suspense>}
         {tab === "species" && (
           <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div style={{ textAlign: "center", paddingTop: 4 }}>
@@ -602,11 +610,11 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           </div>
         )}
 
-        {tab === "admin" && user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a" && <div className="tab-fade"><AdminTab user={user} /></div>}
-        {tab === "harvest" && <div className="tab-fade"><HarvestLogTab user={user} openSignIn={openSignIn} isPro={isPro} openPricingModal={openPricingModal} /></div>}
-        {tab === "ballistics" && <div className="tab-fade"><BallisticsTab /></div>}
-        {tab === "trophy" && <div className="tab-fade"><TrophyBoardTab user={user} openSignIn={openSignIn} selectedState={selectedState} /></div>}
-        {tab === "community" && <div className="tab-fade"><CommunityTab selectedState={selectedState} user={user} openSignIn={openSignIn} externalSetUnread={setMessagesUnread} externalSetNotifUnread={setNotifUnread} isGuest={isGuest} /></div>}
+        {tab === "admin" && user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a" && <Suspense fallback={<div style={{ minHeight: 200 }} />}><div className="tab-fade"><AdminTab user={user} /></div></Suspense>}
+        {tab === "harvest" && <Suspense fallback={<div style={{ minHeight: 200 }} />}><div className="tab-fade"><HarvestLogTab user={user} openSignIn={openSignIn} isPro={isPro} openPricingModal={openPricingModal} /></div></Suspense>}
+        {tab === "ballistics" && <Suspense fallback={<div style={{ minHeight: 200 }} />}><div className="tab-fade"><BallisticsTab /></div></Suspense>}
+        {tab === "trophy" && <Suspense fallback={<div style={{ minHeight: 200 }} />}><div className="tab-fade"><TrophyBoardTab user={user} openSignIn={openSignIn} selectedState={selectedState} /></div></Suspense>}
+        {tab === "community" && <Suspense fallback={<div style={{ minHeight: 200 }} />}><div className="tab-fade"><CommunityTab selectedState={selectedState} user={user} openSignIn={openSignIn} externalSetUnread={setMessagesUnread} externalSetNotifUnread={setNotifUnread} isGuest={isGuest} /></div></Suspense>}
         {tab === "about" && (
           <div className="fade-in card" style={{ padding: 32 }}>
             <div style={{ textAlign: "center", marginBottom: 32 }}>

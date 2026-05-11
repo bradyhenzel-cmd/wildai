@@ -5,7 +5,6 @@ import { supabase } from "../supabase";
 import { capName, avatarColor, stripExif, toast } from "../utils";
 import { STATES } from "../constants";
 import UserProfilePage from "./UserProfilePage";
-import HotspotsTab from "./HotspotsTab";
 import PostDetailPage, { PostComments } from "./PostDetailPage";
 import MessagesTab from "./MessagesTab";
 import GlobalChatTab from "./GlobalChatTab";
