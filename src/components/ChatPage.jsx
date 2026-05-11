@@ -618,7 +618,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         {tab === "about" && (
           <div className="fade-in card" style={{ padding: 32 }}>
             <div style={{ textAlign: "center", marginBottom: 32 }}>
-              <img src="/logo.png" style={{ width: 160, height: 160, objectFit: "contain", marginBottom: 16 }} className="float" />
+              <img src="/logo.png" style={{ width: 88, height: 88, objectFit: "cover", borderRadius: 20, marginBottom: 16, boxShadow: "0 4px 24px rgba(0,0,0,0.5)" }} />
               <h2 style={{ fontFamily: "var(--font-display)", fontSize: 28, color: "var(--text)", marginBottom: 8 }}>Ravlin</h2>
               <p style={{ color: "var(--green)", fontSize: 14, fontWeight: 500 }}>Built for hunters & anglers, by outdoorsmen</p>
             </div>
