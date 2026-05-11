@@ -184,7 +184,7 @@ export default function UserProfilePage({ userId, currentUser, onBack, openSignI
           <div style={{ position: "relative", marginTop: -36, flexShrink: 0 }}>
             <label style={{ cursor: isOwnProfile ? "pointer" : "default", display: "block" }}>
               {isOwnProfile && <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => uploadAvatar(e.target.files[0])} />}
-              <div className="avatar-img" style={{ width: 90, height: 90, background: `linear-gradient(135deg, ${avatarColor(profile?.username)[0]}, ${avatarColor(profile?.username)[1]})`, border: "4px solid #080d08", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div className="avatar-img" style={{ width: 90, height: 90, background: `linear-gradient(135deg, ${avatarColor(profile?.username)[0]}, ${avatarColor(profile?.username)[1]})`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 {uploadingAvatar
                   ? <span style={{ color: "var(--text3)", fontSize: 11 }}>...</span>
                   : profile?.avatar_url
@@ -236,7 +236,7 @@ export default function UserProfilePage({ userId, currentUser, onBack, openSignI
         {/* Buttons row */}
         {!isOwnProfile && (
           <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-            <button onClick={toggleFollow} className={isFollowing ? "btn-ghost" : "btn-primary"} style={{ flex: 1, padding: "8px 0", fontSize: 13, borderRadius: 20 }}>
+            <button onClick={toggleFollow} className={isFollowing ? "btn-ghost" : "btn-primary"} style={{ flex: 1, padding: "8px 0", fontSize: 13, borderRadius: 20, color: isFollowing ? "var(--text2)" : "#fff" }}>
               {isFollowing ? "Following" : "Follow"}
             </button>
             <button onClick={() => { if (!currentUser) { openSignIn(); return; } onMessage?.(userId); }} className="btn-ghost" style={{ flex: 1, padding: "8px 0", fontSize: 13, borderRadius: 20 }}>Message</button>
@@ -247,14 +247,14 @@ export default function UserProfilePage({ userId, currentUser, onBack, openSignI
         )}
 
         {!isOwnProfile && (
-          <div style={{ display: "flex", gap: 12 }}>
+          <div style={{ display: "flex", gap: 8 }}>
             <button onClick={async () => {
               if (!currentUser || isGuest) { openSignIn(); return; }
               const { data: existing } = await supabase.from("reported_users").select("id").eq("user_id", userId).eq("reported_by", currentUser.id).single();
               if (existing) { toast("You've already reported this user."); return; }
               await supabase.from("reported_users").insert({ user_id: userId, reported_by: currentUser.id });
               toast("User reported. Thank you.", "success");
-            }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 11, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>Report user</button>
+            }} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", borderRadius: 20, color: "var(--text3)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", padding: "5px 12px" }}>Report</button>
             {confirmBlock && createPortal(
               <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 999999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }} onClick={() => setConfirmBlock(false)}>
                 <div onClick={e => e.stopPropagation()} style={{ background: "#0d1a0d", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 28, maxWidth: 320, width: "100%", textAlign: "center" }}>
@@ -285,7 +285,7 @@ export default function UserProfilePage({ userId, currentUser, onBack, openSignI
               } else {
                 setConfirmBlock(true);
               }
-            }} style={{ background: "none", border: "none", color: isBlocked ? "var(--text3)" : "rgba(255,100,100,0.5)", fontSize: 11, cursor: "pointer", fontFamily: "var(--font-body)", padding: 0 }}>{isBlocked ? "Unblock user" : "Block user"}</button>
+            }} style={{ background: isBlocked ? "rgba(255,255,255,0.04)" : "rgba(255,60,60,0.08)", border: `1px solid ${isBlocked ? "var(--border)" : "rgba(255,80,80,0.25)"}`, borderRadius: 20, color: isBlocked ? "var(--text3)" : "rgba(255,100,100,0.7)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", padding: "5px 12px" }}>{isBlocked ? "Unblock" : "Block"}</button>
           </div>
         )}
       </div>
@@ -320,13 +320,8 @@ export default function UserProfilePage({ userId, currentUser, onBack, openSignI
         {false && <button onClick={() => setProfileTab("spots")} style={{ flex: 1, background: "none", border: "none", borderBottom: profileTab === "spots" ? "2px solid var(--green)" : "2px solid transparent", color: profileTab === "spots" ? "var(--text)" : "var(--text3)", padding: "10px 0", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)", transition: "all 0.2s" }}>📍 Spots</button>}
       </div>
 
-      {viewingProfilePost && createPortal(
-        <div className="fade-in" style={{ position: "fixed", inset: 0, zIndex: 99999, background: "var(--bg)", overflowY: "auto", padding: "0 0 80px" }}>
-          <div style={{ maxWidth: 760, margin: "0 auto", padding: "16px 16px 0" }}>
-            <PostDetailPage postId={viewingProfilePost} user={currentUser} openSignIn={openSignIn} onBack={() => setViewingProfilePost(null)} onViewUser={onViewUser} />
-          </div>
-        </div>,
-        document.body
+      {viewingProfilePost && (
+        <PostDetailPage postId={viewingProfilePost} user={currentUser} openSignIn={openSignIn} onBack={() => setViewingProfilePost(null)} onViewUser={onViewUser} />
       )}
       {profileTab === "posts" && (
         posts.length === 0 ? (

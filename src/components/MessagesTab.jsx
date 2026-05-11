@@ -40,7 +40,7 @@ function PinPicker({ user, onSelect }) {
   );
 }
 
-export default function MessagesTab({ user, openSignIn, onUnreadChange }) {
+export default function MessagesTab({ user, openSignIn, onUnreadChange, initialThreadUserId }) {
   const [view, setView] = useState("inbox");
   const [inbox, setInbox] = useState([]);
   const [loadingInbox, setLoadingInbox] = useState(true);
@@ -147,20 +147,19 @@ export default function MessagesTab({ user, openSignIn, onUnreadChange }) {
 
   useEffect(() => { if (user) loadInbox(); }, [user]);
 
+  const [threadLoading, setThreadLoading] = useState(!!initialThreadUserId);
+
   useEffect(() => {
-    const check = () => {
-      if (window._openMessageThread && user) {
-        const id = window._openMessageThread;
-        window._openMessageThread = null;
-        supabase.from("profiles").select("username, avatar_url").eq("user_id", id).single().then(({ data }) => {
-          openThread(id, data?.username || "Hunter", data?.avatar_url);
-        });
-      }
-    };
-    check();
-    const t = setTimeout(check, 300);
-    return () => clearTimeout(t);
-  }, [user]);
+    const id = initialThreadUserId || window._openMessageThread;
+    if (id && user) {
+      window._openMessageThread = null;
+      setThreadLoading(true);
+      supabase.from("profiles").select("username, avatar_url").eq("user_id", id).single().then(({ data }) => {
+        openThread(id, data?.username || "Hunter", data?.avatar_url);
+        setThreadLoading(false);
+      });
+    }
+  }, [user, initialThreadUserId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -200,6 +199,20 @@ export default function MessagesTab({ user, openSignIn, onUnreadChange }) {
       <div style={{ fontSize: 40, marginBottom: 12 }}>💬</div>
       <div style={{ color: "var(--text)", fontWeight: 600, marginBottom: 6 }}>Sign in to message</div>
       <button onClick={openSignIn} className="btn-primary" style={{ padding: "8px 20px", fontSize: 13 }}>Sign In</button>
+    </div>
+  );
+
+  if (threadLoading) return (
+    <div style={{ padding: "24px 16px", display: "flex", flexDirection: "column", gap: 14 }}>
+      {[1,2,3].map(i => (
+        <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, backgroundImage: "linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.04) 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s ease-in-out infinite", flexShrink: 0 }} />
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ height: 12, width: "40%", borderRadius: 6, backgroundImage: "linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.04) 75%)", backgroundSize: "200% 100%", animation: `shimmer 1.4s ease-in-out ${i * 0.15}s infinite` }} />
+            <div style={{ height: 10, width: "70%", borderRadius: 6, backgroundImage: "linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.04) 75%)", backgroundSize: "200% 100%", animation: `shimmer 1.4s ease-in-out ${i * 0.15}s infinite` }} />
+          </div>
+        </div>
+      ))}
     </div>
   );
 

@@ -61,11 +61,13 @@ const PostCard = React.memo(function PostCard({
   onToggleComments, onToggleCaption, onOpenMenu, openSignIn, onCommentAdded,
 }) {
   const isHot = likeCount >= 5;
+  const [imgLoaded, setImgLoaded] = React.useState(false);
   return (
     <div className="fade-in" style={{ borderRadius: 16, overflow: "hidden", border: isHot ? "1px solid rgba(255,150,0,0.3)" : "1px solid rgba(255,255,255,0.06)", background: "#0e1510", boxShadow: "0 4px 20px rgba(0,0,0,0.4)" }}>
       {post.photo ? (
         <div style={{ position: "relative", overflow: "hidden", height: 480, background: "#000", borderRadius: "16px 16px 0 0" }}>
-          <img src={post.photo} onClick={() => onOpenReels(reelsIdx)} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", cursor: "pointer" }} />
+          {!imgLoaded && <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.04) 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s ease-in-out infinite" }} />}
+          <img src={post.photo} onClick={() => onOpenReels(reelsIdx)} onLoad={() => setImgLoaded(true)} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", cursor: "pointer", opacity: imgLoaded ? 1 : 0, transition: "opacity 0.3s ease" }} />
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 30%, transparent 50%, rgba(0,0,0,0.7) 100%)", pointerEvents: "none" }} />
           <div style={{ position: "absolute", top: 12, left: 12, right: 52, display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ position: "relative", flexShrink: 0 }}>
@@ -183,7 +185,7 @@ const PostCard = React.memo(function PostCard({
   );
 });
 
-export default function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSetUnread, externalSetNotifUnread, isGuest }) {
+export default function CommunityTab({ selectedState, user, openSignIn, onPinSaved, externalSetUnread, externalSetNotifUnread, isGuest, initialMessageUserId }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -769,7 +771,7 @@ export default function CommunityTab({ selectedState, user, openSignIn, onPinSav
         </div>
       )}
       {communityTab === "messages" && !viewingProfile && (
-        <MessagesTab user={user} openSignIn={openSignIn} supabase={supabase} onUnreadChange={setMessagesUnread} />
+        <MessagesTab user={user} openSignIn={openSignIn} supabase={supabase} onUnreadChange={setMessagesUnread} initialThreadUserId={initialMessageUserId} />
       )}
       {communityTab === "chat" && !viewingProfile && (
         <GlobalChatTab user={user} openSignIn={openSignIn} />
@@ -809,7 +811,7 @@ export default function CommunityTab({ selectedState, user, openSignIn, onPinSav
               onBack={() => setViewingProfile(null)}
               openSignIn={openSignIn}
               onViewUser={(id) => setViewingProfile(id)}
-              onMessage={(id) => { setViewingProfile(null); setCommunityTab("messages"); setTimeout(() => { window._openMessageThread = id; }, 100); }}
+              onMessage={(id) => { window._openMessageThread = id; setViewingProfile(null); setCommunityTab("messages"); }}
               onBlock={(id, unblock) => { setBlockedIds(prev => { const n = new Set(prev); unblock ? n.delete(id) : n.add(id); return n; }); if (!unblock) setViewingProfile(null); }}
             />
           </div>

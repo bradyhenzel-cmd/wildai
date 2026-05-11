@@ -262,7 +262,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
           {!user || isGuest ? (
             <button onClick={() => openSignIn()} className="btn-primary" style={{ padding: "7px 14px", fontSize: 13 }}>{isGuest ? "Sign Up" : "Sign In"}</button>
           ) : (
-            <div style={{ borderRadius: "50%", outline: "2.5px solid var(--green)", outlineOffset: "1px", boxShadow: "0 0 10px rgba(139,195,74,0.25)", display: "inline-flex", lineHeight: 0 }}>
+            <div style={{ borderRadius: "50%", outline: "none", boxShadow: "0 0 0 1.5px rgba(255,255,255,0.7), 0 0 10px rgba(255,255,255,0.2)", display: "inline-flex", lineHeight: 0 }}>
               <UserButton afterSignOutUrl="https://wildai.netlify.app">
                 <UserButton.MenuItems>
                   <UserButton.Action
@@ -614,7 +614,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         {tab === "harvest" && <Suspense fallback={<div style={{ minHeight: 200 }} />}><div className="tab-fade"><HarvestLogTab user={user} openSignIn={openSignIn} isPro={isPro} openPricingModal={openPricingModal} /></div></Suspense>}
         {tab === "ballistics" && <Suspense fallback={<div style={{ minHeight: 200 }} />}><div className="tab-fade"><BallisticsTab /></div></Suspense>}
         {tab === "trophy" && <Suspense fallback={<div style={{ minHeight: 200 }} />}><div className="tab-fade"><TrophyBoardTab user={user} openSignIn={openSignIn} selectedState={selectedState} /></div></Suspense>}
-        {tab === "community" && <Suspense fallback={<div style={{ minHeight: 200 }} />}><div className="tab-fade"><CommunityTab selectedState={selectedState} user={user} openSignIn={openSignIn} externalSetUnread={setMessagesUnread} externalSetNotifUnread={setNotifUnread} isGuest={isGuest} /></div></Suspense>}
+        {tab === "community" && <Suspense fallback={<div style={{ minHeight: 200 }} />}><div className="tab-fade"><CommunityTab selectedState={selectedState} user={user} openSignIn={openSignIn} externalSetUnread={setMessagesUnread} externalSetNotifUnread={setNotifUnread} isGuest={isGuest} initialMessageUserId={window._openMessageThread || null} /></div></Suspense>}
         {tab === "about" && (
           <div className="fade-in card" style={{ padding: 32 }}>
             <div style={{ textAlign: "center", marginBottom: 32 }}>
