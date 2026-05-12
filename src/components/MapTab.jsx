@@ -621,10 +621,12 @@ function PinDetailPage({ pin, onBack, onDelete, onSharePin, onSave }) {
                 })()} style={{ width: 60, height: 60, display: "block" }} />
               </div>
               <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 6 }}>
-                  <span style={{ color: "#ffffff", fontSize: 36, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.02em", textShadow: "0 0 20px rgba(255,255,255,0.2)" }}>{quickConditions.temp}°</span>
-                  <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 20, fontWeight: 300 }}>F</span>
-                  <span style={{ color: "rgba(255,255,255,0.55)", fontSize: 14, fontWeight: 500, marginLeft: 2 }}>{quickConditions.condition}</span>
+                <div style={{ marginBottom: 4 }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                    <span style={{ color: "#ffffff", fontSize: 42, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.02em", textShadow: "0 0 20px rgba(255,255,255,0.15)" }}>{quickConditions.temp}°</span>
+                    <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 22, fontWeight: 300 }}>F</span>
+                  </div>
+                  <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, fontWeight: 500, marginTop: 2 }}>{quickConditions.condition}</div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <Wind size={12} color="rgba(255,255,255,0.3)" />
@@ -735,8 +737,8 @@ function PinDetailPage({ pin, onBack, onDelete, onSharePin, onSave }) {
       {user && (
         <div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-            <span style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>My Pins</span>
-            <button onClick={() => setShowPinsPage(true)} style={{ background: "none", border: "none", color: "var(--green)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-body)" }}>View All ({pins.length}) →</button>
+            <span style={{ color: "rgba(139,195,74,0.7)", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>My Pins</span>
+            <button onClick={() => setShowPinsPage(true)} style={{ background: "none", border: "none", color: "var(--green)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-body)", letterSpacing: "0.02em" }}>View All ({pins.length}) →</button>
           </div>
           {pins.filter(p => p.lat && p.lng).length === 0 ? (
             <div style={{ textAlign: "center", padding: "20px 0", color: "var(--text3)", fontSize: 13 }}>Tap the map to drop your first pin</div>
@@ -774,7 +776,6 @@ function PinDetailPage({ pin, onBack, onDelete, onSharePin, onSave }) {
 
       {!user && (
         <div style={{ textAlign: "center", padding: 24, color: "var(--text3)", fontSize: 14 }}>
-          <div style={{ fontSize: 36, marginBottom: 10 }}>📍</div>
           Sign in to save and drop pins on your map
         </div>
       )}

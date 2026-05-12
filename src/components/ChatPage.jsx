@@ -242,7 +242,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0 }}>
       </div>
 
-      <header style={{ borderBottom: "1px solid rgba(120,180,80,0.1)", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", backdropFilter: "blur(24px)", background: "rgba(5,10,5,0.88)", position: "sticky", top: 0, zIndex: 50, boxShadow: "0 4px 24px rgba(0,0,0,0.3), 0 1px 0 rgba(120,180,80,0.08)", overflow: "visible" }}>
+      <header style={{ borderBottom: "1px solid rgba(120,180,80,0.1)", padding: "14px 20px", display: ["map", "chat", "community"].includes(tab) ? "none" : "flex", alignItems: "center", justifyContent: "space-between", backdropFilter: "blur(24px)", background: "rgba(5,10,5,0.88)", position: "sticky", top: 0, zIndex: 50, boxShadow: "0 4px 24px rgba(0,0,0,0.3), 0 1px 0 rgba(120,180,80,0.08)", overflow: "visible" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div className="mobile-header-center" style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span className="mobile-header-logo" style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "var(--text)" }}>Ravlin</span>
@@ -319,7 +319,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         })()}
       </div>
 
-      <div style={{ flex: 1, padding: 20, paddingBottom: 80, maxWidth: 760, width: "100%", margin: "0 auto", display: "flex", flexDirection: "column", gap: 16, position: "relative" }}>
+      <div style={{ flex: 1, padding: tab === "chat" ? 0 : 20, paddingBottom: tab === "chat" ? 0 : 80, maxWidth: 760, width: "100%", margin: "0 auto", display: "flex", flexDirection: "column", gap: 16, position: "relative" }}>
 
         {showInstallBanner && !window.navigator.standalone && createPortal(
           <div style={{ position: "fixed", inset: 0, zIndex: 999999, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backdropFilter: "blur(8px)" }}>
@@ -358,44 +358,32 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                 </div>
               </div>
             )}
-            {weather && (
-              <div onClick={() => setTab("weather")} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: "linear-gradient(135deg, #0d160d, #111a11)", border: "1px solid #1c2c1c", borderRadius: 16, cursor: "pointer" }}>
-                <div style={{ width: 36, height: 36, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: "rgba(109,186,74,0.12)", border: "1px solid rgba(109,186,74,0.2)" }}>
-                  <span style={{ fontSize: 18 }}>{weather.weather_code === 0 ? "☀️" : weather.weather_code <= 3 ? "⛅" : weather.weather_code <= 48 ? "🌫️" : weather.weather_code <= 67 ? "🌧️" : weather.weather_code <= 77 ? "❄️" : "⛈️"}</span>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ color: "white", fontSize: 13, fontWeight: 700 }}>{Math.round(weather.temperature_2m)}°F</span>
-                    <span style={{ color: "#4a6a4a", fontSize: 12, display: "flex", alignItems: "center", gap: 4 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4a6a4a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>{locationName}</span>
-                  </div>
-                  <span style={{ color: "#6dba4a", fontSize: 11, fontWeight: 600, marginTop: 2 }}>
-                    {weather.weather_code === 0 ? "Clear" : weather.weather_code <= 3 ? "Partly cloudy" : weather.weather_code <= 48 ? "Foggy" : weather.weather_code <= 67 ? "Rain" : weather.weather_code <= 77 ? "Snow" : "Showers"} · {Math.round(weather.wind_speed_10m)} mph
-                  </span>
-                </div>
-                <div style={{ marginLeft: "auto", background: "rgba(109,186,74,0.1)", border: "1px solid rgba(109,186,74,0.15)", borderRadius: 20, padding: "3px 10px", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", color: "rgba(109,186,74,0.7)" }}>LIVE</div>
-              </div>
-            )}
-            <div className="fade-in" style={{ display: "flex", flexDirection: "column", overflow: "hidden", background: "linear-gradient(160deg, #0d140d 0%, #090d09 100%)", border: "1px solid #1a261a", borderRadius: 20, boxShadow: "0 24px 60px rgba(0,0,0,0.6)" }}>
-              <div style={{ padding: "14px 18px", display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid #141e14", background: "rgba(0,0,0,0.2)" }}>
-                <div style={{ width: 36, height: 36, borderRadius: 12, background: "linear-gradient(135deg, #78b450, #4a8a2a)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 16px rgba(120,180,80,0.3)" }}>
-                  <img src="/chat.png" style={{ width: 64, height: 64, objectFit: "cover", borderRadius: "50%" }} />
-                </div>
-                <div>
-                  <div style={{ color: "white", fontWeight: 700, fontSize: 14 }}>Ravlin</div>
+            
+            <div className="fade-in" style={{ display: "flex", flexDirection: "column", overflow: "hidden", background: "linear-gradient(160deg, #0c1c0c 0%, #071007 100%)", border: "none", borderRadius: 0, boxShadow: "none", height: "calc(100dvh - 80px)" }}>
+              <div style={{ padding: "14px 18px", display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid rgba(139,195,74,0.08)", background: "rgba(0,0,0,0.4)", flexShrink: 0 }}>
+                <img src="/chat.png" style={{ width: 40, height: 40, objectFit: "cover", borderRadius: "50%", flexShrink: 0, boxShadow: "0 0 12px rgba(139,195,74,0.3)" }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ color: "#ffffff", fontWeight: 800, fontSize: 16, letterSpacing: "0.01em", position: "relative", left: 0, transform: "none", textAlign: "left" }}>Ravlin</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
                     <div style={{ width: 6, height: 6, borderRadius: "50%", background: botStatus === "online" ? "#4ade80" : "#f43f5e", boxShadow: botStatus === "online" ? "0 0 6px rgba(74,222,128,0.8)" : "0 0 6px rgba(244,63,94,0.8)" }} />
                     <span style={{ color: botStatus === "online" ? "#4a7a4a" : "#f43f5e", fontSize: 11 }}>{botStatus === "online" ? "Online" : "Not connected"}</span>
                   </div>
                 </div>
+                <button onClick={() => setMessages([{ role: "assistant", content: messages[0].content, animate: false }])} style={{ background: "none", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, padding: "5px 10px", color: "rgba(255,255,255,0.3)", fontSize: 11, cursor: "pointer", fontFamily: "var(--font-body)" }}>Clear</button>
               </div>
-              <div style={{ overflowY: "auto", padding: "16px 14px", display: "flex", flexDirection: "column", gap: 12, minHeight: 300, maxHeight: "55vh" }}>
+              <div style={{ overflowY: "auto", padding: "18px 16px", display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
                 {messages.map((m, i) => (
                   <div key={i} className="fade-in" style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start", gap: 10, alignItems: "flex-end" }}>
                     {m.role === "assistant" && <img src="/chat.png" style={{ width: 36, height: 36, objectFit: "cover", borderRadius: "50%", flexShrink: 0 }} />}
-                    <div style={{ background: m.role === "user" ? "linear-gradient(135deg,var(--green),var(--green2))" : "rgba(255,255,255,0.05)", border: m.role === "assistant" ? "1px solid var(--border)" : "none", color: "var(--text)", padding: "13px 17px", borderRadius: m.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", maxWidth: "80%", boxShadow: m.role === "user" ? "0 4px 16px rgba(120,180,80,0.2)" : "none" }}>
-                      {m.role === "assistant" && m.animate
-                        ? <TypewriterText text={m.content} onDone={() => setMessages(prev => prev.map((msg, j) => j === i ? { ...msg, animate: false } : msg))} />
-                        : fmtMsg(m.content)}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4, maxWidth: "80%" }}>
+                      <div style={{ background: m.role === "user" ? "linear-gradient(135deg, rgba(139,195,74,0.9), rgba(74,138,42,0.9))" : "rgba(255,255,255,0.05)", border: m.role === "assistant" ? "1px solid rgba(255,255,255,0.07)" : "none", color: "#ffffff", padding: "12px 16px", borderRadius: m.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", boxShadow: m.role === "user" ? "0 4px 16px rgba(139,195,74,0.2)" : "0 2px 8px rgba(0,0,0,0.3)", fontSize: 14, lineHeight: 1.6 }}>
+                        {m.role === "assistant" && m.animate
+                          ? <TypewriterText text={m.content} onDone={() => setMessages(prev => prev.map((msg, j) => j === i ? { ...msg, animate: false } : msg))} />
+                          : fmtMsg(m.content)}
+                      </div>
+                      {m.role === "assistant" && !m.animate && (
+                        <button onClick={() => navigator.clipboard.writeText(m.content)} style={{ alignSelf: "flex-start", background: "none", border: "none", color: "rgba(255,255,255,0.18)", fontSize: 10, cursor: "pointer", fontFamily: "var(--font-body)", padding: "2px 4px", letterSpacing: "0.04em", fontWeight: 600 }}>COPY</button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -452,11 +440,11 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                 </div>
               )}
               {!hitLimit && (
-                <div style={{ padding: "14px 20px", borderTop: "1px solid var(--border)", display: "flex", gap: 10, alignItems: "center" }}>
+                <div style={{ padding: "12px 16px", paddingBottom: "calc(12px + env(safe-area-inset-bottom, 0px))", borderTop: "1px solid rgba(139,195,74,0.08)", display: "flex", gap: 10, alignItems: "center", background: "rgba(0,0,0,0.4)", flexShrink: 0 }}>
                   <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && sendMessage()}
-                    placeholder={`Ask anything...`}
-                    style={{ flex: 1, padding: "13px 18px", borderRadius: "var(--radius-sm)", fontSize: 14 }} />
-                  <button onClick={() => sendMessage()} style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg, #78b450, #4a8a2a)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 16px rgba(120,180,80,0.35)", transition: "transform 0.15s" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
+                    placeholder="Ask anything..."
+                    style={{ flex: 1, padding: "13px 18px", borderRadius: 14, fontSize: 14, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", outline: "none" }} />
+                  <button onClick={() => sendMessage()} style={{ width: 46, height: 46, borderRadius: 14, background: "linear-gradient(135deg, #78b450, #4a8a2a)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 16px rgba(120,180,80,0.4)", transition: "transform 0.15s" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
                   </button>
                 </div>
