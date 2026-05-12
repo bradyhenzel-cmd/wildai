@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { PawPrint, Crosshair, IdCard, Package } from "lucide-react";
 import { createPortal } from "react-dom";
 import { supabase } from "../supabase";
 import { useUser, UserButton, useClerk } from "@clerk/react";
@@ -27,7 +28,7 @@ export default function ChatPage({ onBack, messageCount, setMessageCount, select
       try {
         const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,precipitation&wind_speed_unit=mph&temperature_unit=fahrenheit&timezone=auto`);
         const d = await r.json();
-        if (d.current) setWeather({ ...d.current, lat, lng: lon });
+        if (d.current) setWeather({ ...d.current, lat, lng: lon, timezone: d.timezone });
       } catch { }
     };
     if (navigator.geolocation) {
@@ -475,7 +476,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
         {mapMounted && (
           <div style={{ display: tab === "map" ? "block" : "none" }} ref={el => { if (el && tab === "map") setTimeout(() => window.dispatchEvent(new Event('resize')), 100); }}>
             <Suspense fallback={null}>
-              <MapTab selectedState={selectedState} user={user} isPro={isPro} onSharePin={(pin) => { window._sharePinToComm = pin; setTab("community"); }} />
+              <MapTab selectedState={selectedState} user={user} isPro={isPro} onSharePin={(pin) => { window._sharePinToComm = pin; setTab("community"); }} weatherOverride={weather} locationNameOverride={locationName} />
             </Suspense>
           </div>
         )}
@@ -584,16 +585,16 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
             <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 4 }}>TOOLS & FEATURES</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               {[
-                { id: "species", label: "Species", desc: "Hunting & fishing guides", accent: "#2d5a1b", color: "#6dba4a", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="22" y1="12" x2="18" y2="12" /><line x1="6" y1="12" x2="2" y2="12" /><line x1="12" y1="6" x2="12" y2="2" /><line x1="12" y1="22" x2="12" y2="18" /></svg> },
-                { id: "regs", label: "Regulations", desc: "State-specific rules", accent: "#1a3a5c", color: "#4a8fd4", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg> },
-                { id: "trip", label: "Trip Planner", desc: "Personalized plans", accent: "#2a1a5c", color: "#a78bfa", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg> },
-                { id: "gear", label: "Gear", desc: "Pack checklists", accent: "#5c2a0a", color: "#fb923c", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" /></svg> },
-                { id: "licenses", label: "Licenses", desc: "Buy state licenses", accent: "#0a4a3a", color: "#34d399", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></svg> },
-                { id: "harvest", label: "Harvest Log", desc: "Track your catches", accent: "#1a3a10", color: "#a3e635", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg> },
-                { id: "trophy", label: "Trophy Board", desc: "Community verified harvests", accent: "#4a2a00", color: "#fbbf24", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2z" /></svg> },
-                { id: "ballistics", label: "Ballistics", desc: "Bullet drop calculator", accent: "#3a0a2a", color: "#f472b6", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2c-2 0-4 1.5-4 4v8h8V6c0-2.5-2-4-4-4z" /><rect x="8" y="14" width="8" height="4" rx="1" /><line x1="10" y1="18" x2="10" y2="21" /><line x1="14" y1="18" x2="14" y2="21" /></svg> },
-                { id: "weather", label: "Weather", desc: "Live conditions", accent: "#0a2a5c", color: "#38bdf8", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="M20 12h2" /><path d="m19.07 4.93-1.41 1.41" /><path d="M15.947 12.650a4 4 0 0 0-5.925-4.128" /><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6z" /></svg> },
-                { id: "about", label: "About", desc: "App info & account", accent: "#2a2a3a", color: "#94a3b8", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> },
+                { id: "species", label: "Species", desc: "Hunting & fishing guides", accent: "#1a5c1a", color: "#4ade80", svg: <PawPrint size={22} /> },
+                { id: "regs", label: "Regulations", desc: "State-specific rules", accent: "#0f2a5c", color: "#3b82f6", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg> },
+                { id: "trip", label: "Trip Planner", desc: "Personalized plans", accent: "#2a0a5c", color: "#a855f7", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg> },
+                { id: "gear", label: "Gear", desc: "Pack checklists", accent: "#5c2a0a", color: "#f97316", svg: <Package size={22} /> },
+                { id: "licenses", label: "Licenses", desc: "Buy state licenses", accent: "#1a4a0a", color: "#84cc16", svg: <IdCard size={22} /> },
+                { id: "harvest", label: "Harvest Log", desc: "Track your catches", accent: "#5c0a2a", color: "#f43f5e", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg> },
+                { id: "trophy", label: "Trophies", desc: "Community verified harvests", accent: "#4a2a00", color: "#f59e0b", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2z" /></svg> },
+                { id: "ballistics", label: "Ballistics", desc: "Bullet drop calculator", accent: "#5c1a1a", color: "#ef4444", svg: <Crosshair size={22} /> },
+                { id: "weather", label: "Weather", desc: "Live conditions", accent: "#0a3a5c", color: "#06b6d4", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="M20 12h2" /><path d="m19.07 4.93-1.41 1.41" /><path d="M15.947 12.650a4 4 0 0 0-5.925-4.128" /><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6z" /></svg> },
+                { id: "about", label: "About", desc: "App info & account", accent: "#3a2a1a", color: "#d4a574", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> },
                 ...(user?.id === "user_3CKoCuA9KUvrtfrJ3ia3Bm2BH1a" ? [{ id: "admin", label: "Admin", desc: "Manage reports", accent: "#3a1a1a", color: "#d44a4a", svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg> }] : []),
               ].map(t => (
                 <button key={t.id} onClick={() => setTab(t.id)} className="more-btn" style={{ padding: "16px", textAlign: "left", cursor: "pointer", border: "1px solid #1a2a1a", borderRadius: 16, background: "linear-gradient(135deg, #0d140d, #101810)", display: "flex", alignItems: "center", gap: 14, minHeight: 80 }}>
@@ -602,7 +603,7 @@ CURRENT CONTEXT (use this for accurate seasonal and timing advice):
                   </div>
                   <div>
                     <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 13 }}>{t.label}</div>
-                    <div style={{ color: "#4a6a4a", fontSize: 10, marginTop: 2 }}>{t.desc}</div>
+                    
                   </div>
                 </button>
               ))}

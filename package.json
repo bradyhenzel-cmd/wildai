@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@clerk/react": "^6.2.1",
+    "@iconify-json/meteocons": "^1.2.4",
+    "@iconify/react": "^6.0.2",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@supabase/supabase-js": "^2.103.2",
