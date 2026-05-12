@@ -55,19 +55,24 @@ export default function TrophyBoardTab({ user, openSignIn, selectedState }) {
 
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div style={{ background: "linear-gradient(135deg, rgba(212,147,10,0.12), rgba(180,120,5,0.06))", border: "1px solid rgba(212,147,10,0.2)", borderRadius: "var(--radius)", padding: "18px 20px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-          <span style={{ fontSize: 24 }}>🏆</span>
-          <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 20, fontFamily: "var(--font-display)" }}>Trophy Board</span>
+      <div style={{ background: "linear-gradient(160deg, #0c1c0c 0%, #071007 100%)", border: "1px solid rgba(139,195,74,0.15)", borderTop: "1px solid rgba(139,195,74,0.25)", borderRadius: 16, padding: "16px 18px", boxShadow: "0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(212,147,10,0.1)", border: "1px solid rgba(212,147,10,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(212,147,10,0.9)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+          </div>
+          <div>
+            <div style={{ color: "#ffffff", fontWeight: 800, fontSize: 18, fontFamily: "var(--font-display)", textShadow: "0 1px 4px rgba(0,0,0,0.4)" }}>Trophy Board</div>
+            <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, marginTop: 2 }}>Community-verified harvests</div>
+          </div>
         </div>
-        <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 14 }}>Community-verified harvests — upvote to confirm legit catches</div>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          <button onClick={() => setFilter("all")} className={`nav-tab ${filter === "all" ? "active" : "inactive"}`} style={{ padding: "4px 12px", fontSize: 11 }}>All States</button>
-          {selectedState && <button onClick={() => setFilter(selectedState)} className={`nav-tab ${filter === selectedState ? "active" : "inactive"}`} style={{ padding: "4px 12px", fontSize: 11 }}>📍 {selectedState}</button>}
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+          {[["all", "All States"], selectedState ? [selectedState, selectedState] : null].filter(Boolean).map(([val, label]) => (
+            <button key={val} onClick={() => setFilter(val)} style={{ padding: "6px 14px", fontSize: 11, fontWeight: 700, borderRadius: 20, border: `1px solid ${filter === val ? "rgba(139,195,74,0.5)" : "rgba(255,255,255,0.08)"}`, background: filter === val ? "rgba(139,195,74,0.15)" : "rgba(255,255,255,0.04)", color: filter === val ? "var(--green)" : "rgba(255,255,255,0.4)", cursor: "pointer", fontFamily: "var(--font-body)" }}>{label}</button>
+          ))}
           <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
-            <button onClick={() => setTypeFilter("all")} className={`nav-tab ${typeFilter === "all" ? "active" : "inactive"}`} style={{ padding: "4px 12px", fontSize: 11 }}>All</button>
-            <button onClick={() => setTypeFilter("hunting")} className={`nav-tab ${typeFilter === "hunting" ? "active" : "inactive"}`} style={{ padding: "4px 12px", fontSize: 11 }}>🎯</button>
-            <button onClick={() => setTypeFilter("fishing")} className={`nav-tab ${typeFilter === "fishing" ? "active" : "inactive"}`} style={{ padding: "4px 12px", fontSize: 11 }}>🎣</button>
+            {[["all", "All"], ["hunting", <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>], ["fishing", <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10"/><path d="M20.414 8.586 22 7"/><circle cx="19" cy="10" r="2"/></svg>]].map(([val, label]) => (
+              <button key={val} onClick={() => setTypeFilter(val)} style={{ width: 32, height: 32, borderRadius: 10, border: `1px solid ${typeFilter === val ? "rgba(139,195,74,0.5)" : "rgba(255,255,255,0.08)"}`, background: typeFilter === val ? "rgba(139,195,74,0.15)" : "rgba(255,255,255,0.04)", color: typeFilter === val ? "var(--green)" : "rgba(255,255,255,0.4)", cursor: "pointer", fontFamily: "var(--font-body)", fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{label}</button>
+            ))}
           </div>
         </div>
       </div>
@@ -76,8 +81,8 @@ export default function TrophyBoardTab({ user, openSignIn, selectedState }) {
 
       {!loading && entries.length === 0 && (
         <div style={{ textAlign: "center", padding: 48, color: "var(--text3)", fontSize: 14 }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>🏆</div>
-          <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>No trophies yet</div>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 12 }}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+          <div style={{ color: "#ffffff", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>No trophies yet</div>
           <div style={{ fontSize: 13 }}>Submit a harvest from your Harvest Log to get on the board!</div>
         </div>
       )}
@@ -88,8 +93,8 @@ export default function TrophyBoardTab({ user, openSignIn, selectedState }) {
         const isOwn = user?.id === e.user_id;
         const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : null;
         return (
-          <div key={e.id} className="card fade-in" style={{ padding: 0, overflow: "hidden", border: i < 3 ? "1px solid rgba(212,147,10,0.25)" : "1px solid var(--border)" }}>
-            {i < 3 && <div style={{ background: "linear-gradient(90deg, rgba(212,147,10,0.12), transparent)", padding: "5px 14px", fontSize: 11, color: "var(--amber)", fontWeight: 700, letterSpacing: "0.05em" }}>{medal} #{i + 1} MOST VERIFIED</div>}
+          <div key={e.id} className="fade-in" style={{ padding: 0, overflow: "hidden", background: "linear-gradient(160deg, #0c1c0c 0%, #071007 100%)", border: i < 3 ? "1px solid rgba(212,147,10,0.25)" : "1px solid rgba(139,195,74,0.1)", borderTop: i < 3 ? "1px solid rgba(212,147,10,0.35)" : "1px solid rgba(139,195,74,0.18)", borderRadius: 16, boxShadow: "0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
+            {i < 3 && <div style={{ background: "linear-gradient(90deg, rgba(212,147,10,0.1), transparent)", padding: "6px 16px", fontSize: 10, color: "rgba(212,147,10,0.8)", fontWeight: 700, letterSpacing: "0.08em" }}>{medal} #{i + 1} MOST VERIFIED</div>}
             {e.photo && <img src={e.photo} style={{ width: "100%", maxHeight: 420, objectFit: "contain", background: "rgba(0,0,0,0.3)" }} />}
             <div style={{ padding: "14px 16px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
@@ -110,14 +115,14 @@ export default function TrophyBoardTab({ user, openSignIn, selectedState }) {
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 {!isOwn ? (
                   <>
-                    <button onClick={() => toggleVote(e.id)} style={{ display: "flex", alignItems: "center", gap: 6, background: isVoted ? "rgba(120,180,80,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${isVoted ? "var(--border-accent)" : "var(--border)"}`, borderRadius: "var(--radius-sm)", padding: "6px 14px", cursor: "pointer", color: isVoted ? "var(--green)" : "var(--text3)", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}>
-                      👍 {isVoted ? "Vouched" : "Vouch"} {votes > 0 && <span style={{ background: isVoted ? "var(--green-dim)" : "rgba(255,255,255,0.06)", padding: "1px 8px", borderRadius: 20, fontSize: 11 }}>{votes}</span>}
+                    <button onClick={() => toggleVote(e.id)} style={{ display: "flex", alignItems: "center", gap: 6, background: isVoted ? "rgba(139,195,74,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${isVoted ? "rgba(139,195,74,0.3)" : "rgba(255,255,255,0.08)"}`, borderRadius: 10, padding: "7px 14px", cursor: "pointer", color: isVoted ? "var(--green)" : "rgba(255,255,255,0.4)", fontFamily: "var(--font-body)", fontSize: 12, fontWeight: 700, transition: "all 0.15s" }}>
+                      {isVoted ? "Vouched" : "Vouch"} {votes > 0 && <span style={{ background: isVoted ? "rgba(139,195,74,0.15)" : "rgba(255,255,255,0.06)", padding: "1px 8px", borderRadius: 20, fontSize: 11 }}>{votes}</span>}
                     </button>
                     <button onClick={async () => {
                       if (!user) { openSignIn(); return; }
                       await supabase.from("reports").insert({ post_id: e.id, user_id: user.id, reason: "trophy_fake" });
                       toast("Thanks for reporting — we'll review this entry.", "success");
-                    }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text3)", fontSize: 12, padding: "4px 8px", fontFamily: "var(--font-body)" }}>🚩</button>
+                    }} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.2)", fontSize: 12, padding: "4px 8px", fontFamily: "var(--font-body)" }}>Report</button>
                   </>
                 ) : (
                   <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--text3)", fontSize: 12 }}>

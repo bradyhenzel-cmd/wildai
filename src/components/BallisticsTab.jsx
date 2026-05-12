@@ -70,53 +70,53 @@ export default function BallisticsTab() {
   };
 
   return (
-    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div className="card" style={{ padding: "20px 24px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-          <span style={{ fontSize: 24 }}>🎯</span>
+    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ background: "linear-gradient(160deg, #0c1c0c 0%, #071007 100%)", border: "1px solid rgba(139,195,74,0.15)", borderTop: "1px solid rgba(139,195,74,0.25)", borderRadius: 16, padding: "16px 18px", boxShadow: "0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(239,68,68,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>
+          </div>
           <div>
-            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16, fontFamily: "var(--font-display)" }}>Ballistics Calculator</div>
-            <div style={{ color: "var(--text3)", fontSize: 12 }}>Bullet drop & wind drift at range</div>
+            <div style={{ color: "#ffffff", fontWeight: 800, fontSize: 16, fontFamily: "var(--font-display)", textShadow: "0 1px 4px rgba(0,0,0,0.4)" }}>Ballistics Calculator</div>
+            <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, marginTop: 2 }}>Bullet drop & wind drift at range</div>
           </div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
           <div style={{ gridColumn: "1 / -1" }}>
-            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>LOAD NAME (optional)</div>
-            <input placeholder=".308 Win 168gr Federal" value={form.label} onChange={e => { setForm(f => ({ ...f, label: e.target.value })); resetResults(); }} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+            <div style={{ color: "rgba(139,195,74,0.6)", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 6 }}>LOAD NAME (optional)</div>
+            <input placeholder="" value={form.label} onChange={e => { setForm(f => ({ ...f, label: e.target.value })); resetResults(); }} style={{ width: "100%", padding: "11px 14px", borderRadius: 12, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", outline: "none", boxSizing: "border-box" }} />
           </div>
+          {[
+            { key: "weight", label: "BULLET WEIGHT (gr)", placeholder: "168", type: "number" },
+            { key: "velocity", label: "MUZZLE VELOCITY (fps)", placeholder: "2650", type: "number" },
+            { key: "bc", label: "BALLISTIC COEFF (G1)", placeholder: "0.47", type: "number" },
+          ].map(({ key, label, placeholder, type }) => (
+            <div key={key}>
+              <div style={{ color: "rgba(139,195,74,0.6)", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 6 }}>{label}</div>
+              <input type={type} placeholder="" value={form[key]} onChange={e => { setForm(f => ({ ...f, [key]: e.target.value })); resetResults(); }} style={{ width: "100%", padding: "11px 14px", borderRadius: 12, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", outline: "none", boxSizing: "border-box" }} />
+            </div>
+          ))}
           <div>
-            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>BULLET WEIGHT (gr)</div>
-            <input type="number" placeholder="168" value={form.weight} onChange={e => { setForm(f => ({ ...f, weight: e.target.value })); resetResults(); }} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
-          </div>
-          <div>
-            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>MUZZLE VELOCITY (fps)</div>
-            <input type="number" placeholder="2650" value={form.velocity} onChange={e => { setForm(f => ({ ...f, velocity: e.target.value })); resetResults(); }} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
-          </div>
-          <div>
-            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>BALLISTIC COEFF (G1)</div>
-            <input type="number" placeholder="0.47" value={form.bc} onChange={e => { setForm(f => ({ ...f, bc: e.target.value })); resetResults(); }} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
-          </div>
-          <div>
-            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>ZERO DISTANCE (yd)</div>
-            <select value={form.zero} onChange={e => { setForm(f => ({ ...f, zero: e.target.value })); resetResults(); }} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }}>
+            <div style={{ color: "rgba(139,195,74,0.6)", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 6 }}>ZERO DISTANCE (yd)</div>
+            <select value={form.zero} onChange={e => { setForm(f => ({ ...f, zero: e.target.value })); resetResults(); }} style={{ width: "100%", padding: "11px 14px", borderRadius: 12, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", outline: "none", boxSizing: "border-box" }}>
               <option value="50">50 yards</option>
               <option value="100">100 yards</option>
               <option value="200">200 yards</option>
               <option value="300">300 yards</option>
             </select>
           </div>
-          <div>
-            <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 5 }}>WIND SPEED (mph)</div>
-            <input type="number" placeholder="10" value={form.wind} onChange={e => { setForm(f => ({ ...f, wind: e.target.value })); resetResults(); }} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", fontSize: 13 }} />
+          <div style={{ gridColumn: "1 / -1" }}>
+            <div style={{ color: "rgba(139,195,74,0.6)", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 6 }}>WIND SPEED (mph)</div>
+            <input type="number" placeholder="" value={form.wind} onChange={e => { setForm(f => ({ ...f, wind: e.target.value })); resetResults(); }} style={{ width: "100%", padding: "11px 14px", borderRadius: 12, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", outline: "none", boxSizing: "border-box" }} />
           </div>
         </div>
-        <button onClick={calculate} disabled={!form.weight || !form.velocity || !form.bc} className="btn-primary" style={{ width: "100%", padding: "11px", fontSize: 14, opacity: (!form.weight || !form.velocity || !form.bc) ? 0.5 : 1 }}>
+        <button onClick={calculate} disabled={!form.weight || !form.velocity || !form.bc} style={{ width: "100%", padding: "13px", fontSize: 14, fontWeight: 700, borderRadius: 12, border: "none", cursor: "pointer", background: (!form.weight || !form.velocity || !form.bc) ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg, #78b450, #4a8a2a)", color: (!form.weight || !form.velocity || !form.bc) ? "rgba(255,255,255,0.25)" : "#ffffff", transition: "all 0.2s", fontFamily: "var(--font-body)", boxShadow: (!form.weight || !form.velocity || !form.bc) ? "none" : "0 4px 16px rgba(120,180,80,0.35)" }}>
           Calculate Drop Chart
         </button>
       </div>
 
       {results && (
-        <div className="card fade-in" style={{ padding: "20px 24px", overflowX: "auto" }}>
+        <div style={{ background: "linear-gradient(160deg, #0c1c0c 0%, #071007 100%)", border: "1px solid rgba(139,195,74,0.15)", borderTop: "1px solid rgba(139,195,74,0.25)", borderRadius: 16, padding: "20px", overflowX: "auto", boxShadow: "0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
             {form.label ? <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15, fontFamily: "var(--font-display)" }}>{form.label}</div> : <div />}
             <button onClick={() => setResults(null)} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 18, cursor: "pointer", padding: 0, lineHeight: 1 }}>✕</button>

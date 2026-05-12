@@ -123,35 +123,41 @@ export default function HarvestLogTab({ user, openSignIn, isPro, openPricingModa
 
 
       {showForm && createPortal(
-        <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "#0e1510", display: "flex", flexDirection: "column" }}>
-          <div style={{ background: "#0e1510", width: "100%", height: "100%", overflowY: "auto", display: "flex", flexDirection: "column", animation: "slideUp 0.3s cubic-bezier(0.32,0.72,0,1)" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 10px" }}>
-              <span style={{ color: "var(--text)", fontWeight: 700, fontSize: 15, fontFamily: "var(--font-display)" }}>New Entry</span>
-              <button onClick={() => setShowForm(false)} style={{ background: "rgba(255,255,255,0.06)", border: "none", color: "var(--text2)", width: 28, height: 28, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
+        <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "linear-gradient(160deg, #0a160a 0%, #060d06 100%)", display: "flex", flexDirection: "column" }}>
+          <div style={{ width: "100%", height: "100%", overflowY: "auto", display: "flex", flexDirection: "column", animation: "slideUp 0.3s cubic-bezier(0.32,0.72,0,1)" }}>
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px 12px", borderBottom: "1px solid rgba(139,195,74,0.08)", background: "rgba(0,0,0,0.3)" }}>
+              <div>
+                <div style={{ color: "rgba(139,195,74,0.7)", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 2 }}>Harvest Log</div>
+                <div style={{ color: "#ffffff", fontWeight: 800, fontSize: 18, fontFamily: "var(--font-display)" }}>New Entry</div>
+              </div>
+              <button onClick={() => setShowForm(false)} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)", width: 32, height: 32, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
             </div>
-            <label style={{ display: "block", cursor: "pointer", position: "relative", marginTop: 12 }}>
+            {/* Photo */}
+            <label style={{ display: "block", cursor: "pointer", position: "relative" }}>
               <input type="file" accept="image/*" onChange={e => { const file = e.target.files[0]; if (!file) return; setForm(f => ({ ...f, photoFile: file, photo: URL.createObjectURL(file) })); }} style={{ display: "none" }} />
               {form.photo ? (
                 <div style={{ position: "relative" }}>
-                  <img src={form.photo} style={{ width: "100%", maxHeight: 240, objectFit: "cover", display: "block" }} />
-                  <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.6)", borderRadius: 20, padding: "4px 10px", fontSize: 11, color: "white" }}>Change</div>
+                  <img src={form.photo} style={{ width: "100%", maxHeight: 260, objectFit: "cover", display: "block" }} />
+                  <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)", borderRadius: 20, padding: "5px 12px", fontSize: 11, color: "white", fontWeight: 600 }}>Change Photo</div>
                 </div>
               ) : (
-                <div style={{ height: 100, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(255,255,255,0.02)", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
-                  <span style={{ color: "rgba(255,255,255,0.22)", fontSize: 12 }}>Tap to add a photo</span>
+                <div style={{ height: 120, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(139,195,74,0.03)", borderTop: "1px solid rgba(139,195,74,0.08)", borderBottom: "1px solid rgba(139,195,74,0.08)" }}>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(139,195,74,0.3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  <span style={{ color: "rgba(139,195,74,0.5)", fontSize: 12, fontWeight: 600 }}>Tap to add a photo</span>
                 </div>
               )}
             </label>
-            <div style={{ padding: "14px 16px 36px", display: "flex", flexDirection: "column", gap: 10 }}>
-              <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: 3 }}>
-                {[["hunting", "Hunting", <svg key="hunt" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="22" x2="18" y1="12" y2="12" /><line x1="6" x2="2" y1="12" y2="12" /><line x1="12" x2="12" y1="6" y2="2" /><line x1="12" x2="12" y1="22" y2="18" /></svg>], ["fishing", "Fishing", <svg key="fish" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10" /><path d="M20.414 8.586 22 7" /><circle cx="19" cy="10" r="2" /></svg>]].map(([val, label, icon]) => (
-                  <button key={val} onClick={() => setForm(f => ({ ...f, type: val }))} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "8px 0", fontSize: 12, fontWeight: 700, borderRadius: 9, border: "none", cursor: "pointer", transition: "all 0.2s", background: form.type === val ? "linear-gradient(135deg,#2d5a1b,#1e4010)" : "transparent", color: form.type === val ? "white" : "#4a6a4a", fontFamily: "var(--font-body)" }}>
+            <div style={{ padding: "16px 18px 40px", display: "flex", flexDirection: "column", gap: 12 }}>
+              {/* Type toggle */}
+              <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: 4 }}>
+                {[["hunting", "Hunting", <svg key="hunt" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>], ["fishing", "Fishing", <svg key="fish" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10"/><path d="M20.414 8.586 22 7"/><circle cx="19" cy="10" r="2"/></svg>]].map(([val, label, icon]) => (
+                  <button key={val} onClick={() => setForm(f => ({ ...f, type: val }))} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px 0", fontSize: 13, fontWeight: 700, borderRadius: 10, border: "none", cursor: "pointer", transition: "all 0.2s", background: form.type === val ? "linear-gradient(135deg, #3a7020, #2d5a1a)" : "transparent", color: form.type === val ? "#ffffff" : "rgba(255,255,255,0.3)", fontFamily: "var(--font-body)", boxShadow: form.type === val ? "0 2px 8px rgba(0,0,0,0.3)" : "none" }}>
                     {icon}{label}
                   </button>
                 ))}
               </div>
-              <input placeholder="Species *" maxLength={50} value={form.species} onChange={e => setForm(f => ({ ...f, species: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
+              <input placeholder="Species *" maxLength={50} value={form.species} onChange={e => setForm(f => ({ ...f, species: e.target.value }))} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box", outline: "none" }} />
               {/Mobi|Android/i.test(navigator.userAgent) ? (
                 <div style={{ display: "flex", gap: 6 }}>
                   {(() => {
@@ -180,21 +186,21 @@ export default function HarvestLogTab({ user, openSignIn, isPro, openPricingModa
               ) : (
                 <DatePickerInput value={form.date} onChange={val => setForm(f => ({ ...f, date: val }))} maxDate={new Date()} minDate={new Date(new Date().getFullYear() - 10, 0, 1)} placeholder="Select harvest date..." />
               )}
-              <input placeholder="Location" maxLength={100} value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
-              <select value={form.state} onChange={e => setForm(f => ({ ...f, state: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "#0e1510", border: "1px solid rgba(255,255,255,0.08)", color: form.state ? "var(--text)" : "rgba(255,255,255,0.3)", fontFamily: "var(--font-body)", boxSizing: "border-box" }}>
+              <input placeholder="Location" maxLength={100} value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box", outline: "none" }} />
+              <select value={form.state} onChange={e => setForm(f => ({ ...f, state: e.target.value }))} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 13, background: "#0a160a", border: "1px solid rgba(255,255,255,0.08)", color: form.state ? "var(--text)" : "rgba(255,255,255,0.3)", fontFamily: "var(--font-body)", boxSizing: "border-box", outline: "none" }}>
                 <option value="">State (optional)</option>
                 {STATES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              <div style={{ display: "flex", gap: 8 }}>
-                <input placeholder="Weight (lbs)" maxLength={8} value={form.weight} onChange={e => setForm(f => ({ ...f, weight: e.target.value }))} style={{ flex: 1, minWidth: 0, padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
-                <input placeholder={form.type === "fishing" ? "Length (in)" : "Antlers/Score"} maxLength={30} value={form.size} onChange={e => setForm(f => ({ ...f, size: e.target.value }))} style={{ flex: 1, minWidth: 0, padding: "10px 12px", borderRadius: 10, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
+              <div style={{ display: "flex", gap: 10 }}>
+                <input placeholder="Weight (lbs)" maxLength={8} value={form.weight} onChange={e => setForm(f => ({ ...f, weight: e.target.value }))} style={{ flex: 1, minWidth: 0, padding: "12px 14px", borderRadius: 12, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box", outline: "none" }} />
+                <input placeholder={form.type === "fishing" ? "Length (in)" : "Antlers/Score"} maxLength={30} value={form.size} onChange={e => setForm(f => ({ ...f, size: e.target.value }))} style={{ flex: 1, minWidth: 0, padding: "12px 14px", borderRadius: 12, fontSize: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box", outline: "none" }} />
               </div>
-              <textarea placeholder="Weather conditions, tactics used, memorable details..." maxLength={500} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13, minHeight: 70, resize: "none", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box" }} />
-              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "rgba(212,147,10,0.06)", border: "1px solid rgba(212,147,10,0.15)", borderRadius: 10 }}>
-                <span>🏆</span>
-                <span style={{ color: "var(--amber)", fontSize: 12 }}>Fill out all fields and add a photo to submit to the Trophy Board.</span>
+              <textarea placeholder="Weather conditions, tactics used, memorable details..." maxLength={500} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 13, minHeight: 80, resize: "none", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text)", fontFamily: "var(--font-body)", boxSizing: "border-box", outline: "none" }} />
+              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "rgba(212,147,10,0.06)", border: "1px solid rgba(212,147,10,0.15)", borderRadius: 12 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(212,147,10,0.8)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+                <span style={{ color: "rgba(212,147,10,0.7)", fontSize: 12 }}>Fill out all fields and add a photo to submit to the Trophy Board.</span>
               </div>
-              <button onClick={save} disabled={!form.species || !form.date} className="btn-primary" style={{ width: "100%", padding: "13px", fontSize: 14, fontWeight: 700, borderRadius: 12, opacity: (!form.species || !form.date) ? 0.5 : 1 }}>Save Entry</button>
+              <button onClick={save} disabled={!form.species || !form.date} style={{ width: "100%", padding: "14px", fontSize: 14, fontWeight: 700, borderRadius: 14, border: "none", cursor: "pointer", background: (!form.species || !form.date) ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg, #78b450, #4a8a2a)", color: (!form.species || !form.date) ? "rgba(255,255,255,0.2)" : "#ffffff", fontFamily: "var(--font-body)", boxShadow: (!form.species || !form.date) ? "none" : "0 4px 16px rgba(120,180,80,0.35)", transition: "all 0.2s" }}>Save Entry</button>
             </div>
           </div>
         </div>,

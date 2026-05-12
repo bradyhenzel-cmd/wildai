@@ -86,47 +86,47 @@ export default function RegulationsTab({ selectedState, currentUser }) {
   );
 
   return (
-    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
 
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 0" }}>
+      <div style={{ background: "linear-gradient(160deg, #0c1c0c 0%, #071007 100%)", border: "1px solid rgba(139,195,74,0.15)", borderTop: "1px solid rgba(139,195,74,0.25)", borderRadius: 16, padding: "16px 18px", boxShadow: "0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 2 }}>REGULATIONS</div>
-          <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 22, fontFamily: "var(--font-display)" }}>{selectedState}</div>
+          <div style={{ color: "rgba(139,195,74,0.7)", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Regulations</div>
+          <div style={{ color: "#ffffff", fontWeight: 800, fontSize: 26, fontFamily: "var(--font-display)", letterSpacing: "-0.01em", textShadow: "0 0 20px rgba(255,255,255,0.1)", lineHeight: 1 }}>{selectedState}</div>
         </div>
         {currentUser?.id === ADMIN_USER_ID && (
           <button onClick={() => setShowAdmin(s => !s)} className="btn-ghost" style={{ padding: "6px 14px", fontSize: 12 }}>
-            {showAdmin ? "✕ Close" : "⚙️ Admin"}
+            {showAdmin ? "✕ Close" : "Admin"}
           </button>
         )}
       </div>
 
       {/* Official links */}
       {STATE_WILDLIFE_AGENCIES[selectedState] && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <a href={STATE_WILDLIFE_AGENCIES[selectedState].hunting} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 20px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", textDecoration: "none", transition: "border-color 0.2s" }} onMouseEnter={e => e.currentTarget.style.borderColor = "var(--green)"} onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div>
-                <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15, fontFamily: "var(--font-display)", marginBottom: 3 }}>Hunting Regulations</div>
-                <div style={{ color: "var(--text3)", fontSize: 12 }}>{selectedState} Official Wildlife Agency</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          {[
+            { href: STATE_WILDLIFE_AGENCIES[selectedState].hunting, label: "Hunting Regs", sub: "Official state rules", accent: "rgba(212,147,10,0.12)", border: "rgba(212,147,10,0.25)", icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(212,147,10,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg> },
+            { href: STATE_WILDLIFE_AGENCIES[selectedState].fishing, label: "Fishing Regs", sub: "Official state rules", accent: "rgba(74,144,217,0.12)", border: "rgba(74,144,217,0.25)", icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(74,144,217,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m17.586 11.414-5.93 5.93a1 1 0 0 1-8-8l3.137-3.137a.707.707 0 0 1 1.207.5V10"/><path d="M20.414 8.586 22 7"/><circle cx="19" cy="10" r="2"/></svg> },
+          ].map(({ href, label, sub, accent, border, icon }) => (
+            <a key={label} href={href} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+              <div style={{ background: "linear-gradient(160deg, #0c1c0c 0%, #071007 100%)", border: `1px solid ${border}`, borderRadius: 16, padding: "20px 16px", textAlign: "center", cursor: "pointer", boxShadow: "0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 52, height: 52, borderRadius: 14, background: accent, border: `1px solid ${border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>{icon}</div>
+                <div>
+                  <div style={{ color: "#ffffff", fontWeight: 700, fontSize: 14, marginBottom: 3 }}>{label}</div>
+                  <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 11 }}>{sub}</div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 5, color: "rgba(139,195,74,0.7)", fontSize: 11, fontWeight: 600 }}>
+                  View Official Site
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                </div>
               </div>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
-          </a>
-          <a href={STATE_WILDLIFE_AGENCIES[selectedState].fishing} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 20px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", textDecoration: "none", transition: "border-color 0.2s" }} onMouseEnter={e => e.currentTarget.style.borderColor = "var(--green)"} onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div>
-                <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15, fontFamily: "var(--font-display)", marginBottom: 3 }}>Fishing Regulations</div>
-                <div style={{ color: "var(--text3)", fontSize: 12 }}>{selectedState} Official Wildlife Agency</div>
-              </div>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
-          </a>
+            </a>
+          ))}
         </div>
       )}
 
-      <div style={{ padding: "13px 18px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius)" }}>
-        <div style={{ color: "var(--text3)", fontSize: 12, lineHeight: 1.6 }}>Detailed in-app regulations coming soon. Official agency links above are always current.</div>
+      <div style={{ padding: "13px 16px", background: "rgba(139,195,74,0.04)", border: "1px solid rgba(139,195,74,0.1)", borderRadius: 14 }}>
+        <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, lineHeight: 1.6, textAlign: "center" }}>Detailed in-app regulations coming soon. Official agency links above are always current.</div>
       </div>
 
       {regs && !loading && !generating && (
