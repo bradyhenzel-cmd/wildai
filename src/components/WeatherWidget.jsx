@@ -125,7 +125,7 @@ export default function WeatherWidget({ selectedState, weather, setWeather, loca
                   <span style={{ color: "#ffffff", fontSize: 42, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.02em", textShadow: "0 0 20px rgba(255,255,255,0.15)" }}>{Math.round(weather.temperature_2m)}°</span>
                   <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 22, fontWeight: 300 }}>F</span>
                 </div>
-                {c2 && <div style={{ color: c2.color, fontSize: 12, fontWeight: 600 }}>{c2.label}</div>}
+                
               </div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 14 }}>
