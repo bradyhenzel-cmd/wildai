@@ -597,7 +597,7 @@ function PinDetailPage({ pin, onBack, onDelete, onSharePin, onSave }) {
               )}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-              <div style={{ flexShrink: 0, width: 60, height: 60, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
                 <Icon icon={(() => {
                   const h = new Date().getHours();
                   const n = h >= 20 || h < 6;
@@ -618,19 +618,17 @@ function PinDetailPage({ pin, onBack, onDelete, onSharePin, onSave }) {
                   if (c === 95) return n ? "meteocons:thunderstorms-night-fill" : "meteocons:thunderstorms-day-fill";
                   if (c === 96 || c === 99) return n ? "meteocons:thunderstorms-night-rain-fill" : "meteocons:thunderstorms-day-rain-fill";
                   return n ? "meteocons:partly-cloudy-night-fill" : "meteocons:partly-cloudy-day-fill";
-                })()} style={{ width: 60, height: 60, display: "block" }} />
+                })()} style={{ width: 56, height: 56, display: "block" }} />
+                <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, fontWeight: 500 }}>{quickConditions.condition}</span>
               </div>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                <div style={{ marginBottom: 4 }}>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-                    <span style={{ color: "#ffffff", fontSize: 42, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.02em", textShadow: "0 0 20px rgba(255,255,255,0.15)" }}>{quickConditions.temp}°</span>
-                    <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 22, fontWeight: 300 }}>F</span>
-                  </div>
-                  <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, fontWeight: 500, marginTop: 2 }}>{quickConditions.condition}</div>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingTop: 8 }}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 5, marginBottom: 6 }}>
+                  <span style={{ color: "#ffffff", fontSize: 44, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.02em", textShadow: "0 0 20px rgba(255,255,255,0.15)" }}>{quickConditions.temp}°</span>
+                  <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 22, fontWeight: 300 }}>F</span>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <Wind size={12} color="rgba(255,255,255,0.3)" />
-                  <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, fontWeight: 500, letterSpacing: "0.02em" }}>{quickConditions.windSpeed} mph {quickConditions.windDir}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                  <Wind size={11} color="rgba(255,255,255,0.25)" />
+                  <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 12 }}>{quickConditions.windSpeed} mph {quickConditions.windDir}</span>
                 </div>
               </div>
             </div>
@@ -748,23 +746,15 @@ function PinDetailPage({ pin, onBack, onDelete, onSharePin, onSave }) {
                 const dist = userCoords ? getDistanceMi(userCoords.lat, userCoords.lng, pin.lat, pin.lng) : null;
                 const distLabel = dist !== null ? (dist < 0.1 ? "< 0.1 mi" : `${dist.toFixed(1)} mi`) : null;
                 return (
-                  <button key={pin.id} onClick={() => setViewingPin(pin)} style={{ flexShrink: 0, width: 162, background: "linear-gradient(160deg, #0c1c0c 0%, #071007 100%)", border: "1px solid rgba(139,195,74,0.12)", borderTop: "1px solid rgba(139,195,74,0.2)", borderRadius: 16, padding: "14px 15px", textAlign: "left", cursor: "pointer", fontFamily: "var(--font-body)", display: "flex", flexDirection: "column", boxShadow: "0 4px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
-                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 6, marginBottom: 7 }}>
-                      <span style={{ color: "#ffffff", fontWeight: 700, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, textShadow: "0 1px 4px rgba(0,0,0,0.4)" }}>{pin.name || "Unnamed Spot"}</span>
-                      {distLabel && <span style={{ color: "rgba(139,195,74,0.6)", fontSize: 10, fontWeight: 700, whiteSpace: "nowrap", flexShrink: 0, marginTop: 1, letterSpacing: "0.02em" }}>{distLabel}</span>}
+                  <button key={pin.id} onClick={() => setViewingPin(pin)} style={{ flexShrink: 0, width: 148, background: "linear-gradient(160deg, #0c1c0c 0%, #071007 100%)", border: "1px solid rgba(139,195,74,0.12)", borderTop: "1px solid rgba(139,195,74,0.2)", borderRadius: 14, padding: "14px", textAlign: "left", cursor: "pointer", fontFamily: "var(--font-body)", display: "flex", flexDirection: "column", gap: 6, boxShadow: "0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
+                    <span style={{ color: "#ffffff", fontWeight: 700, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pin.name || "Unnamed Spot"}</span>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 4 }}>
+                      <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 11 }}>{pin.spot_type || ""}</span>
+                      {distLabel && <span style={{ color: "rgba(139,195,74,0.55)", fontSize: 10, fontWeight: 700, whiteSpace: "nowrap", flexShrink: 0, letterSpacing: "0.02em" }}>{distLabel}</span>}
                     </div>
-                    {pin.spot_type && (
-                      <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 7 }}>
-                        <div style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--green)", flexShrink: 0, boxShadow: "0 0 5px rgba(139,195,74,0.7)" }} />
-                        <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, fontWeight: 500 }}>{pin.spot_type}</span>
-                      </div>
-                    )}
-                    {pin.notes && (
-                      <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, lineHeight: 1.5, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", flex: 1, marginBottom: 10 }}>{pin.notes}</div>
-                    )}
-                    <div style={{ marginTop: "auto", paddingTop: 9, borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span style={{ color: "var(--green)", fontSize: 11, fontWeight: 700, letterSpacing: "0.03em" }}>Conditions</span>
-                      <span style={{ color: "var(--green)", fontSize: 14, fontWeight: 300 }}>→</span>
+                    <div style={{ marginTop: "auto", paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span style={{ color: "var(--green)", fontSize: 11, fontWeight: 700 }}>Conditions</span>
+                      <span style={{ color: "var(--green)", fontSize: 13 }}>→</span>
                     </div>
                   </button>
                 );
